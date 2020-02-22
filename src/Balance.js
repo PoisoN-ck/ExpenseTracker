@@ -56,7 +56,7 @@ class Balance extends Component {
     const {setCurrentAmount, addIncome, addExpense} = this;
 
     return (
-      <div>
+      <React.Fragment>
         <h1>{balance}</h1>
         <ul>{
           moneyFlow.map((item, index) => {
@@ -69,7 +69,7 @@ class Balance extends Component {
         <input onChange={setCurrentAmount} value={currentAmount}/>
         <button onClick={addIncome}>Add income</button>
         <button onClick={addExpense}>Reduce income</button>
-      </div>
+      </React.Fragment>
     );
   }
 }
