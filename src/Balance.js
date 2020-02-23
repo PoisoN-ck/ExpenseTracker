@@ -1,13 +1,14 @@
 import React, { Component } from 'react';
+import MoneyRecord from './MoneyRecord'
 
 class Balance extends Component {
 
   constructor() {
     super();
     this.state = {
-      balance: 100,
+      balance: 10000,
       currentAmount: 0,
-      moneyFlow: []
+      moneyFlow: [100, -20, 300]
     }
     this.addIncome = this.addIncome.bind(this);
     this.addExpense = this.addExpense.bind(this);
@@ -46,6 +47,9 @@ class Balance extends Component {
 
   addMoneyFlow(value) {
     const {moneyFlow} = this.state;
+    
+    if (!value) return;
+
     this.setState({
       moneyFlow: [...moneyFlow, value]
     });
@@ -57,18 +61,19 @@ class Balance extends Component {
 
     return (
       <React.Fragment>
-        <h1>{balance}</h1>
-        <ul>{
-          moneyFlow.map((item, index) => {
-            return (
-              <li key={`value_${index}`}>{item}</li>
-            )
-          })
-        }
-        </ul>
+        <h1>{balance} HUF</h1>
         <input onChange={setCurrentAmount} value={currentAmount}/>
         <button onClick={addIncome}>Add income</button>
         <button onClick={addExpense}>Reduce income</button>
+        <ul>
+          {
+            moneyFlow.map((item, index) => {
+              return (
+                <MoneyRecord key={`value_${index}`} record={item}/>
+              )
+            })
+          }
+        </ul>
       </React.Fragment>
     );
   }
