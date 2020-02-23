@@ -15,6 +15,17 @@ class Balance extends Component {
     this.setCurrentAmount = this.setCurrentAmount.bind(this);
   }
 
+  categories = [
+    "food",
+    "partying",
+    "clothes",
+    "flat",
+    "self-care",
+    "presents",
+    "holidays",
+    "fees"
+  ]
+
   addIncome() {
     const {balance, currentAmount} = this.state;
     this.addMoneyFlow(currentAmount);
@@ -57,12 +68,21 @@ class Balance extends Component {
 
   render() {
     const {balance, currentAmount, moneyFlow} = this.state;
-    const {setCurrentAmount, addIncome, addExpense} = this;
+    const {setCurrentAmount, addIncome, addExpense, categories} = this;
 
     return (
       <React.Fragment>
         <h1>{balance} HUF</h1>
         <input onChange={setCurrentAmount} value={currentAmount}/>
+        <select>
+          {
+            categories.sort().map(item => {
+              return(
+                <option value={item}>{item.charAt(0).toUpperCase() + item.slice(1)}</option>
+              )
+            })
+          }
+        </select>
         <button onClick={addIncome}>Add income</button>
         <button onClick={addExpense}>Reduce income</button>
         <ul>
