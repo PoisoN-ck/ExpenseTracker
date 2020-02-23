@@ -13,7 +13,7 @@ function ExpenseCategories(props) {
     <select onBlur={handleSelect}>
       {
         categories.sort().map(
-          (cat) => <option key={`${cat}_key`} value={cat}>{cat.charAt(0).toUpperCase() + cat.slice(1)}</option>,
+          (cat) => <option key={`${cat}_key`} value={cat}>{cat}</option>,
         )
       }
     </select>
