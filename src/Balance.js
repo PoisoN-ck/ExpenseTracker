@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
-import MoneyRecord from './MoneyRecord'
+import MoneyRecord from './MoneyRecord';
+import Category from './Category';
 
 class Balance extends Component {
 
@@ -8,11 +9,18 @@ class Balance extends Component {
     this.state = {
       balance: 10000,
       currentAmount: 0,
-      moneyFlow: [100, -20, 300]
+      currentCategory: this.categories.sort()[0],
+      moneyFlow: [
+        {value: 100, category: "salary"},
+        {value: -20, category: "food"},
+        {value: 300, category: "salary"},
+        {value: -100, category: "clothes"}
+      ]
     }
     this.addIncome = this.addIncome.bind(this);
     this.addExpense = this.addExpense.bind(this);
     this.setCurrentAmount = this.setCurrentAmount.bind(this);
+    this.setCurrentCategory = this.setCurrentCategory.bind(this);
   }
 
   categories = [
@@ -23,12 +31,13 @@ class Balance extends Component {
     "self-care",
     "presents",
     "holidays",
-    "fees"
+    "fees",
+    "salary"
   ]
 
   addIncome() {
     const {balance, currentAmount} = this.state;
-    this.addMoneyFlow(currentAmount);
+    this.addMoneyFlow(currentAmount, "salary");
     this.setState({
       balance: balance + currentAmount,
       currentAmount: 0
@@ -36,8 +45,8 @@ class Balance extends Component {
   }
 
   addExpense() {
-    const {balance, currentAmount} = this.state;
-    this.addMoneyFlow(currentAmount * -1);
+    const {balance, currentAmount,  currentCategory} = this.state;
+    this.addMoneyFlow(currentAmount * -1, currentCategory);
     this.setState({
       balance: balance - currentAmount,
       currentAmount: 0
@@ -56,25 +65,33 @@ class Balance extends Component {
     });
   }
 
-  addMoneyFlow(value) {
+  setCurrentCategory(event) {
+    const {value} = event.target;
+
+    this.setState({
+      currentCategory: value
+    });
+  }
+
+  addMoneyFlow(value, category) {
     const {moneyFlow} = this.state;
     
     if (!value) return;
 
     this.setState({
-      moneyFlow: [...moneyFlow, value]
+      moneyFlow: [...moneyFlow, {value, category: category.charAt(0).toUpperCase() + category.slice(1)}]
     });
   }
 
   render() {
-    const {balance, currentAmount, moneyFlow} = this.state;
-    const {setCurrentAmount, addIncome, addExpense, categories} = this;
+    const {balance, currentAmount, currentCategory, moneyFlow} = this.state;
+    const {setCurrentAmount, setCurrentCategory, addIncome, addExpense, categories} = this;
 
     return (
       <React.Fragment>
         <h1>{balance} HUF</h1>
         <input onChange={setCurrentAmount} value={currentAmount}/>
-        <select>
+        <select onChange={(e) => setCurrentCategory(e)}>
           {
             categories.sort().map(item => {
               return(
@@ -89,7 +106,7 @@ class Balance extends Component {
           {
             moneyFlow.map((item, index) => {
               return (
-                <MoneyRecord key={`value_${index}`} record={item}/>
+                <MoneyRecord key={`value_${index}`} valueRecord={item.value} categoryRecord={item.category}/>
               )
             })
           }

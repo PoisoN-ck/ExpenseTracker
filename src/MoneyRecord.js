@@ -1,11 +1,11 @@
 import React from 'react';
 
 function MoneyRecord(props) {
-    const {record} = props;
+    const {valueRecord, categoryRecord} = props;
 
     return(
         <li>
-            {record > 0 ? 'Income' : 'Expense'} {record} HUF
+            {valueRecord > 0 ? 'Income' : 'Expense'} {valueRecord} HUF, {categoryRecord}
         </li>
     )
 }
