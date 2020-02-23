@@ -22,10 +22,10 @@ class ExpenseTracker extends Component {
       currentAmount: 0,
       currentCategory: this.categories.sort()[0],
       transactions: [
-        { value: 100, category: 'salary' },
-        { value: -20, category: 'food' },
-        { value: 300, category: 'salary' },
-        { value: -100, category: 'clothes' },
+        { value: 100, category: 'Profit', transType: 'income' },
+        { value: -20, category: 'Food', transType: 'expense' },
+        { value: 300, category: 'Profit', transType: 'income' },
+        { value: -100, category: 'Clothes', transType: 'expense' },
       ],
     }
     this.addIncome = this.addIncome.bind(this);
@@ -60,12 +60,13 @@ class ExpenseTracker extends Component {
 
   addTransactions(value, category) {
     const { transactions } = this.state;
+    const transType = value < 0 ? 'Expense' : 'Income';
 
     if (!value) return;
 
     this.setState({
       transactions: [...transactions, {
-        value, category: category.charAt(0).toUpperCase() + category.slice(1),
+        value, category: category.charAt(0).toUpperCase() + category.slice(1), transType,
       }],
     });
   }
@@ -84,7 +85,7 @@ class ExpenseTracker extends Component {
   addIncome() {
     const { balance, currentAmount } = this.state;
 
-    this.addTransactions(currentAmount, 'Income');
+    this.addTransactions(currentAmount, 'Profit');
 
     this.setState({
       balance: balance + currentAmount,
