@@ -1,9 +1,9 @@
 import React from 'react';
-import Balance from './Balance'
+import ExpenseTracker from './ExpenseTracker'
 
 function App() {
   return (
-    <Balance />
+    <ExpenseTracker />
   );
 }
 

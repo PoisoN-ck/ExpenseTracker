@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
-function Category(props) {
+function ExpenseCategories(props) {
   const { categories, setCategory } = props;
 
   function handleSelect(event) {
@@ -20,9 +20,9 @@ function Category(props) {
   )
 }
 
-Category.propTypes = {
+ExpenseCategories.propTypes = {
   categories: PropTypes.arrayOf(PropTypes.string).isRequired,
   setCategory: PropTypes.func.isRequired,
 };
 
-export default Category
+export default ExpenseCategories
