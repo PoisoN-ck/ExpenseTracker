@@ -1,19 +1,28 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 
 function Category(props) {
-    // const {valueRecord, categoryRecord} = props;
+  const { categories, setCategory } = props;
 
-    // return(
-    //     <select onChange={(e) => setCurrentCategory(e)}>
-    //       {
-    //         categories.sort().map(item => {
-    //           return(
-    //             <option value={item}>{item.charAt(0).toUpperCase() + item.slice(1)}</option>
-    //           )
-    //         })
-    //       }
-    //     </select>
-    // )
+  function handleSelect(event) {
+    const { value } = event.target;
+    setCategory(value);
+  }
+
+  return (
+    <select onBlur={handleSelect}>
+      {
+        categories.sort().map(
+          (cat) => <option key={`${cat}_key`} value={cat}>{cat.charAt(0).toUpperCase() + cat.slice(1)}</option>,
+        )
+      }
+    </select>
+  )
 }
 
-export default Category;
+Category.propTypes = {
+  categories: PropTypes.arrayOf(PropTypes.string).isRequired,
+  setCategory: PropTypes.func.isRequired,
+};
+
+export default Category

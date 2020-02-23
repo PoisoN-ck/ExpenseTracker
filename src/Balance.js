@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import MoneyRecord from './MoneyRecord';
+import Category from './Category';
 
 class Balance extends Component {
   categories = [
@@ -30,6 +31,7 @@ class Balance extends Component {
     this.addExpense = this.addExpense.bind(this);
     this.setCurrentAmount = this.setCurrentAmount.bind(this);
     this.setCurrentCategory = this.setCurrentCategory.bind(this);
+    this.getLastRecords = this.getLastRecords.bind(this);
   }
 
   setCurrentAmount(event) {
@@ -44,12 +46,21 @@ class Balance extends Component {
     });
   }
 
-  setCurrentCategory(event) {
-    const { value } = event.target;
-
+  setCurrentCategory(category) {
     this.setState({
-      currentCategory: value,
+      currentCategory: category,
     });
+  }
+
+  getLastRecords(num) {
+    const { moneyFlow } = this.state;
+    return moneyFlow.slice(-num);
+  }
+
+  get moneyRecords() {
+    return this.getLastRecords(10).map(
+      (item, index) => <MoneyRecord key={`val_${index}`} valueRecord={item.value} categoryRecord={item.category} />,
+    )
   }
 
   addMoneyFlow(value, category) {
@@ -87,12 +98,15 @@ class Balance extends Component {
   }
 
   render() {
-    const {
-      balance, currentAmount, moneyFlow,
-    } = this.state;
+    const { balance, currentAmount } = this.state;
 
     const {
-      setCurrentAmount, setCurrentCategory, addIncome, addExpense, categories,
+      setCurrentAmount,
+      setCurrentCategory,
+      moneyRecords,
+      addIncome,
+      addExpense,
+      categories,
     } = this;
 
     return (
@@ -101,21 +115,11 @@ class Balance extends Component {
           {`${balance} HUF`}
         </h1>
         <input onChange={setCurrentAmount} value={currentAmount} />
-        <select onBlur={(e) => setCurrentCategory(e)}>
-          {
-            categories.sort().map(
-              (cat) => <option value={cat}>{cat.charAt(0).toUpperCase() + cat.slice(1)}</option>,
-            )
-          }
-        </select>
+        <Category categories={categories} setCategory={setCurrentCategory} />
         <button type="button" onClick={addIncome}>Add income</button>
         <button type="button" onClick={addExpense}>Reduce income</button>
         <ul>
-          {
-            moneyFlow.map(
-              (item, index) => <MoneyRecord key={`val_${index + 1}`} valueRecord={item.value} categoryRecord={item.category} />,
-            )
-          }
+          { moneyRecords }
         </ul>
       </>
     );
