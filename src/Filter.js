@@ -2,27 +2,26 @@ import React from 'react'
 import PropTypes from 'prop-types'
 
 function Filter(props) {
-  const { categories } = props;
-  categories.push('All categories')
-  console.log(categories);
+  const { items } = props;
 
-  function getCategory(category, index) {
-    return (
-      <li key={`category_${index}`}>
-        {category}
-      </li>
-    )
+  function handleClick(event) {
+    return props.setFilterCategory(event.target.textContent);
+  }
+
+  function getItem(itemsList) {
+    return itemsList.map((item, index) => <li onClickCapture={handleClick} key={`category_${index}`}>{item}</li>)
   }
 
   return (
     <ul>
-      {categories.map(getCategory)}
+      {getItem(items)}
     </ul>
   )
 }
 
 Filter.propTypes = {
-  categories: PropTypes.arrayOf(PropTypes.string).isRequired,
+  items: PropTypes.arrayOf(PropTypes.string).isRequired,
+  setFilterCategory: PropTypes.func.isRequired,
 }
 
 export default Filter
