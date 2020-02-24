@@ -2,8 +2,20 @@ import React, { Component } from 'react';
 import Balance from './Balance';
 import Transactions from './Transactions';
 import ActionBar from './ActionBar';
+import Filter from './Filter';
 
 class ExpenseTracker extends Component {
+  categories = [
+    'Food',
+    'Partying',
+    'Clothes',
+    'Flat',
+    'Self-care',
+    'Presents',
+    'Holidays',
+    'Fees',
+  ]
+
   constructor() {
     super();
     this.state = {
@@ -35,12 +47,13 @@ class ExpenseTracker extends Component {
 
   render() {
     const { balance } = this.state;
-    const { getLastRecords, addTransaction } = this;
+    const { categories, getLastRecords, addTransaction } = this;
 
     return (
       <>
         <Balance balance={balance} />
-        <ActionBar addTransaction={addTransaction} />
+        <ActionBar addTransaction={addTransaction} categories={categories} />
+        <Filter categories={categories} />
         <Transactions transactionsList={getLastRecords(10)} />
       </>
     );

@@ -3,21 +3,10 @@ import PropTypes from 'prop-types';
 import ExpenseCategories from './ExpenseCategories';
 
 class ActionBar extends Component {
-  categories = [
-    'Food',
-    'Partying',
-    'Clothes',
-    'Flat',
-    'Self-care',
-    'Presents',
-    'Holidays',
-    'Fees',
-  ]
-
-  constructor() {
+  constructor(props) {
     super()
     this.state = {
-      selectedCategory: this.categories.sort()[0],
+      selectedCategory: props.categories.sort()[0],
       transactionAmount: 0,
     }
     this.setCurrentAmount = this.setCurrentAmount.bind(this);
@@ -79,10 +68,10 @@ class ActionBar extends Component {
 
   render() {
     const { transactionAmount } = this.state;
+    const { categories } = this.props;
     const {
       setCurrentAmount,
       setCurrentCategory,
-      categories,
       addIncome,
       addExpense,
     } = this;
@@ -100,6 +89,7 @@ class ActionBar extends Component {
 
 ActionBar.propTypes = {
   addTransaction: PropTypes.func.isRequired,
+  categories: PropTypes.arrayOf(PropTypes.string).isRequired,
 };
 
 export default ActionBar
