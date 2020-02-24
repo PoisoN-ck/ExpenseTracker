@@ -21,6 +21,7 @@ class ExpenseTracker extends Component {
     this.state = {
       balance: 10000,
       filteredCategory: '',
+      currentTransactionType: '',
       transactions: [
         { value: 100, category: 'Profit', transType: 'Income' },
         { value: -20, category: 'Food', transType: 'Expense' },
@@ -30,8 +31,10 @@ class ExpenseTracker extends Component {
     }
     this.getLastRecords = this.getLastRecords.bind(this);
     this.addTransaction = this.addTransaction.bind(this);
-    this.addCategory = this.addCategory.bind(this);
+    this.addToCategories = this.addToCategories.bind(this);
     this.setFilterCategory = this.setFilterCategory.bind(this);
+    this.getFilteredItems = this.getFilteredItems.bind(this);
+    this.setFilterByType = this.setFilterByType.bind(this);
   }
 
   getLastRecords(num) {
@@ -39,14 +42,46 @@ class ExpenseTracker extends Component {
     return transactions.slice(-num);
   }
 
-  setFilterCategory(category) {
+  setFilterCategory(list, category) {
     let { filteredCategory } = this.state;
 
-    filteredCategory = this.categories.find((item) => category === item);
-    console.log(filteredCategory);
+    filteredCategory = list.find((item) => category === item);
+
     this.setState({
       filteredCategory,
+      currentTransactionType: '',
     })
+  }
+
+  setFilterByType(list, type) {
+    let { currentTransactionType } = this.state;
+
+    currentTransactionType = list.find((item) => type === item);
+
+    this.setState({
+      currentTransactionType,
+      filteredCategory: '',
+    })
+  }
+
+  getFilteredItems() {
+    const { filteredCategory, currentTransactionType, transactions } = this.state;
+
+    if (currentTransactionType || filteredCategory === 'All Categories') {
+      const transactionType = currentTransactionType === 'Income' ? 'Income' : 'Expense';
+
+      const filteredTransactions = transactions.filter(
+        (transaction) => transaction.transType === transactionType,
+      ).map((filteredCategoryObj) => `${filteredCategoryObj.value} HUF`)
+
+      return filteredTransactions;
+    }
+
+    const filteredTransactions = transactions.filter(
+      (transaction) => transaction.category === filteredCategory,
+    ).map((filteredCategoryObj) => `${filteredCategoryObj.value} HUF`)
+
+    return filteredTransactions;
   }
 
   addTransaction(transaction) {
@@ -58,19 +93,22 @@ class ExpenseTracker extends Component {
     });
   }
 
-  addCategory(category) {
+  addToCategories(category) {
     const { categories } = this
     return [...categories, category].sort();
   }
 
+
   render() {
-    const { balance, filteredCategory, transactions } = this.state;
+    const { balance } = this.state;
     const {
       categories,
       getLastRecords,
       addTransaction,
-      addCategory,
+      addToCategories,
       setFilterCategory,
+      getFilteredItems,
+      setFilterByType,
     } = this;
 
     return (
@@ -78,11 +116,16 @@ class ExpenseTracker extends Component {
         <Balance balance={balance} />
         <ActionBar addTransaction={addTransaction} categories={categories} />
         <Filter
-          items={addCategory('All Categories')}
-          setFilterCategory={setFilterCategory}
-          filteredCategory={filteredCategory}
-          transactions={transactions}
+          items={addToCategories('All Categories')}
+          setFilter={setFilterCategory}
         />
+        <Filter
+          items={['Income', 'Expense']}
+          setFilter={setFilterByType}
+        />
+        <ul>
+          {getFilteredItems()}
+        </ul>
         <Transactions transactionsList={getLastRecords(10)} />
       </>
     );
