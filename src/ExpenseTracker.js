@@ -22,10 +22,10 @@ class ExpenseTracker extends Component {
       balance: 10000,
       filteredCategory: '',
       transactions: [
-        { value: 100, category: 'Profit', transType: 'income' },
-        { value: -20, category: 'Food', transType: 'expense' },
-        { value: 300, category: 'Profit', transType: 'income' },
-        { value: -100, category: 'Clothes', transType: 'expense' },
+        { value: 100, category: 'Profit', transType: 'Income' },
+        { value: -20, category: 'Food', transType: 'Expense' },
+        { value: 300, category: 'Profit', transType: 'Income' },
+        { value: -100, category: 'Clothes', transType: 'Expense' },
       ],
     }
     this.getLastRecords = this.getLastRecords.bind(this);
@@ -64,7 +64,7 @@ class ExpenseTracker extends Component {
   }
 
   render() {
-    const { balance } = this.state;
+    const { balance, filteredCategory, transactions } = this.state;
     const {
       categories,
       getLastRecords,
@@ -77,7 +77,12 @@ class ExpenseTracker extends Component {
       <>
         <Balance balance={balance} />
         <ActionBar addTransaction={addTransaction} categories={categories} />
-        <Filter items={addCategory('All Categories')} setFilterCategory={setFilterCategory} />
+        <Filter
+          items={addCategory('All Categories')}
+          setFilterCategory={setFilterCategory}
+          filteredCategory={filteredCategory}
+          transactions={transactions}
+        />
         <Transactions transactionsList={getLastRecords(10)} />
       </>
     );
