@@ -2,20 +2,33 @@ import React from 'react'
 import PropTypes from 'prop-types'
 
 function Filter(props) {
-  const { items } = props;
+  const { items, setFilter, resetFilter } = props;
 
   function handleClick(event) {
-    return props.setFilter(props.items, event.target.textContent);
+    setFilter(event.target.textContent);
   }
 
-  function getItem(itemsList) {
-    return itemsList.map((item, index) => <li onClickCapture={handleClick} key={`category_${index}`}>{item}</li>)
+  function getFilterItems(itemsList) {
+    return itemsList.map((item, index) => {
+      return (
+        <li key={`category_${index}`}>
+          <button type="button" onClick={handleClick}>{item}</button>
+        </li>
+      );
+    });
+  }
+
+  function handleReset() {
+    resetFilter();
   }
 
   return (
     <>
       <ul>
-        {getItem(items)}
+        <li>
+          <button type="button" onClick={handleReset}>All</button>
+        </li>
+        {getFilterItems(items)}
       </ul>
     </>
   )
@@ -24,6 +37,7 @@ function Filter(props) {
 Filter.propTypes = {
   items: PropTypes.arrayOf(PropTypes.string).isRequired,
   setFilter: PropTypes.func.isRequired,
+  resetFilter: PropTypes.func.isRequired,
 }
 
 export default Filter

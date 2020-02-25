@@ -9,6 +9,7 @@
   ],
   "rules": {
     "react/no-array-index-key": "off",
+    "arrow-body-style": "off",
     "semi": 0,
     "react/jsx-filename-extension": [
       1,

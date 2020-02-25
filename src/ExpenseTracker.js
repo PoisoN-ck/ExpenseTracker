@@ -19,69 +19,54 @@ class ExpenseTracker extends Component {
   constructor() {
     super();
     this.state = {
-      balance: 10000,
-      filteredCategory: '',
-      currentTransactionType: '',
+      balance: 100000000,
       transactions: [
         { value: 100, category: 'Profit', transType: 'Income' },
         { value: -20, category: 'Food', transType: 'Expense' },
         { value: 300, category: 'Profit', transType: 'Income' },
         { value: -100, category: 'Clothes', transType: 'Expense' },
       ],
+      filteredTransactions: [],
     }
     this.getLastRecords = this.getLastRecords.bind(this);
     this.addTransaction = this.addTransaction.bind(this);
-    this.addToCategories = this.addToCategories.bind(this);
-    this.setFilterCategory = this.setFilterCategory.bind(this);
-    this.getFilteredItems = this.getFilteredItems.bind(this);
+    this.filterTransactions = this.filterTransactions.bind(this);
+    this.setFilterByCategory = this.setFilterByCategory.bind(this);
     this.setFilterByType = this.setFilterByType.bind(this);
+    this.resetFilters = this.resetFilters.bind(this);
+  }
+
+  componentDidMount() {
+    this.resetFilters();
   }
 
   getLastRecords(num) {
+    const { filteredTransactions } = this.state;
+    return filteredTransactions.slice(-num);
+  }
+
+  setFilterByCategory(category) {
+    this.filterTransactions('category', category);
+  }
+
+  setFilterByType(type) {
+    this.filterTransactions('transType', type);
+  }
+
+  filterTransactions(field, value) {
     const { transactions } = this.state;
-    return transactions.slice(-num);
-  }
-
-  setFilterCategory(list, category) {
-    let { filteredCategory } = this.state;
-
-    filteredCategory = list.find((item) => category === item);
 
     this.setState({
-      filteredCategory,
-      currentTransactionType: '',
-    })
+      filteredTransactions: transactions.filter((transaction) => transaction[field] === value),
+    });
   }
 
-  setFilterByType(list, type) {
-    let { currentTransactionType } = this.state;
-
-    currentTransactionType = list.find((item) => type === item);
+  resetFilters() {
+    const { transactions } = this.state;
 
     this.setState({
-      currentTransactionType,
-      filteredCategory: '',
+      filteredTransactions: transactions,
     })
-  }
-
-  getFilteredItems() {
-    const { filteredCategory, currentTransactionType, transactions } = this.state;
-
-    if (currentTransactionType || filteredCategory === 'All Categories') {
-      const transactionType = currentTransactionType === 'Income' ? 'Income' : 'Expense';
-
-      const filteredTransactions = transactions.filter(
-        (transaction) => transaction.transType === transactionType,
-      ).map((filteredCategoryObj) => `${filteredCategoryObj.value} HUF`)
-
-      return filteredTransactions;
-    }
-
-    const filteredTransactions = transactions.filter(
-      (transaction) => transaction.category === filteredCategory,
-    ).map((filteredCategoryObj) => `${filteredCategoryObj.value} HUF`)
-
-    return filteredTransactions;
   }
 
   addTransaction(transaction) {
@@ -91,13 +76,9 @@ class ExpenseTracker extends Component {
       balance: balance + transaction.value,
       transactions: [...transactions, transaction],
     });
-  }
 
-  addToCategories(category) {
-    const { categories } = this
-    return [...categories, category].sort();
+    this.resetFilters();
   }
-
 
   render() {
     const { balance } = this.state;
@@ -105,10 +86,9 @@ class ExpenseTracker extends Component {
       categories,
       getLastRecords,
       addTransaction,
-      addToCategories,
-      setFilterCategory,
-      getFilteredItems,
+      setFilterByCategory,
       setFilterByType,
+      resetFilters,
     } = this;
 
     return (
@@ -116,16 +96,15 @@ class ExpenseTracker extends Component {
         <Balance balance={balance} />
         <ActionBar addTransaction={addTransaction} categories={categories} />
         <Filter
-          items={addToCategories('All Categories')}
-          setFilter={setFilterCategory}
+          items={categories}
+          setFilter={setFilterByCategory}
+          resetFilter={resetFilters}
         />
         <Filter
           items={['Income', 'Expense']}
           setFilter={setFilterByType}
+          resetFilter={resetFilters}
         />
-        <ul>
-          {getFilteredItems()}
-        </ul>
         <Transactions transactionsList={getLastRecords(10)} />
       </>
     );
