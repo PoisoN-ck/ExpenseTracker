@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import ExpenseCategories from './ExpenseCategories';
 
 class ActionBar extends Component {
   constructor(props) {
@@ -10,9 +9,17 @@ class ActionBar extends Component {
       transactionAmount: 0,
     }
     this.setCurrentAmount = this.setCurrentAmount.bind(this);
-    this.setCurrentCategory = this.setCurrentCategory.bind(this);
     this.addExpense = this.addExpense.bind(this);
     this.addIncome = this.addIncome.bind(this);
+    this.handleSelectCategory = this.handleSelectCategory.bind(this);
+  }
+
+  get categoryOptions() {
+    const { categories } = this.props;
+
+    return categories.sort().map(
+      (cat) => <option key={`${cat}_key`} value={cat}>{cat}</option>,
+    )
   }
 
   setCurrentAmount(event) {
@@ -22,14 +29,10 @@ class ActionBar extends Component {
       return;
     }
 
+    if (value < 0) return;
+
     this.setState({
       transactionAmount: Number(value),
-    });
-  }
-
-  setCurrentCategory(category) {
-    this.setState({
-      selectedCategory: category,
     });
   }
 
@@ -66,20 +69,30 @@ class ActionBar extends Component {
     })
   }
 
+  handleSelectCategory(event) {
+    const { value: category } = event.target;
+
+    this.setState({
+      selectedCategory: category,
+    });
+  }
+
   render() {
     const { transactionAmount } = this.state;
-    const { categories } = this.props;
     const {
       setCurrentAmount,
-      setCurrentCategory,
       addIncome,
       addExpense,
+      handleSelectCategory,
+      categoryOptions,
     } = this;
 
     return (
       <section>
         <input onChange={setCurrentAmount} value={transactionAmount} />
-        <ExpenseCategories categories={categories} setCategory={setCurrentCategory} />
+        <select onBlur={handleSelectCategory}>
+          {categoryOptions}
+        </select>
         <button type="button" onClick={addIncome}>Add income</button>
         <button type="button" onClick={addExpense}>Reduce income</button>
       </section>

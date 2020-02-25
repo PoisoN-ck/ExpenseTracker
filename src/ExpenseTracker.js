@@ -40,6 +40,14 @@ class ExpenseTracker extends Component {
     this.resetFilters();
   }
 
+  componentDidUpdate(prevProps, prevState) {
+    const { transactions: currentTransactions } = this.state;
+
+    if (currentTransactions.length !== prevState.transactions.length) {
+      this.resetFilters();
+    }
+  }
+
   getLastRecords(num) {
     const { filteredTransactions } = this.state;
     return filteredTransactions.slice(-num);
@@ -70,14 +78,14 @@ class ExpenseTracker extends Component {
   }
 
   addTransaction(transaction) {
+    if (!transaction.value) return;
+
     const { transactions, balance } = this.state;
 
     this.setState({
       balance: balance + transaction.value,
       transactions: [...transactions, transaction],
     });
-
-    this.resetFilters();
   }
 
   render() {
