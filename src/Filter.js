@@ -5,14 +5,17 @@ function Filter(props) {
   const { items, setFilter, resetFilter } = props;
 
   function handleClick(event) {
-    setFilter(event.target.textContent);
+    setFilter(event.target.dataset.value);
   }
 
   function getFilterItems(itemsList) {
     return itemsList.map((item, index) => {
+      const value = typeof item === 'object' ? item.value : item;
+      const name = typeof item === 'object' ? item.name : item;
+
       return (
         <li key={`category_${index}`}>
-          <button type="button" onClick={handleClick}>{item}</button>
+          <button type="button" onClick={handleClick} data-value={value}>{name}</button>
         </li>
       );
     });
