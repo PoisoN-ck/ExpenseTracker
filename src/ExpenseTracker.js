@@ -25,13 +25,13 @@ class ExpenseTracker extends Component {
           value: 100,
           category: 'Profit',
           transType: 'Income',
-          timestamp: new Date(Date.UTC(2020, 1, 2)),
+          timestamp: new Date(Date.UTC(2020, 0, 2)),
         },
         {
           value: -20,
           category: 'Food',
           transType: 'Expense',
-          timestamp: new Date(Date.UTC(2020, 1, 3)),
+          timestamp: new Date(Date.UTC(2020, 0, 3)),
         },
         {
           value: 300,
@@ -77,9 +77,9 @@ class ExpenseTracker extends Component {
   }
 
   getThisMonthExpenses() {
-    const { filteredTransactions } = this.state;
+    const { transactions } = this.state;
     const currentMonth = new Date().getMonth();
-    const expenses = filteredTransactions.filter(
+    const expenses = transactions.filter(
       (transaction) => transaction.transType === 'Expense',
     ).filter((expense) => expense.timestamp.getMonth() === currentMonth)
       .map((filteredTransaction) => filteredTransaction.value * -1)
@@ -87,9 +87,9 @@ class ExpenseTracker extends Component {
   }
 
   getThisMonthEarnings() {
-    const { filteredTransactions } = this.state;
+    const { transactions } = this.state;
     const currentMonth = new Date().getMonth();
-    const expenses = filteredTransactions.filter(
+    const expenses = transactions.filter(
       (transaction) => transaction.transType === 'Income',
     ).filter((expense) => expense.timestamp.getMonth() === currentMonth)
       .map((filteredTransaction) => filteredTransaction.value)
@@ -110,9 +110,16 @@ class ExpenseTracker extends Component {
 
   filterTransactions(field, value) {
     const { transactions } = this.state;
+    const identifiedValueType = Number.isNaN(Number(value)) ? value : Number(value);
+
+    function identifyField(item) {
+      return field === 'timestamp' ? item[field].getMonth() : item[field]
+    }
 
     this.setState({
-      filteredTransactions: transactions.filter((transaction) => transaction[field] === value),
+      filteredTransactions: transactions.filter(
+        (transaction) => identifyField(transaction) === identifiedValueType,
+      ),
     });
   }
 
@@ -159,12 +166,12 @@ class ExpenseTracker extends Component {
         <ActionBar addTransaction={addTransaction} categories={categories} />
         <Filter
           items={categories}
-          setFilter={setFilterByDate}
+          setFilter={setFilterByCategory}
           resetFilter={resetFilters}
         />
         <Filter
-          items={['Last month', 'This month', 'Last week']}
-          setFilter={setFilterByCategory}
+          items={[{ name: 'Last month', value: new Date().getMonth() - 1 }, { name: 'This month', value: new Date().getMonth() }]}
+          setFilter={setFilterByDate}
           resetFilter={resetFilters}
         />
         <Filter

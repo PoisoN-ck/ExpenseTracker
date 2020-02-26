@@ -5,6 +5,7 @@ function Filter(props) {
   const { items, setFilter, resetFilter } = props;
 
   function handleClick(event) {
+    console.log(event.target.dataset.value);
     setFilter(event.target.dataset.value);
   }
 
@@ -38,7 +39,7 @@ function Filter(props) {
 }
 
 Filter.propTypes = {
-  items: PropTypes.arrayOf(PropTypes.string).isRequired,
+  items: PropTypes.arrayOf(PropTypes.oneOfType([PropTypes.string, PropTypes.number])).isRequired,
   setFilter: PropTypes.func.isRequired,
   resetFilter: PropTypes.func.isRequired,
 }
