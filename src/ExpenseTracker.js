@@ -21,10 +21,30 @@ class ExpenseTracker extends Component {
     this.state = {
       balance: 100000000,
       transactions: [
-        { value: 100, category: 'Profit', transType: 'Income' },
-        { value: -20, category: 'Food', transType: 'Expense' },
-        { value: 300, category: 'Profit', transType: 'Income' },
-        { value: -100, category: 'Clothes', transType: 'Expense' },
+        {
+          value: 100,
+          category: 'Profit',
+          transType: 'Income',
+          timestamp: new Date(Date.UTC(2020, 1, 2)),
+        },
+        {
+          value: -20,
+          category: 'Food',
+          transType: 'Expense',
+          timestamp: new Date(Date.UTC(2020, 1, 3)),
+        },
+        {
+          value: 300,
+          category: 'Profit',
+          transType: 'Income',
+          timestamp: new Date(Date.UTC(2020, 1, 4)),
+        },
+        {
+          value: -100,
+          category: 'Clothes',
+          transType: 'Expense',
+          timestamp: new Date(Date.UTC(2020, 1, 5)),
+        },
       ],
       filteredTransactions: [],
     }
@@ -33,7 +53,10 @@ class ExpenseTracker extends Component {
     this.filterTransactions = this.filterTransactions.bind(this);
     this.setFilterByCategory = this.setFilterByCategory.bind(this);
     this.setFilterByType = this.setFilterByType.bind(this);
+    this.setFilterByDate = this.setFilterByDate.bind(this);
     this.resetFilters = this.resetFilters.bind(this);
+    this.getThisMonthExpenses = this.getThisMonthExpenses.bind(this);
+    this.getThisMonthEarnings = this.getThisMonthEarnings.bind(this);
   }
 
   componentDidMount() {
@@ -51,6 +74,30 @@ class ExpenseTracker extends Component {
   getLastRecords(num) {
     const { filteredTransactions } = this.state;
     return filteredTransactions.slice(-num);
+  }
+
+  getThisMonthExpenses() {
+    const { filteredTransactions } = this.state;
+    const currentMonth = new Date().getMonth();
+    const expenses = filteredTransactions.filter(
+      (transaction) => transaction.transType === 'Expense',
+    ).filter((expense) => expense.timestamp.getMonth() === currentMonth)
+      .map((filteredTransaction) => filteredTransaction.value * -1)
+    return expenses.reduce((transaction, nextTransaction) => transaction + nextTransaction, 0);
+  }
+
+  getThisMonthEarnings() {
+    const { filteredTransactions } = this.state;
+    const currentMonth = new Date().getMonth();
+    const expenses = filteredTransactions.filter(
+      (transaction) => transaction.transType === 'Income',
+    ).filter((expense) => expense.timestamp.getMonth() === currentMonth)
+      .map((filteredTransaction) => filteredTransaction.value)
+    return expenses.reduce((transaction, nextTransaction) => transaction + nextTransaction, 0);
+  }
+
+  setFilterByDate(timestamp) {
+    this.filterTransactions('timestamp', timestamp);
   }
 
   setFilterByCategory(category) {
@@ -96,15 +143,27 @@ class ExpenseTracker extends Component {
       addTransaction,
       setFilterByCategory,
       setFilterByType,
+      setFilterByDate,
       resetFilters,
+      getThisMonthExpenses,
+      getThisMonthEarnings,
     } = this;
 
     return (
       <>
-        <Balance balance={balance} />
+        <Balance
+          balance={balance}
+          getThisMonthExpenses={getThisMonthExpenses}
+          getThisMonthEarnings={getThisMonthEarnings}
+        />
         <ActionBar addTransaction={addTransaction} categories={categories} />
         <Filter
           items={categories}
+          setFilter={setFilterByDate}
+          resetFilter={resetFilters}
+        />
+        <Filter
+          items={['Last month', 'This month', 'Last week']}
           setFilter={setFilterByCategory}
           resetFilter={resetFilters}
         />

@@ -43,6 +43,7 @@ class ActionBar extends Component {
       value: transactionAmount * -1,
       category: selectedCategory,
       transType: 'Expense',
+      timestamp: new Date(),
     }
 
     addTransaction(transaction);
@@ -59,6 +60,7 @@ class ActionBar extends Component {
       value: transactionAmount,
       category: 'Profit',
       transType: 'Income',
+      timestamp: new Date(),
     }
 
     /* pass transaction to ExpenseTracker through a method */

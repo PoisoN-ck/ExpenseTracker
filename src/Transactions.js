@@ -5,11 +5,16 @@ function Transactions(props) {
   const { transactionsList } = props;
 
   function getTransaction(transaction, index) {
-    const { value, category, transType } = transaction;
+    const {
+      value,
+      category,
+      transType,
+      timestamp,
+    } = transaction;
 
     return (
       <li key={`transaction_${index}`}>
-        {`${transType}: ${value} HUF, ${category}`}
+        {`${transType}: ${value} HUF, ${category}, ${timestamp.toLocaleString()}`}
       </li>
     )
   }
