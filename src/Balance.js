@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 
 function Balance(props) {
-  const { balance, getThisMonthExpenses, getThisMonthEarnings } = props;
+  const { balance, earnings, spending } = props;
 
   return (
     <>
@@ -10,7 +10,7 @@ function Balance(props) {
         {`${balance} HUF`}
       </h1>
       <h4>
-        {`this months spendings: ${getThisMonthExpenses()}, this months earnings: ${getThisMonthEarnings()}`}
+        {`Earnings: ${earnings} Spendings: ${spending * -1}`}
       </h4>
     </>
   )
@@ -18,8 +18,8 @@ function Balance(props) {
 
 Balance.propTypes = {
   balance: PropTypes.number.isRequired,
-  getThisMonthExpenses: PropTypes.func.isRequired,
-  getThisMonthEarnings: PropTypes.func.isRequired,
+  earnings: PropTypes.number.isRequired,
+  spending: PropTypes.number.isRequired,
 };
 
 export default Balance;

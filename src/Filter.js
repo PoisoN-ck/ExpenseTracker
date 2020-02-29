@@ -2,10 +2,9 @@ import React from 'react'
 import PropTypes from 'prop-types'
 
 function Filter(props) {
-  const { items, setFilter, resetFilter } = props;
+  const { items, setFilter } = props;
 
   function handleClick(event) {
-    console.log(event.target.dataset.value);
     setFilter(event.target.dataset.value);
   }
 
@@ -16,22 +15,21 @@ function Filter(props) {
 
       return (
         <li key={`category_${index}`}>
-          <button type="button" onClick={handleClick} data-value={value}>{name}</button>
+          <button
+            type="button"
+            onClick={handleClick}
+            data-value={typeof value === 'object' ? JSON.stringify(value) : value}
+          >
+            {name}
+          </button>
         </li>
       );
     });
   }
 
-  function handleReset() {
-    resetFilter();
-  }
-
   return (
     <>
       <ul>
-        <li>
-          <button type="button" onClick={handleReset}>All</button>
-        </li>
         {getFilterItems(items)}
       </ul>
     </>
@@ -39,9 +37,10 @@ function Filter(props) {
 }
 
 Filter.propTypes = {
-  items: PropTypes.arrayOf(PropTypes.oneOfType([PropTypes.string, PropTypes.number])).isRequired,
+  items: PropTypes.arrayOf(PropTypes.oneOfType(
+    [PropTypes.string, PropTypes.object, PropTypes.number],
+  )).isRequired,
   setFilter: PropTypes.func.isRequired,
-  resetFilter: PropTypes.func.isRequired,
 }
 
 export default Filter
