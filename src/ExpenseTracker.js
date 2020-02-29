@@ -1,5 +1,11 @@
 import React, { Component } from 'react';
-import { subMonths, startOfMonth, startOfWeek, subWeeks, isWithinRange } from 'date-fns';
+import {
+  subMonths,
+  startOfMonth,
+  startOfWeek,
+  subWeeks,
+  isWithinRange,
+} from 'date-fns';
 import Balance from './Balance';
 import Transactions from './Transactions';
 import ActionBar from './ActionBar';
@@ -52,11 +58,63 @@ class ExpenseTracker extends Component {
 
   typeFilters = ['Income', 'Expense']
 
+  defaultNumOfTrans = 10
+
   constructor() {
     super();
     this.state = {
       balance: 100000000,
+      transactionsToShow: this.defaultNumOfTrans,
+      isAllTransactionsShown: false,
       transactions: [
+        {
+          value: 100,
+          category: 'Profit',
+          transType: 'Income',
+          timestamp: new Date(2020, 0, 1, 0, 0, 0),
+        },
+        {
+          value: -20,
+          category: 'Food',
+          transType: 'Expense',
+          timestamp: new Date(2020, 0, 31, 23, 59, 59),
+        },
+        {
+          value: 300,
+          category: 'Profit',
+          transType: 'Income',
+          timestamp: new Date(2020, 1, 3, 23, 0, 0),
+        },
+        {
+          value: -100,
+          category: 'Clothes',
+          transType: 'Expense',
+          timestamp: new Date(2020, 1, 5),
+        },
+        {
+          value: -10000,
+          category: 'Clothes',
+          transType: 'Expense',
+          timestamp: new Date(2020, 1, 29, 11, 0, 0),
+        },
+        {
+          value: 370000,
+          category: 'Profit',
+          transType: 'Income',
+          timestamp: new Date(2020, 1, 24, 7, 0, 0),
+        },
+        {
+          value: 100000,
+          category: 'Profit',
+          transType: 'Income',
+          timestamp: new Date(2020, 1, 18, 7, 0, 0),
+        },
+        {
+          value: 5000,
+          category: 'Food',
+          transType: 'Expense',
+          timestamp: new Date(2020, 1, 18, 7, 0, 0),
+        },
         {
           value: 100,
           category: 'Profit',
@@ -109,13 +167,14 @@ class ExpenseTracker extends Component {
       filteredTransactions: [],
     }
     this.getLastRecords = this.getLastRecords.bind(this);
+    this.getTransactionsBalance = this.getTransactionsBalance.bind(this);
     this.addTransaction = this.addTransaction.bind(this);
     this.filterTransactions = this.filterTransactions.bind(this);
     this.setFilterByCategory = this.setFilterByCategory.bind(this);
     this.setFilterByType = this.setFilterByType.bind(this);
     this.setFilterByDate = this.setFilterByDate.bind(this);
     this.resetFilters = this.resetFilters.bind(this);
-    this.getTransactionsBalance = this.getTransactionsBalance.bind(this);
+    this.showAllTransactions = this.showAllTransactions.bind(this);
   }
 
   componentDidMount() {
@@ -176,6 +235,22 @@ class ExpenseTracker extends Component {
     })
   }
 
+  showAllTransactions() {
+    const { transactions, isAllTransactionsShown } = this.state;
+
+    if (isAllTransactionsShown) {
+      this.setState({
+        transactionsToShow: this.defaultNumOfTrans,
+        isAllTransactionsShown: false,
+      })
+    } else {
+      this.setState({
+        transactionsToShow: transactions.length,
+        isAllTransactionsShown: true,
+      })
+    }
+  }
+
   addTransaction(transaction) {
     if (!transaction.value) return;
 
@@ -188,7 +263,13 @@ class ExpenseTracker extends Component {
   }
 
   render() {
-    const { balance } = this.state;
+    const {
+      balance,
+      transactionsToShow,
+      isAllTransactionsShown,
+      filteredTransactions,
+    } = this.state;
+
     const {
       categories,
       getLastRecords,
@@ -200,6 +281,8 @@ class ExpenseTracker extends Component {
       getTransactionsBalance,
       datesFilters,
       typeFilters,
+      showAllTransactions,
+      defaultNumOfTrans,
     } = this;
 
     const balances = getTransactionsBalance();
@@ -212,11 +295,14 @@ class ExpenseTracker extends Component {
           spending={balances.Expense ? balances.Expense : 0}
         />
         <ActionBar addTransaction={addTransaction} categories={categories} />
-        <button type="button" onClick={resetFilters}>Reset filters</button>
+        <button type="button" onClick={resetFilters}>Reset Filters</button>
         <Filter items={categories} setFilter={setFilterByCategory} />
         <Filter items={datesFilters} setFilter={setFilterByDate} />
         <Filter items={typeFilters} setFilter={setFilterByType} />
-        <Transactions transactionsList={getLastRecords(10)} />
+        {filteredTransactions.length > defaultNumOfTrans
+          ? <button type="button" onClick={showAllTransactions}>{isAllTransactionsShown ? 'View less transations' : 'View all transactions'}</button>
+          : null}
+        <Transactions transactionsList={getLastRecords(transactionsToShow)} />
       </>
     );
   }

@@ -21,7 +21,6 @@ function Transactions(props) {
 
   return (
     <>
-      <h2>Last transactions:</h2>
       <ul>
         {transactionsList.map(getTransaction)}
       </ul>
