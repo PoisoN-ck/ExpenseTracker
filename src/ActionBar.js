@@ -1,47 +1,64 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
+import Modal from './Modal';
 
 class ActionBar extends Component {
-  constructor(props) {
+  constructor() {
     super()
     this.state = {
-      selectedCategory: props.categories.sort()[0],
-      transactionAmount: 0,
+      transactionAmount: '',
     }
     this.setCurrentAmount = this.setCurrentAmount.bind(this);
     this.addExpense = this.addExpense.bind(this);
     this.addIncome = this.addIncome.bind(this);
-    this.handleSelectCategory = this.handleSelectCategory.bind(this);
+    this.handleAddTransaction = this.handleAddTransaction.bind(this);
   }
 
-  get categoryOptions() {
+  get transactionCategories() {
     const { categories } = this.props;
 
-    return categories.sort().map(
-      (cat) => <option key={`${cat}_key`} value={cat}>{cat}</option>,
+    return categories.map(
+      (category, index) => {
+        return (
+          <button
+            key={`cat_button_${index}`}
+            className="button button--pure-white padding-vertical-sm"
+            type="button"
+            data-category={category}
+            onClick={this.addExpense}
+          >
+            {category}
+          </button>
+        )
+      },
     )
   }
 
   setCurrentAmount(event) {
     const { value } = event.target;
+    const convertedValue = Number(value);
 
-    if (Number.isNaN(Number(value))) {
+    if (Number.isNaN(convertedValue)) {
+      return;
+    } else if (convertedValue < 1) {
+      this.setState({
+        transactionAmount: '',
+      });
       return;
     }
 
-    if (value < 0) return;
-
     this.setState({
-      transactionAmount: Number(value),
+      transactionAmount: convertedValue,
     });
   }
 
-  addExpense() {
-    const { addTransaction } = this.props;
-    const { transactionAmount, selectedCategory } = this.state;
+  addExpense(event) {
+    const { addTransaction, closeModal } = this.props;
+    const { transactionAmount } = this.state;
+    const { category } = event.target.dataset
     const transaction = {
       value: transactionAmount * -1,
-      category: selectedCategory,
+      category,
       transType: 'Expense',
       timestamp: new Date(),
     }
@@ -49,12 +66,14 @@ class ActionBar extends Component {
     addTransaction(transaction);
 
     this.setState({
-      transactionAmount: 0,
-    })
+      transactionAmount: '',
+    });
+
+    closeModal('addTransactionModal');
   }
 
   addIncome() {
-    const { addTransaction } = this.props;
+    const { addTransaction, closeModal } = this.props;
     const { transactionAmount } = this.state;
     const transaction = {
       value: transactionAmount,
@@ -63,40 +82,48 @@ class ActionBar extends Component {
       timestamp: new Date(),
     }
 
-    /* pass transaction to ExpenseTracker through a method */
     addTransaction(transaction);
 
     this.setState({
-      transactionAmount: 0,
-    })
+      transactionAmount: '',
+    });
+
+    closeModal('addTransactionModal');
   }
 
-  handleSelectCategory(event) {
-    const { value: category } = event.target;
+  handleAddTransaction(event) {
+    const { openModal } = this.props
+    const { modal: modalName } = event.target.dataset;
+    const { transactionAmount } = this.state;
 
-    this.setState({
-      selectedCategory: category,
-    });
+    if (!transactionAmount) return;
+
+    openModal(modalName);
   }
 
   render() {
     const { transactionAmount } = this.state;
+    const { modals, closeModal } = this.props;
+    const { addTransactionModal } = modals;
     const {
       setCurrentAmount,
       addIncome,
-      addExpense,
-      handleSelectCategory,
-      categoryOptions,
+      transactionCategories,
+      handleAddTransaction,
     } = this;
 
     return (
-      <section>
-        <input onChange={setCurrentAmount} value={transactionAmount} />
-        <select onBlur={handleSelectCategory}>
-          {categoryOptions}
-        </select>
-        <button type="button" onClick={addIncome}>Add income</button>
-        <button type="button" onClick={addExpense}>Reduce income</button>
+      <section className="action-bar padding-vertical-md">
+        <div className="action-bar__content container">
+          <input className="action-bar__input-field" onChange={setCurrentAmount} value={transactionAmount} placeholder="Enter the amount..." />
+          <button className="action-bar__button button button--round button--blue" type="button" data-modal="addTransactionModal" onClick={handleAddTransaction}>Add</button>
+          {addTransactionModal && (
+            <Modal modalName="addTransactionModal" closeModal={closeModal} title="Choose category">
+              <button key="cat_button_income" className="button button--pure-white action-bar__income-button padding-vertical-sm" type="button" onClick={addIncome}>Income</button>
+              {transactionCategories}
+            </Modal>
+          )}
+        </div>
       </section>
     )
   }
@@ -105,6 +132,9 @@ class ActionBar extends Component {
 ActionBar.propTypes = {
   addTransaction: PropTypes.func.isRequired,
   categories: PropTypes.arrayOf(PropTypes.string).isRequired,
+  modals: PropTypes.oneOfType([PropTypes.object || PropTypes.bool]).isRequired,
+  openModal: PropTypes.func.isRequired,
+  closeModal: PropTypes.func.isRequired,
 };
 
 export default ActionBar

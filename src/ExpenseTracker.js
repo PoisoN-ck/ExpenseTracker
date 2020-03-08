@@ -10,6 +10,7 @@ import Balance from './Balance';
 import Transactions from './Transactions';
 import ActionBar from './ActionBar';
 import Filter from './Filter';
+import Modal from './Modal';
 
 class ExpenseTracker extends Component {
   currentDate = new Date();
@@ -66,6 +67,11 @@ class ExpenseTracker extends Component {
       balance: 100000000,
       transactionsToShow: this.defaultNumOfTrans,
       isAllTransactionsShown: false,
+      modals: {
+        addTransactionModal: false,
+        filtersModal: false,
+      },
+      isFilterApplied: false,
       transactions: [
         {
           value: 100,
@@ -175,6 +181,9 @@ class ExpenseTracker extends Component {
     this.setFilterByDate = this.setFilterByDate.bind(this);
     this.resetFilters = this.resetFilters.bind(this);
     this.showAllTransactions = this.showAllTransactions.bind(this);
+    this.closeModal = this.closeModal.bind(this);
+    this.openModal = this.openModal.bind(this);
+    this.handleFiltersShow = this.handleFiltersShow.bind(this);
   }
 
   componentDidMount() {
@@ -207,15 +216,22 @@ class ExpenseTracker extends Component {
       filteredTransactions: transactions.filter(
         (transaction) => isWithinRange(transaction.timestamp, startDate, endDate),
       ),
-    })
+      isFilterApplied: true,
+    });
   }
 
   setFilterByCategory(category) {
     this.filterTransactions('category', category);
+    this.setState({
+      isFilterApplied: true,
+    });
   }
 
   setFilterByType(type) {
     this.filterTransactions('transType', type);
+    this.setState({
+      isFilterApplied: true,
+    });
   }
 
   filterTransactions(field, value) {
@@ -232,6 +248,7 @@ class ExpenseTracker extends Component {
 
     this.setState({
       filteredTransactions: transactions,
+      isFilterApplied: false,
     })
   }
 
@@ -262,13 +279,42 @@ class ExpenseTracker extends Component {
     }, this.resetFilters);
   }
 
+  closeModal(modalName) {
+    const { modals } = this.state;
+
+    modals[modalName] = false;
+    this.setState({
+      modals,
+    });
+  }
+
+  openModal(modalName) {
+    const { modals } = this.state;
+
+    modals[modalName] = true;
+    this.setState({
+      modals,
+    });
+  }
+
+  handleFiltersShow(event) {
+    const { openModal } = this
+    const { modal: modalName } = event.target.dataset;
+
+    openModal(modalName);
+  }
+
   render() {
     const {
       balance,
       transactionsToShow,
       isAllTransactionsShown,
       filteredTransactions,
+      modals,
+      isFilterApplied,
     } = this.state;
+
+    const { filtersModal } = modals;
 
     const {
       categories,
@@ -283,26 +329,44 @@ class ExpenseTracker extends Component {
       typeFilters,
       showAllTransactions,
       defaultNumOfTrans,
+      closeModal,
+      openModal,
+      handleFiltersShow,
     } = this;
 
     const balances = getTransactionsBalance();
 
     return (
       <>
-        <Balance
-          balance={balance}
-          earnings={balances.Income ? balances.Income : 0}
-          spending={balances.Expense ? balances.Expense : 0}
-        />
-        <ActionBar addTransaction={addTransaction} categories={categories} />
-        <button type="button" onClick={resetFilters}>Reset Filters</button>
-        <Filter items={categories} setFilter={setFilterByCategory} />
-        <Filter items={datesFilters} setFilter={setFilterByDate} />
-        <Filter items={typeFilters} setFilter={setFilterByType} />
-        {filteredTransactions.length > defaultNumOfTrans
-          ? <button type="button" onClick={showAllTransactions}>{isAllTransactionsShown ? 'View less transations' : 'View all transactions'}</button>
-          : null}
+        <header>
+          <div className="filters-trigger container">
+            <button className="filters-trigger__button" type="button" data-modal="filtersModal" onClick={handleFiltersShow}> </button>
+          </div>
+          {filtersModal && (
+            <Modal modalName="filtersModal" closeModal={closeModal} title="Choose filter">
+              <div className="filters">
+                <Filter items={categories} setFilter={setFilterByCategory} />
+                <Filter items={datesFilters} setFilter={setFilterByDate} />
+                <Filter items={typeFilters} setFilter={setFilterByType} />
+              </div>
+            </Modal>
+          )}
+          <Balance
+            balance={balance}
+            earnings={balances.Income ? balances.Income : 0}
+            spending={balances.Expense ? balances.Expense : 0}
+          />
+        </header>
+        <div className="all-or-less-transactions">
+          {filteredTransactions.length > defaultNumOfTrans
+            ? <button type="button" className="button button--pure-white" onClick={showAllTransactions}>{isAllTransactionsShown ? 'View less transactions' : 'View all transactions'}</button>
+            : null}
+        </div>
         <Transactions transactionsList={getLastRecords(transactionsToShow)} />
+        <div className="bottom-bar">
+          {isFilterApplied ? <button className="reset-filters-button button button--blue button--round" type="button" onClick={resetFilters}>Reset Filters</button> : null}
+          <ActionBar className="action-bar" addTransaction={addTransaction} categories={categories} closeModal={closeModal} openModal={openModal} modals={modals} />
+        </div>
       </>
     );
   }

@@ -14,25 +14,23 @@ function Filter(props) {
       const name = typeof item === 'object' ? item.name : item;
 
       return (
-        <li key={`category_${index}`}>
-          <button
-            type="button"
-            onClick={handleClick}
-            data-value={typeof value === 'object' ? JSON.stringify(value) : value}
-          >
-            {name}
-          </button>
-        </li>
+        <button
+          type="button"
+          onClick={handleClick}
+          data-value={typeof value === 'object' ? JSON.stringify(value) : value}
+          key={`category_${index}`}
+          className="filters__category button button--white button--round"
+        >
+          {name}
+        </button>
       );
     });
   }
 
   return (
-    <>
-      <ul>
-        {getFilterItems(items)}
-      </ul>
-    </>
+    <ul className="filters__category-group padding-vertical-sm">
+      {getFilterItems(items)}
+    </ul>
   )
 }
 

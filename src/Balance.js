@@ -5,14 +5,28 @@ function Balance(props) {
   const { balance, earnings, spending } = props;
 
   return (
-    <>
-      <h1>
-        {`${balance} HUF`}
-      </h1>
-      <h4>
-        {`Earnings: ${earnings} Spendings: ${spending * -1}`}
-      </h4>
-    </>
+    <div className="balance padding-vertical-lg">
+      <div className="container balance__content">
+        <div className="balance__header">
+          <h1 className="balance__title text-sm text-uppercase">Overview</h1>
+        </div>
+        <div className="balance__info padding-vertical-lg">
+          <h2 className="text-xs text-uppercase text-bold text-muted">Current balance</h2>
+          <p className="balance__amount text-lg">{`${balance} HUF`}</p>
+        </div>
+        <div className="balance__breakdown">
+          <span className="balance__type">
+            <p className="text-xs text-uppercase text-bold text-muted">Earnings</p>
+            <p className="text-md">{earnings}</p>
+          </span>
+          <span className="balance__vertical-line" />
+          <span className="balance__type">
+            <p className="text-xs text-uppercase text-bold text-muted">Spendings</p>
+            <p className="text-md">{spending * -1}</p>
+          </span>
+        </div>
+      </div>
+    </div>
   )
 }
 

@@ -13,18 +13,24 @@ function Transactions(props) {
     } = transaction;
 
     return (
-      <li key={`transaction_${index}`}>
-        {`${transType}: ${value} HUF, ${category}, ${timestamp.toLocaleString()}`}
+      <li className="transactions__transaction transaction padding-vertical-sm" key={`transaction_${index}`}>
+        <p className="transaction__header text-sm">
+          <span>{category}</span>
+          <span className={transType === 'Expense' ? 'expense' : 'profit'}>{`${value} HUF`}</span>
+        </p>
+        <p className="transaction__date text-xs text-bold">{timestamp.toLocaleString()}</p>
       </li>
     )
   }
 
   return (
-    <>
-      <ul>
-        {transactionsList.map(getTransaction)}
-      </ul>
-    </>
+    <section className="transactions padding-vertical-sm">
+      <div className="container">
+        <ul>
+          {transactionsList.map(getTransaction)}
+        </ul>
+      </div>
+    </section>
   )
 }
 

@@ -1,0 +1,315 @@
+@import url('https://fonts.googleapis.com/css?family=Open+Sans&display=swap');
+
+// Variables
+
+$white: #FFFFFF;
+$main-color: #328DFF;
+
+// Instead of reset.css
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Open Sans', sans-serif;
+  font-size: 16px;
+  color: #000000;
+}
+
+// General classes
+
+.application-layout {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+.container {
+  width: 90%;
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+.button {
+  font-size: 1rem;
+  padding: 0.25rem 1rem;
+  text-transform: uppercase;
+}
+
+.icon {
+  font-size: 0.75rem;
+  border: 1px solid rgba(209, 209, 209, 0.5);
+  border-radius: 50%;
+  width: 1.25rem;
+  height: 1.25rem;
+  background-color: $white;
+}
+
+.icon:before {
+  content: 'X';
+  opacity: 0.3;
+}
+
+.button:hover, .icon:hover {
+  cursor: pointer;
+}
+
+.button:focus, .icon:focus {
+  outline: none;
+}
+
+.button--round {
+  border-radius: 1rem;
+}
+
+.button--blue {
+  background-color: $main-color;
+  border: 1px solid $main-color;
+  color: $white;
+}
+
+.button--pure-white {
+  background-color: $white;
+  border: 1px solid $white;
+  color: $main-color;
+}
+
+.button--white {
+  background-color: $white;
+  border: 1px solid $main-color;
+  color: $main-color;
+}
+
+.text-xs {
+  font-size: 0.5rem;
+}
+
+.text-sm {
+  font-size: 0.75rem;
+}
+
+.text-md {
+  font-size: 1.25rem;
+}
+
+.text-lg {
+  font-size: 1.875rem;
+}
+
+.text-uppercase {
+  text-transform: uppercase;
+}
+
+.text-bold {
+  font-weight: bold;
+}
+
+.text-muted {
+  opacity: .4;
+}
+
+.padding-vertical-lg {
+  padding: 1.5rem 0;
+}
+
+.padding-vertical-md {
+  padding: 1rem 0;
+}
+
+.padding-vertical-sm {
+  padding: 0.5rem 0;
+}
+
+.text-align-center {
+  text-align: center;
+}
+
+
+// ExpenseTracker Component
+
+.filters-trigger {
+  position: relative;
+}
+
+.filters-trigger__button {
+  border: none;
+  position: absolute;
+  top: 1.5rem;
+  right: 0.5rem;
+  width: 1.125rem;
+  height: 1.125rem;
+  background: url('./img/filter.svg') no-repeat center center;
+  background-size: 1.125rem 1.125rem;
+}
+
+.filters-trigger__button:focus {
+  outline: none;
+}
+
+.bottom-bar {
+  position: relative;
+}
+
+.reset-filters-button {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  margin-bottom: 0.5rem;
+}
+
+// Balance Component
+
+.balance {
+  background-color: $main-color;
+  box-shadow: 0 0 4px 2px rgba(0, 0, 0, 0.25);
+}
+
+.balance__content {
+  text-align: center;
+  color: $white;
+}
+
+.balance__amount {
+  padding-top: 0.25rem;
+}
+
+.balance__breakdown {
+  display: flex;
+  justify-content: space-around;
+  padding: 0 2rem;
+  margin: 0 auto;
+}
+
+.balance__type {
+  padding: 0.5rem 0;
+  width: 50%;
+}
+
+.balance__vertical-line {
+  border-left: 1px solid #2A7DE0;
+}
+
+// ActionBar Component
+
+.action-bar {
+  box-shadow: 0 0 2px 1px rgba(0, 0, 0, 0.2);
+  background-color: $white;
+}
+
+.action-bar__content {
+  display: flex;
+  justify-content: center;
+}
+
+.action-bar__input-field {
+  border: 1px solid #BFC5CE;
+  border-radius: 1rem;
+  font-size: 1rem;
+  padding: 0.25rem 0.5rem;
+  margin-right: 0.5rem;
+  width: 70%;
+}
+
+.action-bar__input-field:focus {
+  outline: none;
+}
+
+.action-bar__button {
+  width: 30%;
+}
+
+.action-bar__income-button {
+  border-bottom: 1px solid rgba(209, 209, 209, 0.7);
+}
+
+// Transactions Component
+
+.transactions {
+  flex-grow: 2;
+  overflow-y: scroll;
+}
+
+.transaction {
+  list-style: none;
+  border-bottom: 1px solid rgba(209, 209, 209, 0.4);
+}
+
+.transaction:last-child {
+  border-bottom: none;
+}
+
+.transaction__header {
+  display: flex;
+  justify-content: space-between;
+}
+
+.transaction__date {
+  opacity: 0.3;
+}
+
+.all-or-less-transactions {
+  padding-top: 1rem;
+  text-align: center;
+}
+
+// Filters Component
+
+.filters__category-group {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  border-bottom: 1px solid rgba(209, 209, 209, 0.7);
+}
+
+.filters__category-group:last-child {
+  border-bottom: none;
+}
+
+.filters__category {
+  margin: 0.125rem;
+}
+
+// Modal Component
+
+.modal {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  left: 0;
+  z-index: 10;
+  background-color: rgba(0, 0, 0, 0.3);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.modal__content {
+  background-color: #FFFFFF;
+  box-shadow: 0 0 8px 2px rgba(0, 0, 0, 0.3);
+  position: relative;
+}
+
+.modal__title {
+  color: $white;
+  background-color: $main-color;
+}
+
+.modal__items-list {
+  padding: 0 1rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.close-button {
+  position: absolute;
+  top: -0.5rem;
+  right: -0.5rem;
+  border: none;
+  box-shadow: 0 0 8px 2px rgba(0, 0, 0, 0.3);
+}

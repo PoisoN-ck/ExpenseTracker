@@ -1,9 +1,12 @@
 import React from 'react';
 import ExpenseTracker from './ExpenseTracker'
+import './App.scss'
 
 function App() {
   return (
-    <ExpenseTracker />
+    <div className="application-layout">
+      <ExpenseTracker />
+    </div>
   );
 }
 
