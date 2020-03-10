@@ -22,7 +22,7 @@ class ActionBar extends Component {
         return (
           <button
             key={`cat_button_${index}`}
-            className="button button--pure-white padding-vertical-sm"
+            className="flex-list__item flex-list__item--lg button button--white button--round"
             type="button"
             data-category={category}
             onClick={this.addExpense}
@@ -119,8 +119,10 @@ class ActionBar extends Component {
           <button className="action-bar__button button button--round button--blue" type="button" data-modal="addTransactionModal" onClick={handleAddTransaction}>Add</button>
           {addTransactionModal && (
             <Modal modalName="addTransactionModal" closeModal={closeModal} title="Choose category">
-              <button key="cat_button_income" className="button button--pure-white action-bar__income-button padding-vertical-sm" type="button" onClick={addIncome}>Income</button>
-              {transactionCategories}
+              <div className="flex-list">
+                <button key="cat_button_income" className="flex-list__item flex-list__item--lg button button--white button--round action-bar__income-button" type="button" onClick={addIncome}>Income</button>
+                {transactionCategories}
+              </div>
             </Modal>
           )}
         </div>

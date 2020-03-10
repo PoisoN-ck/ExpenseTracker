@@ -11,6 +11,8 @@
     "react/no-array-index-key": "off",
     "arrow-body-style": "off",
     "no-else-return": "off",
+    "class-methods-use-this": "off",
+    "import/prefer-default-export": "off",
     "semi": 0,
     "react/jsx-filename-extension": [
       1,

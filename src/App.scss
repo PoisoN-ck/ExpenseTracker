@@ -34,7 +34,7 @@ body {
 }
 
 .button {
-  font-size: 1rem;
+  font-size: 0.875rem;
   padding: 0.25rem 1rem;
   text-transform: uppercase;
 }
@@ -127,7 +127,6 @@ body {
   text-align: center;
 }
 
-
 // ExpenseTracker Component
 
 .filters-trigger {
@@ -208,7 +207,7 @@ body {
 .action-bar__input-field {
   border: 1px solid #BFC5CE;
   border-radius: 1rem;
-  font-size: 1rem;
+  font-size: 0.875rem;
   padding: 0.25rem 0.5rem;
   margin-right: 0.5rem;
   width: 70%;
@@ -223,7 +222,7 @@ body {
 }
 
 .action-bar__income-button {
-  border-bottom: 1px solid rgba(209, 209, 209, 0.7);
+  // border-bottom: 1px solid rgba(209, 209, 209, 0.7);
 }
 
 // Transactions Component
@@ -251,7 +250,7 @@ body {
   opacity: 0.3;
 }
 
-.all-or-less-transactions {
+.show-transactions {
   padding-top: 1rem;
   text-align: center;
 }
@@ -288,7 +287,8 @@ body {
   align-items: center;
 }
 
-.modal__content {
+.modal__container {
+  max-width: 90%;
   background-color: #FFFFFF;
   box-shadow: 0 0 8px 2px rgba(0, 0, 0, 0.3);
   position: relative;
@@ -297,13 +297,29 @@ body {
 .modal__title {
   color: $white;
   background-color: $main-color;
+  font-weight: 400;
 }
 
-.modal__items-list {
-  padding: 0 1rem;
+.modal__content {
+  padding: 1rem;
+}
+
+.flex-list {
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  align-items: center;
+}
+
+.flex-list__item {
+  margin-bottom: 0.75rem;
+}
+
+.flex-list__item--lg {
+  width: 200px;
+}
+
+.flex-list__item:last-child {
+  margin-bottom: 0;
 }
 
 .close-button {

@@ -6,6 +6,7 @@ import {
   subWeeks,
   isWithinRange,
 } from 'date-fns';
+import { capitalize, sortTransactionsByDate } from './Helpers';
 import Balance from './Balance';
 import Transactions from './Transactions';
 import ActionBar from './ActionBar';
@@ -65,8 +66,7 @@ class ExpenseTracker extends Component {
     super();
     this.state = {
       balance: 100000000,
-      transactionsToShow: this.defaultNumOfTrans,
-      isAllTransactionsShown: false,
+      isShowAllTransactions: false,
       modals: {
         addTransactionModal: false,
         filtersModal: false,
@@ -80,7 +80,7 @@ class ExpenseTracker extends Component {
           timestamp: new Date(2020, 0, 1, 0, 0, 0),
         },
         {
-          value: -20,
+          value: 20,
           category: 'Food',
           transType: 'Expense',
           timestamp: new Date(2020, 0, 31, 23, 59, 59),
@@ -92,13 +92,13 @@ class ExpenseTracker extends Component {
           timestamp: new Date(2020, 1, 3, 23, 0, 0),
         },
         {
-          value: -100,
+          value: 100,
           category: 'Clothes',
           transType: 'Expense',
           timestamp: new Date(2020, 1, 5),
         },
         {
-          value: -10000,
+          value: 10000,
           category: 'Clothes',
           transType: 'Expense',
           timestamp: new Date(2020, 1, 29, 11, 0, 0),
@@ -128,7 +128,7 @@ class ExpenseTracker extends Component {
           timestamp: new Date(2020, 0, 1, 0, 0, 0),
         },
         {
-          value: -20,
+          value: 20,
           category: 'Food',
           transType: 'Expense',
           timestamp: new Date(2020, 0, 31, 23, 59, 59),
@@ -140,13 +140,13 @@ class ExpenseTracker extends Component {
           timestamp: new Date(2020, 1, 3, 23, 0, 0),
         },
         {
-          value: -100,
+          value: 200,
           category: 'Clothes',
           transType: 'Expense',
           timestamp: new Date(2020, 1, 5),
         },
         {
-          value: -10000,
+          value: 20000,
           category: 'Clothes',
           transType: 'Expense',
           timestamp: new Date(2020, 1, 29, 11, 0, 0),
@@ -171,28 +171,33 @@ class ExpenseTracker extends Component {
         },
       ],
       filteredTransactions: [],
+      filters: {
+        category: [],
+        date: [],
+        type: [],
+      },
     }
-    this.getLastRecords = this.getLastRecords.bind(this);
     this.getTransactionsBalance = this.getTransactionsBalance.bind(this);
     this.addTransaction = this.addTransaction.bind(this);
-    this.filterTransactions = this.filterTransactions.bind(this);
     this.setFilterByCategory = this.setFilterByCategory.bind(this);
     this.setFilterByType = this.setFilterByType.bind(this);
     this.setFilterByDate = this.setFilterByDate.bind(this);
     this.resetFilters = this.resetFilters.bind(this);
-    this.showAllTransactions = this.showAllTransactions.bind(this);
+    this.toggleShowAllTransactions = this.toggleShowAllTransactions.bind(this);
     this.closeModal = this.closeModal.bind(this);
     this.openModal = this.openModal.bind(this);
     this.handleFiltersShow = this.handleFiltersShow.bind(this);
+    this.toggleFilter = this.toggleFilter.bind(this);
+    this.applyFilters = this.applyFilters.bind(this);
   }
 
   componentDidMount() {
+    const { transactions } = this.state;
     this.resetFilters();
-  }
 
-  getLastRecords(num) {
-    const { filteredTransactions } = this.state;
-    return filteredTransactions.slice(-num);
+    this.setState({
+      transactions: transactions.sort(sortTransactionsByDate),
+    });
   }
 
   getTransactionsBalance() {
@@ -208,39 +213,60 @@ class ExpenseTracker extends Component {
     return result;
   }
 
-  setFilterByDate(datesInterval) {
-    const { transactions } = this.state;
+  setFilterByDate(transactions, datesInterval) {
     const { startDate, endDate } = JSON.parse(datesInterval);
 
-    this.setState({
-      filteredTransactions: transactions.filter(
-        (transaction) => isWithinRange(transaction.timestamp, startDate, endDate),
-      ),
-      isFilterApplied: true,
-    });
-  }
-
-  setFilterByCategory(category) {
-    this.filterTransactions('category', category);
-    this.setState({
-      isFilterApplied: true,
-    });
-  }
-
-  setFilterByType(type) {
-    this.filterTransactions('transType', type);
-    this.setState({
-      isFilterApplied: true,
-    });
-  }
-
-  filterTransactions(field, value) {
-    const { transactions } = this.state;
-    const filteredTransactions = transactions.filter(
-      (transaction) => transaction[field] === value,
+    return transactions.filter(
+      (transaction) => isWithinRange(transaction.timestamp, startDate, endDate),
     );
+  }
 
-    this.setState({ filteredTransactions });
+  setFilterByCategory(transactions, category) {
+    return transactions.filter(
+      (transaction) => transaction.category === category,
+    );
+  }
+
+  setFilterByType(transactions, type) {
+    return transactions.filter(
+      (transaction) => transaction.transType === type,
+    );
+  }
+
+  toggleFilter(filter) {
+    const { filters } = this.state;
+
+    if (filters[filter.name].includes(filter.value)) {
+      filters[filter.name].splice(filters[filter.name].indexOf(filter.value), 1);
+    } else {
+      filters[filter.name].push(filter.value);
+    }
+
+    this.setState({ filters });
+  }
+
+  applyFilters() {
+    const { filters, transactions } = this.state;
+    let filteredTransactions = [];
+    let isFiltered = false;
+
+    Object.keys(filters).forEach((filterType) => {
+      if (filters[filterType].length === 0) return;
+      let filteredByType = [];
+      filters[filterType].forEach((filter) => {
+        const currentFilteredTransactions = this[`setFilterBy${capitalize(filterType)}`](filteredTransactions.length || isFiltered ? filteredTransactions : transactions, filter);
+        filteredByType = [...currentFilteredTransactions, ...filteredByType];
+      });
+      filteredTransactions = [...filteredByType];
+      isFiltered = true;
+    });
+
+    this.setState({
+      filteredTransactions: isFiltered ? filteredTransactions : transactions,
+      isFilterApplied: true,
+    });
+
+    this.closeModal('filtersModal');
   }
 
   resetFilters() {
@@ -249,23 +275,20 @@ class ExpenseTracker extends Component {
     this.setState({
       filteredTransactions: transactions,
       isFilterApplied: false,
+      filters: {
+        category: [],
+        date: [],
+        type: [],
+      },
     })
   }
 
-  showAllTransactions() {
-    const { transactions, isAllTransactionsShown } = this.state;
+  toggleShowAllTransactions() {
+    const { isShowAllTransactions } = this.state;
 
-    if (isAllTransactionsShown) {
-      this.setState({
-        transactionsToShow: this.defaultNumOfTrans,
-        isAllTransactionsShown: false,
-      })
-    } else {
-      this.setState({
-        transactionsToShow: transactions.length,
-        isAllTransactionsShown: true,
-      })
-    }
+    this.setState({
+      isShowAllTransactions: !isShowAllTransactions,
+    })
   }
 
   addTransaction(transaction) {
@@ -275,7 +298,7 @@ class ExpenseTracker extends Component {
 
     this.setState({
       balance: balance + transaction.value,
-      transactions: [...transactions, transaction],
+      transactions: [transaction, ...transactions],
     }, this.resetFilters);
   }
 
@@ -307,31 +330,29 @@ class ExpenseTracker extends Component {
   render() {
     const {
       balance,
-      transactionsToShow,
-      isAllTransactionsShown,
+      isShowAllTransactions,
       filteredTransactions,
       modals,
       isFilterApplied,
+      filters,
     } = this.state;
 
     const { filtersModal } = modals;
 
     const {
       categories,
-      getLastRecords,
       addTransaction,
-      setFilterByCategory,
-      setFilterByType,
-      setFilterByDate,
+      toggleFilter,
       resetFilters,
       getTransactionsBalance,
       datesFilters,
       typeFilters,
-      showAllTransactions,
+      toggleShowAllTransactions,
       defaultNumOfTrans,
       closeModal,
       openModal,
       handleFiltersShow,
+      applyFilters,
     } = this;
 
     const balances = getTransactionsBalance();
@@ -340,14 +361,15 @@ class ExpenseTracker extends Component {
       <>
         <header>
           <div className="filters-trigger container">
-            <button className="filters-trigger__button" type="button" data-modal="filtersModal" onClick={handleFiltersShow}> </button>
+            <button className="filters-trigger__button button" type="button" data-modal="filtersModal" onClick={handleFiltersShow}> </button>
           </div>
           {filtersModal && (
             <Modal modalName="filtersModal" closeModal={closeModal} title="Choose filter">
               <div className="filters">
-                <Filter items={categories} setFilter={setFilterByCategory} />
-                <Filter items={datesFilters} setFilter={setFilterByDate} />
-                <Filter items={typeFilters} setFilter={setFilterByType} />
+                <Filter items={categories} filterName="category" setFilter={toggleFilter} activeFilters={filters.category} />
+                <Filter items={datesFilters} filterName="date" setFilter={toggleFilter} activeFilters={filters.date} />
+                <Filter items={typeFilters} filterName="type" setFilter={toggleFilter} activeFilters={filters.type} />
+                <button type="button" className="button button--blue button--round" onClick={applyFilters}>Apply filters</button>
               </div>
             </Modal>
           )}
@@ -357,12 +379,18 @@ class ExpenseTracker extends Component {
             spending={balances.Expense ? balances.Expense : 0}
           />
         </header>
-        <div className="all-or-less-transactions">
+        <div className="show-transactions">
           {filteredTransactions.length > defaultNumOfTrans
-            ? <button type="button" className="button button--pure-white" onClick={showAllTransactions}>{isAllTransactionsShown ? 'View less transactions' : 'View all transactions'}</button>
+            ? <button type="button" className="button button--pure-white" onClick={toggleShowAllTransactions}>{isShowAllTransactions ? 'View less transactions' : 'View all transactions'}</button>
             : null}
         </div>
-        <Transactions transactionsList={getLastRecords(transactionsToShow)} />
+        <Transactions
+          transactionsList={
+            isShowAllTransactions
+              ? filteredTransactions
+              : filteredTransactions.slice(0, this.defaultNumOfTrans)
+          }
+        />
         <div className="bottom-bar">
           {isFilterApplied ? <button className="reset-filters-button button button--blue button--round" type="button" onClick={resetFilters}>Reset Filters</button> : null}
           <ActionBar className="action-bar" addTransaction={addTransaction} categories={categories} closeModal={closeModal} openModal={openModal} modals={modals} />

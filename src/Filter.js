@@ -2,24 +2,30 @@ import React from 'react'
 import PropTypes from 'prop-types'
 
 function Filter(props) {
-  const { items, setFilter } = props;
+  const {
+    items,
+    setFilter,
+    filterName,
+    activeFilters,
+  } = props;
 
   function handleClick(event) {
-    setFilter(event.target.dataset.value);
+    setFilter({ name: filterName, value: event.target.dataset.value });
   }
 
   function getFilterItems(itemsList) {
     return itemsList.map((item, index) => {
-      const value = typeof item === 'object' ? item.value : item;
+      let value = typeof item === 'object' ? item.value : item;
       const name = typeof item === 'object' ? item.name : item;
+      value = typeof value === 'object' ? JSON.stringify(value) : value
 
       return (
         <button
           type="button"
           onClick={handleClick}
-          data-value={typeof value === 'object' ? JSON.stringify(value) : value}
+          data-value={value}
           key={`category_${index}`}
-          className="filters__category button button--white button--round"
+          className={`filters__category button button--round ${activeFilters.includes(value) ? 'button--blue' : 'button--white'}`}
         >
           {name}
         </button>
@@ -28,17 +34,19 @@ function Filter(props) {
   }
 
   return (
-    <ul className="filters__category-group padding-vertical-sm">
+    <ul className="filters__category-group flex-list padding-vertical-sm">
       {getFilterItems(items)}
     </ul>
   )
 }
 
 Filter.propTypes = {
+  filterName: PropTypes.string.isRequired,
   items: PropTypes.arrayOf(PropTypes.oneOfType(
     [PropTypes.string, PropTypes.object, PropTypes.number],
   )).isRequired,
   setFilter: PropTypes.func.isRequired,
+  activeFilters: PropTypes.arrayOf(PropTypes.string).isRequired,
 }
 
 export default Filter
