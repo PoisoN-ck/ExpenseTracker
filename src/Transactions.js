@@ -9,7 +9,7 @@ function Transactions(props) {
       value,
       category,
       transType,
-      timestamp,
+      transDate,
     } = transaction;
 
     return (
@@ -18,7 +18,7 @@ function Transactions(props) {
           <span>{category}</span>
           <span className={transType === 'Expense' ? 'expense' : 'profit'}>{`${value} HUF`}</span>
         </p>
-        <p className="transaction__date text-xs text-bold">{timestamp.toLocaleString()}</p>
+        <p className="transaction__date text-xs text-bold">{new Date(transDate).toLocaleString()}</p>
       </li>
     )
   }

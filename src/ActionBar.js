@@ -60,7 +60,7 @@ class ActionBar extends Component {
       value: transactionAmount * -1,
       category,
       transType: 'Expense',
-      timestamp: new Date(),
+      transDate: new Date().getTime(),
     }
 
     addTransaction(transaction);
@@ -79,7 +79,7 @@ class ActionBar extends Component {
       value: transactionAmount,
       category: 'Profit',
       transType: 'Income',
-      timestamp: new Date(),
+      transDate: new Date().getTime(),
     }
 
     addTransaction(transaction);
@@ -114,7 +114,7 @@ class ActionBar extends Component {
 
     return (
       <section className="action-bar padding-vertical-md">
-        <div className="action-bar__content container">
+        <div className="flex-center container">
           <input className="action-bar__input-field" onChange={setCurrentAmount} value={transactionAmount} placeholder="Enter the amount..." />
           <button className="action-bar__button button button--round button--blue" type="button" data-modal="addTransactionModal" onClick={handleAddTransaction}>Add</button>
           {addTransactionModal && (

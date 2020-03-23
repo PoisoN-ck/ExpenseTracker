@@ -34,7 +34,7 @@ function Filter(props) {
   }
 
   return (
-    <ul className="filters__category-group flex-list padding-vertical-sm">
+    <ul className="filters__category-group">
       {getFilterItems(items)}
     </ul>
   )

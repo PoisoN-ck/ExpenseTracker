@@ -5,13 +5,16 @@ import {
   startOfWeek,
   subWeeks,
   isWithinRange,
+  endOfWeek,
 } from 'date-fns';
+import db from './db';
 import { capitalize, sortTransactionsByDate } from './Helpers';
 import Balance from './Balance';
 import Transactions from './Transactions';
 import ActionBar from './ActionBar';
 import Filter from './Filter';
 import Modal from './Modal';
+import loading from './img/loading.svg'
 
 class ExpenseTracker extends Component {
   currentDate = new Date();
@@ -29,14 +32,14 @@ class ExpenseTracker extends Component {
 
   datesFilters = [
     {
-      name: 'Previous Month',
+      name: 'Last Month',
       value: {
         startDate: startOfMonth(subMonths(this.currentDate, 1)),
         endDate: startOfMonth(this.currentDate),
       },
     },
     {
-      name: 'Current Month',
+      name: 'This Month',
       value: {
         startDate: startOfMonth(this.currentDate),
         endDate: startOfMonth(subMonths(this.currentDate, -1)),
@@ -46,7 +49,7 @@ class ExpenseTracker extends Component {
       name: 'This Week',
       value: {
         startDate: startOfWeek(this.currentDate, { weekStartsOn: 1 }),
-        endDate: this.currentDate,
+        endDate: endOfWeek(this.currentDate, { weekStartsOn: 1 }),
       },
     },
     {
@@ -58,118 +61,21 @@ class ExpenseTracker extends Component {
     },
   ]
 
-  typeFilters = ['Income', 'Expense']
+  typeFilters = ['Income', 'Expense'];
 
-  defaultNumOfTrans = 10
+  defaultNumOfTrans = 7;
 
   constructor() {
     super();
     this.state = {
-      balance: 100000000,
+      isLoading: true,
       isShowAllTransactions: false,
       modals: {
         addTransactionModal: false,
         filtersModal: false,
       },
       isFilterApplied: false,
-      transactions: [
-        {
-          value: 100,
-          category: 'Profit',
-          transType: 'Income',
-          timestamp: new Date(2020, 0, 1, 0, 0, 0),
-        },
-        {
-          value: 20,
-          category: 'Food',
-          transType: 'Expense',
-          timestamp: new Date(2020, 0, 31, 23, 59, 59),
-        },
-        {
-          value: 300,
-          category: 'Profit',
-          transType: 'Income',
-          timestamp: new Date(2020, 1, 3, 23, 0, 0),
-        },
-        {
-          value: 100,
-          category: 'Clothes',
-          transType: 'Expense',
-          timestamp: new Date(2020, 1, 5),
-        },
-        {
-          value: 10000,
-          category: 'Clothes',
-          transType: 'Expense',
-          timestamp: new Date(2020, 1, 29, 11, 0, 0),
-        },
-        {
-          value: 370000,
-          category: 'Profit',
-          transType: 'Income',
-          timestamp: new Date(2020, 1, 24, 7, 0, 0),
-        },
-        {
-          value: 100000,
-          category: 'Profit',
-          transType: 'Income',
-          timestamp: new Date(2020, 1, 18, 7, 0, 0),
-        },
-        {
-          value: 5000,
-          category: 'Food',
-          transType: 'Expense',
-          timestamp: new Date(2020, 1, 18, 7, 0, 0),
-        },
-        {
-          value: 100,
-          category: 'Profit',
-          transType: 'Income',
-          timestamp: new Date(2020, 0, 1, 0, 0, 0),
-        },
-        {
-          value: 20,
-          category: 'Food',
-          transType: 'Expense',
-          timestamp: new Date(2020, 0, 31, 23, 59, 59),
-        },
-        {
-          value: 300,
-          category: 'Profit',
-          transType: 'Income',
-          timestamp: new Date(2020, 1, 3, 23, 0, 0),
-        },
-        {
-          value: 200,
-          category: 'Clothes',
-          transType: 'Expense',
-          timestamp: new Date(2020, 1, 5),
-        },
-        {
-          value: 20000,
-          category: 'Clothes',
-          transType: 'Expense',
-          timestamp: new Date(2020, 1, 29, 11, 0, 0),
-        },
-        {
-          value: 370000,
-          category: 'Profit',
-          transType: 'Income',
-          timestamp: new Date(2020, 1, 24, 7, 0, 0),
-        },
-        {
-          value: 100000,
-          category: 'Profit',
-          transType: 'Income',
-          timestamp: new Date(2020, 1, 18, 7, 0, 0),
-        },
-        {
-          value: 5000,
-          category: 'Food',
-          transType: 'Expense',
-          timestamp: new Date(2020, 1, 18, 7, 0, 0),
-        },
-      ],
+      transactions: [],
       filteredTransactions: [],
       filters: {
         category: [],
@@ -177,6 +83,8 @@ class ExpenseTracker extends Component {
         type: [],
       },
     }
+
+    this.syncWithFirebase = this.syncWithFirebase.bind(this);
     this.getTransactionsBalance = this.getTransactionsBalance.bind(this);
     this.addTransaction = this.addTransaction.bind(this);
     this.setFilterByCategory = this.setFilterByCategory.bind(this);
@@ -192,11 +100,23 @@ class ExpenseTracker extends Component {
   }
 
   componentDidMount() {
-    const { transactions } = this.state;
-    this.resetFilters();
+    const vh = window.innerHeight;
+    document.documentElement.style.setProperty('--vh', `${vh}px`);
+    this.getTransactionsFromDB()
+      .then((transactionsFromDB) => {
+        this.setState({
+          transactions: transactionsFromDB.sort(sortTransactionsByDate),
+          isLoading: false,
+        }, () => {
+          this.resetFilters();
+          this.syncWithFirebase();
+        });
+      });
+  }
 
-    this.setState({
-      transactions: transactions.sort(sortTransactionsByDate),
+  getTransactionsFromDB() {
+    return db.fetch('transactionsList', {
+      asArray: true,
     });
   }
 
@@ -217,7 +137,7 @@ class ExpenseTracker extends Component {
     const { startDate, endDate } = JSON.parse(datesInterval);
 
     return transactions.filter(
-      (transaction) => isWithinRange(transaction.timestamp, startDate, endDate),
+      (transaction) => isWithinRange(new Date(transaction.transDate), startDate, endDate),
     );
   }
 
@@ -231,6 +151,14 @@ class ExpenseTracker extends Component {
     return transactions.filter(
       (transaction) => transaction.transType === type,
     );
+  }
+
+  syncWithFirebase() {
+    db.syncState('transactionsList', {
+      context: this,
+      state: 'transactions',
+      asArray: true,
+    });
   }
 
   toggleFilter(filter) {
@@ -294,10 +222,9 @@ class ExpenseTracker extends Component {
   addTransaction(transaction) {
     if (!transaction.value) return;
 
-    const { transactions, balance } = this.state;
+    const { transactions } = this.state;
 
     this.setState({
-      balance: balance + transaction.value,
       transactions: [transaction, ...transactions],
     }, this.resetFilters);
   }
@@ -329,12 +256,12 @@ class ExpenseTracker extends Component {
 
   render() {
     const {
-      balance,
       isShowAllTransactions,
       filteredTransactions,
       modals,
       isFilterApplied,
       filters,
+      isLoading,
     } = this.state;
 
     const { filtersModal } = modals;
@@ -359,6 +286,12 @@ class ExpenseTracker extends Component {
 
     return (
       <>
+        {isLoading
+        && (
+          <div className="loader">
+            <img className="loader__image" src={loading} alt="Loader" />
+          </div>
+        )}
         <header>
           <div className="filters-trigger container">
             <button className="filters-trigger__button button" type="button" data-modal="filtersModal" onClick={handleFiltersShow}> </button>
@@ -369,17 +302,22 @@ class ExpenseTracker extends Component {
                 <Filter items={categories} filterName="category" setFilter={toggleFilter} activeFilters={filters.category} />
                 <Filter items={datesFilters} filterName="date" setFilter={toggleFilter} activeFilters={filters.date} />
                 <Filter items={typeFilters} filterName="type" setFilter={toggleFilter} activeFilters={filters.type} />
-                <button type="button" className="button button--blue button--round" onClick={applyFilters}>Apply filters</button>
+              </div>
+              <div className="flex-center">
+                <button type="button" className="button button--blue button--round padding-vertical-sm apply-button" onClick={applyFilters}>Apply filters</button>
               </div>
             </Modal>
           )}
           <Balance
-            balance={balance}
+            balance={
+              (balances.Income ? balances.Income : 0)
+              - (balances.Expense ? balances.Expense * -1 : 0)
+            }
             earnings={balances.Income ? balances.Income : 0}
             spending={balances.Expense ? balances.Expense : 0}
           />
         </header>
-        <div className="show-transactions">
+        <div className={filteredTransactions.length > defaultNumOfTrans ? 'show-transactions' : null}>
           {filteredTransactions.length > defaultNumOfTrans
             ? <button type="button" className="button button--pure-white" onClick={toggleShowAllTransactions}>{isShowAllTransactions ? 'View less transactions' : 'View all transactions'}</button>
             : null}

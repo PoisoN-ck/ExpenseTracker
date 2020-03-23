@@ -3,5 +3,5 @@ export function capitalize(word) {
 }
 
 export function sortTransactionsByDate(currentTrans, nextTrans) {
-  return nextTrans.timestamp.getTime() - currentTrans.timestamp.getTime();
+  return nextTrans.transDate - currentTrans.transDate;
 }

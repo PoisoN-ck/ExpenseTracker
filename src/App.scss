@@ -24,7 +24,7 @@ body {
 .application-layout {
   display: flex;
   flex-direction: column;
-  height: 100vh;
+  height: calc(var(--vh, 100vh));
 }
 
 .container {
@@ -127,6 +127,39 @@ body {
   text-align: center;
 }
 
+.flex-center {
+  display: flex;
+  justify-content: center;
+}
+
+.loader {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  left: 0;
+  background-color: $white;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.loader__image {
+  width: 10rem;
+  height: 10rem;
+  animation-name: loading;
+  animation-duration: 2s;
+  animation-iteration-count: infinite;
+  animation-timing-function: linear;
+}
+
+@keyframes loading {
+  from {transform: rotate(0deg);}
+  to {transform: rotate(360deg);}
+}
+
 // ExpenseTracker Component
 
 .filters-trigger {
@@ -211,6 +244,7 @@ body {
   padding: 0.25rem 0.5rem;
   margin-right: 0.5rem;
   width: 70%;
+  font-size: 1rem;
 }
 
 .action-bar__input-field:focus {
@@ -259,9 +293,11 @@ body {
 
 .filters__category-group {
   display: flex;
-  justify-content: center;
   flex-wrap: wrap;
+  justify-content: center;
   border-bottom: 1px solid rgba(209, 209, 209, 0.7);
+  margin-top: 0.5rem;
+  padding-bottom: 0.5rem;
 }
 
 .filters__category-group:last-child {
@@ -269,7 +305,14 @@ body {
 }
 
 .filters__category {
-  margin: 0.125rem;
+  flex-grow: 2;
+  flex-basis: 45%;
+  flex-shrink: 2;
+  margin: 0.2rem;
+}
+
+.apply-button {
+  width: 100%;
 }
 
 // Modal Component
@@ -288,7 +331,8 @@ body {
 }
 
 .modal__container {
-  max-width: 90%;
+  width: 90%;
+  max-width: 400px;
   background-color: #FFFFFF;
   box-shadow: 0 0 8px 2px rgba(0, 0, 0, 0.3);
   position: relative;
