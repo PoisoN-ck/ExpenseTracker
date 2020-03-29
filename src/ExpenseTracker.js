@@ -100,8 +100,6 @@ class ExpenseTracker extends Component {
   }
 
   componentDidMount() {
-    const vh = window.innerHeight;
-    document.documentElement.style.setProperty('--vh', `${vh}px`);
     this.getTransactionsFromDB()
       .then((transactionsFromDB) => {
         this.setState({

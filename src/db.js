@@ -4,8 +4,8 @@ import { fireBaseAPIKey } from './keys'
 
 const firebaseApp = initializeApp({
   apiKey: fireBaseAPIKey,
-  authDomain: 'trakkex.firebaseio.com/',
-  databaseURL: 'https://trakkex.firebaseio.com/',
+  authDomain: 'trakkex-demo.firebaseio.com/',
+  databaseURL: 'https://trakkex-demo.firebaseio.com/',
 });
 
 const base = Rebase.createClass(database());
