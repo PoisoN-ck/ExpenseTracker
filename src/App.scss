@@ -4,6 +4,8 @@
 
 $white: #FFFFFF;
 $main-color: #328DFF;
+$warning: #f71818;
+$success: #21ce32;
 
 // Instead of reset.css
 
@@ -20,6 +22,10 @@ body {
 }
 
 // General classes
+
+.main-color {
+  color: $main-color;
+}
 
 .application-layout {
   display: flex;
@@ -83,6 +89,12 @@ body {
   color: $main-color;
 }
 
+.button-to-text {
+  border: none;
+  font-size: 1rem;
+  background: none;
+}
+
 .text-xs {
   font-size: 0.5rem;
 }
@@ -123,6 +135,18 @@ body {
   padding: 0.5rem 0;
 }
 
+.padding-horizontal-xs {
+  padding: 0 0.25rem;
+}
+
+.margin-vertical-sm {
+  margin: 0.5rem 0;
+}
+
+.margin-vertical-md {
+  margin: 1rem 0;
+}
+
 .text-align-center {
   text-align: center;
 }
@@ -155,6 +179,26 @@ body {
   animation-timing-function: linear;
 }
 
+.warning {
+  color: $warning;
+}
+
+.success {
+  color: $success;
+}
+
+.cursor-pointer:hover {
+  cursor: pointer;
+}
+
+.no-outline-on-focus:focus {
+  outline: none;
+}
+
+.underlined-text {
+  text-decoration: underline;
+}
+
 @keyframes loading {
   from {transform: rotate(0deg);}
   to {transform: rotate(360deg);}
@@ -162,23 +206,38 @@ body {
 
 // ExpenseTracker Component
 
-.filters-trigger {
+.upper-menu {
   position: relative;
 }
 
-.filters-trigger__button {
+.upper-menu__button {
+  background: none;
   border: none;
   position: absolute;
   top: 1.5rem;
-  right: 0.5rem;
   width: 1.125rem;
   height: 1.125rem;
-  background: url('./img/filter.svg') no-repeat center center;
   background-size: 1.125rem 1.125rem;
+  background-repeat: no-repeat;
+  background-position: center center;
 }
 
-.filters-trigger__button:focus {
+.upper-menu__button:focus {
   outline: none;
+}
+
+.upper-menu__button:hover {
+  cursor: pointer;
+}
+
+.upper-menu__filter-trigger {
+  right: 0.5rem;
+  background-image: url('./img/filter.svg');
+}
+
+.upper-menu__sign-out {
+  left: 0.5rem;
+  background-image: url('./img/signout.svg');
 }
 
 .bottom-bar {
@@ -368,4 +427,91 @@ body {
   right: -0.5rem;
   border: none;
   box-shadow: 0 0 8px 2px rgba(0, 0, 0, 0.3);
+}
+
+// Login
+
+.login-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  width: 100%;
+  background-color: $main-color;
+}
+
+.login-container__wrapper {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-evenly;
+  align-items: center;
+  min-height: 30rem;
+  width: 100%;
+  max-width: 20rem;
+  box-shadow: 0 0 8px 2px rgba(0, 0, 0, 0.3);
+  padding: 2rem;
+  border-radius: 2rem;
+  background-color: $white;
+}
+
+.login-container__form-wrapper {
+  width: 90%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.login-container__heading {
+  font-size: 3.25rem;
+  color: $main-color;
+}
+
+.login-container__subheading {
+  font-weight: normal;
+}
+
+.login-container__form {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+}
+
+.login-container__form-item {
+  border: 1px solid #bfc5ce;
+  border-radius: 1.5rem;
+  padding: .75rem 1rem;
+  width: 100%;
+  font-size: 1rem;
+}
+
+.login-container__form-item:focus {
+  box-shadow: 0px 0px 8px 2px rgba(0, 0, 0, 0.3);
+  outline: none;
+  -webkit-appearance: none;
+}
+
+.login-container__submit {
+  box-shadow: 0 0 8px 1px rgba(0, 0, 0, 0.3);
+  font-weight: 700;
+}
+
+.login-container__submit:focus, .login-container__submit:active {
+  -webkit-appearance: none;
+  border: none;
+  box-shadow: 0px 0px 14px 4px $main-color;
+}
+
+.login-container__submit:active {
+  transform: scale(0.95);
+  -webkit-transform: scale(0.95);
+  -ms-transform: scale(0.95);
+}
+
+.login-container__error {
+  font-weight: 700;
+  min-height: 3rem;
 }

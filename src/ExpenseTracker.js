@@ -7,6 +7,7 @@ import {
   isWithinRange,
   endOfWeek,
 } from 'date-fns';
+import PropTypes from 'prop-types';
 import db from './db';
 import { capitalize, sortTransactionsByDate } from './Helpers';
 import Balance from './Balance';
@@ -14,7 +15,6 @@ import Transactions from './Transactions';
 import ActionBar from './ActionBar';
 import Filter from './Filter';
 import Modal from './Modal';
-import loading from './img/loading.svg'
 
 class ExpenseTracker extends Component {
   currentDate = new Date();
@@ -28,7 +28,7 @@ class ExpenseTracker extends Component {
     'Presents',
     'Holidays',
     'Fees',
-  ]
+  ];
 
   datesFilters = [
     {
@@ -59,7 +59,7 @@ class ExpenseTracker extends Component {
         endDate: startOfWeek(this.currentDate, { weekStartsOn: 1 }),
       },
     },
-  ]
+  ];
 
   typeFilters = ['Income', 'Expense'];
 
@@ -68,11 +68,11 @@ class ExpenseTracker extends Component {
   constructor() {
     super();
     this.state = {
-      isLoading: true,
       isShowAllTransactions: false,
       modals: {
         addTransactionModal: false,
         filtersModal: false,
+        error: false,
       },
       isFilterApplied: false,
       transactions: [],
@@ -100,20 +100,26 @@ class ExpenseTracker extends Component {
   }
 
   componentDidMount() {
+    const { startLoading, stopLoading } = this.props;
+    startLoading();
     this.getTransactionsFromDB()
       .then((transactionsFromDB) => {
         this.setState({
           transactions: transactionsFromDB.sort(sortTransactionsByDate),
-          isLoading: false,
         }, () => {
           this.resetFilters();
           this.syncWithFirebase();
+          stopLoading();
         });
+      })
+      .catch((error) => {
+        alert(error.message);
       });
   }
 
   getTransactionsFromDB() {
-    return db.fetch('transactionsList', {
+    const { userId } = this.props;
+    return db.fetch(`${userId}/transactionsList`, {
       asArray: true,
     });
   }
@@ -152,11 +158,14 @@ class ExpenseTracker extends Component {
   }
 
   syncWithFirebase() {
-    db.syncState('transactionsList', {
-      context: this,
-      state: 'transactions',
-      asArray: true,
-    });
+    const { userId, isVerified } = this.props;
+    if (isVerified) {
+      db.syncState(`${userId}/transactionsList`, {
+        context: this,
+        state: 'transactions',
+        asArray: true,
+      });
+    }
   }
 
   toggleFilter(filter) {
@@ -254,12 +263,17 @@ class ExpenseTracker extends Component {
 
   render() {
     const {
+      handleSignOut,
+      isVerified,
+      resendEmail,
+      messageText,
+    } = this.props;
+    const {
       isShowAllTransactions,
       filteredTransactions,
       modals,
       isFilterApplied,
       filters,
-      isLoading,
     } = this.state;
 
     const { filtersModal } = modals;
@@ -284,15 +298,10 @@ class ExpenseTracker extends Component {
 
     return (
       <>
-        {isLoading
-        && (
-          <div className="loader">
-            <img className="loader__image" src={loading} alt="Loader" />
-          </div>
-        )}
         <header>
-          <div className="filters-trigger container">
-            <button className="filters-trigger__button button" type="button" data-modal="filtersModal" onClick={handleFiltersShow}> </button>
+          <div className="upper-menu container">
+            <button className="upper-menu__sign-out upper-menu__button" type="button" onClick={handleSignOut}> </button>
+            <button className="upper-menu__filter-trigger upper-menu__button" type="button" data-modal="filtersModal" onClick={handleFiltersShow}> </button>
           </div>
           {filtersModal && (
             <Modal modalName="filtersModal" closeModal={closeModal} title="Choose filter">
@@ -329,11 +338,32 @@ class ExpenseTracker extends Component {
         />
         <div className="bottom-bar">
           {isFilterApplied ? <button className="reset-filters-button button button--blue button--round" type="button" onClick={resetFilters}>Reset Filters</button> : null}
+          {isVerified ? null
+            : (
+              <div className="warning padding-vertical-md text-align-center">
+                {messageText ? <p className={`text-bold ${messageText.includes('success') ? 'success' : 'warning'}`}>{messageText}</p> : null}
+                <p>
+                  <span className="warning text-bold">NOTE: </span>
+                  You haven&apos;t verified your email address. No data will be saved.
+                  <button type="button" className="warning text-bold cursor-pointer padding-horizontal-xs button-to-text no-outline-on-focus underlined-text" onClick={resendEmail}>Resend verification email</button>
+                </p>
+              </div>
+            )}
           <ActionBar className="action-bar" addTransaction={addTransaction} categories={categories} closeModal={closeModal} openModal={openModal} modals={modals} />
         </div>
       </>
     );
   }
 }
+
+ExpenseTracker.propTypes = {
+  startLoading: PropTypes.func.isRequired,
+  stopLoading: PropTypes.func.isRequired,
+  handleSignOut: PropTypes.func.isRequired,
+  userId: PropTypes.string.isRequired,
+  isVerified: PropTypes.bool.isRequired,
+  resendEmail: PropTypes.func.isRequired,
+  messageText: PropTypes.string.isRequired,
+};
 
 export default ExpenseTracker;
