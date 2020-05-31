@@ -12,11 +12,15 @@ function Transactions(props) {
       transDate,
     } = transaction;
 
+    function convertToString(num) {
+      return num.toLocaleString();
+    }
+
     return (
       <li className="transactions__transaction transaction padding-vertical-sm" key={`transaction_${index}`}>
         <p className="transaction__header text-sm">
           <span>{category}</span>
-          <span className={transType === 'Expense' ? 'expense' : 'profit'}>{`${value} HUF`}</span>
+          <span className={transType === 'Expense' ? 'expense' : 'profit'}>{`${convertToString(value)} HUF`}</span>
         </p>
         <p className="transaction__date text-xs text-bold">{new Date(transDate).toLocaleString()}</p>
       </li>
