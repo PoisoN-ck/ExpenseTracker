@@ -21,10 +21,12 @@ class ExpenseTracker extends Component {
 
   categories = [
     'Food',
-    'Partying',
     'Clothes',
-    'Flat',
+    'Transport',
+    'Utilities',
+    'Mobile',
     'Self-care',
+    'Partying',
     'Presents',
     'Holidays',
     'Fees',
