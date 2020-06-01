@@ -26,7 +26,7 @@ function Balance(props) {
           <span className="balance__vertical-line" />
           <span className="balance__type">
             <p className="text-xs text-uppercase text-bold text-muted">Spendings</p>
-            <p className="text-md">{convertToString(spending) * -1}</p>
+            <p className="text-md">{convertToString(spending * -1)}</p>
           </span>
         </div>
       </div>
