@@ -323,7 +323,7 @@ class ExpenseTracker extends Component {
               - (balances.Expense ? balances.Expense * -1 : 0)
             }
             earnings={balances.Income ? balances.Income : 0}
-            spending={balances.Expense ? balances.Expense : 0}
+            spendings={balances.Expense ? balances.Expense * -1 : 0}
           />
         </header>
         <div className={filteredTransactions.length > defaultNumOfTrans ? 'show-transactions' : null}>

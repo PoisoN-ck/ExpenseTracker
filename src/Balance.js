@@ -2,9 +2,9 @@ import React from 'react';
 import PropTypes from 'prop-types';
 
 function Balance(props) {
-  const { balance, earnings, spending } = props;
+  const { balance, earnings, spendings } = props;
 
-  function convertToString(num) {
+  function convertAmountToString(num) {
     return num.toLocaleString();
   }
 
@@ -16,17 +16,17 @@ function Balance(props) {
         </div>
         <div className="balance__info padding-vertical-lg">
           <h2 className="text-xs text-uppercase text-bold text-muted">Current balance</h2>
-          <p className="balance__amount text-lg">{`${convertToString(balance)} HUF`}</p>
+          <p className="balance__amount text-lg">{`${convertAmountToString(balance)} HUF`}</p>
         </div>
         <div className="balance__breakdown">
           <span className="balance__type">
             <p className="text-xs text-uppercase text-bold text-muted">Earnings</p>
-            <p className="text-md">{convertToString(earnings)}</p>
+            <p className="text-md">{convertAmountToString(earnings)}</p>
           </span>
           <span className="balance__vertical-line" />
           <span className="balance__type">
             <p className="text-xs text-uppercase text-bold text-muted">Spendings</p>
-            <p className="text-md">{convertToString(spending * -1)}</p>
+            <p className="text-md">{convertAmountToString(spendings)}</p>
           </span>
         </div>
       </div>
@@ -37,7 +37,7 @@ function Balance(props) {
 Balance.propTypes = {
   balance: PropTypes.number.isRequired,
   earnings: PropTypes.number.isRequired,
-  spending: PropTypes.number.isRequired,
+  spendings: PropTypes.number.isRequired,
 };
 
 export default Balance;
