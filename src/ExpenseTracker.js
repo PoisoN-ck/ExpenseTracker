@@ -20,16 +20,16 @@ class ExpenseTracker extends Component {
   currentDate = new Date();
 
   categories = [
-    'Food',
+    'Groceries',
     'Clothes',
     'Transport',
     'Utilities',
     'Mobile',
+    'Eateries',
     'Self-care',
     'Partying',
     'Presents',
     'Holidays',
-    'Fees',
   ];
 
   datesFilters = [
