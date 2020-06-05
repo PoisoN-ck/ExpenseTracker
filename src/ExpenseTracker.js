@@ -24,7 +24,7 @@ class ExpenseTracker extends Component {
     'Clothes',
     'Transport',
     'Utilities',
-    'Mobile',
+    'Fees',
     'Eateries',
     'Self-care',
     'Partying',
