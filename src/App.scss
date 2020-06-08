@@ -339,18 +339,27 @@ body {
 // Transactions Component
 
 .transactions {
+  position: relative;
   flex-grow: 2;
   overflow-y: scroll;
 }
 
+.transactions__no-transactions {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translateY(-50%) translateX(-50%);
+  text-align: center;
+}
+
 .transactions__no-transactions-image {
-  padding: 0.5rem;
+  width: 100%;
   max-width: 8.5rem;
 }
 
 .transactions__no-transactions-text {
-  padding: 0.5rem 1rem;
   color: #B3B3B3;
+  margin-top: 1rem;
 }
 
 .transaction {

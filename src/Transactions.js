@@ -39,9 +39,9 @@ function Transactions(props) {
           </div>
         )
         : (
-          <div className="flex-center-column full-parent-height">
+          <div className="transactions__no-transactions container">
             <img className="transactions__no-transactions-image" src={noTransactions} alt="No transactions" />
-            <p className="transactions__no-transactions-text text-align-center">No transactions to show... Why not to file one?</p>
+            <p className="transactions__no-transactions-text">No transactions to show... Why not to file one?</p>
           </div>
         )}
     </section>
