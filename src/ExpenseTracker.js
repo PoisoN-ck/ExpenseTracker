@@ -194,9 +194,12 @@ class ExpenseTracker extends Component {
         const currentFilteredTransactions = this[`setFilterBy${capitalize(filterType)}`](filteredTransactions.length || isFiltered ? filteredTransactions : transactions, filter);
         filteredByType = [...currentFilteredTransactions, ...filteredByType];
       });
-      filteredTransactions = [...filteredByType].sort((a, b) => b.transDate - a.transDate);
+      filteredTransactions = [...filteredByType];
       isFiltered = true;
     });
+
+    filteredTransactions = filteredTransactions.sort((a, b) => b.transDate - a.transDate);
+    filteredTransactions = [...new Set(filteredTransactions)];
 
     this.setState({
       filteredTransactions: isFiltered ? filteredTransactions : transactions,

@@ -26,12 +26,12 @@ function Balance(props) {
         <div className="balance__breakdown">
           <span className="balance__type">
             <p className="text-xs text-uppercase text-bold text-muted">Earnings</p>
-            <p className="text-md">{`${showBalance ? convertAmountToString(earnings) : '••• •••'}`}</p>
+            <p className="text-md">{`${showBalance ? convertAmountToString(earnings) : '••• ••• •••'}`}</p>
           </span>
           <span className="balance__vertical-line" />
           <span className="balance__type">
             <p className="text-xs text-uppercase text-bold text-muted">Spendings</p>
-            <p className="text-md">{`${showBalance ? convertAmountToString(spendings) : '••• •••'}`}</p>
+            <p className="text-md">{`${showBalance ? convertAmountToString(spendings) : '••• ••• •••'}`}</p>
           </span>
         </div>
       </div>
