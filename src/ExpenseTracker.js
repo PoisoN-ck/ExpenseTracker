@@ -329,11 +329,13 @@ class ExpenseTracker extends Component {
             spendings={balances.Expense ? balances.Expense * -1 : 0}
           />
         </header>
+
         <div className={filteredTransactions.length > defaultNumOfTrans ? 'show-transactions' : null}>
           {filteredTransactions.length > defaultNumOfTrans
             ? <button type="button" className="button button--pure-white" onClick={toggleShowAllTransactions}>{isShowAllTransactions ? 'View less transactions' : 'View all transactions'}</button>
             : null}
         </div>
+
         <Transactions
           transactionsList={
             isShowAllTransactions
@@ -341,6 +343,7 @@ class ExpenseTracker extends Component {
               : filteredTransactions.slice(0, this.defaultNumOfTrans)
           }
         />
+
         <div className="bottom-bar">
           {isFilterApplied ? <button className="reset-filters-button button button--blue button--round" type="button" onClick={resetFilters}>Reset Filters</button> : null}
           {isVerified ? null

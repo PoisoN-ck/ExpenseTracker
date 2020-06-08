@@ -4,7 +4,7 @@
 
 $white: #FFFFFF;
 $main-color: #328DFF;
-$warning: #f71818;
+$warning: #F0435F;
 $success: #21ce32;
 
 // Instead of reset.css
@@ -156,6 +156,17 @@ body {
   justify-content: center;
 }
 
+.flex-center-column {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.full-parent-height {
+  height: 100%;
+}
+
 .loader {
   position: fixed;
   top: 0;
@@ -275,6 +286,10 @@ body {
   padding-top: 0.25rem;
 }
 
+.balance__amount:hover {
+  cursor: pointer;
+}
+
 .balance__breakdown {
   display: flex;
   justify-content: space-around;
@@ -326,6 +341,16 @@ body {
 .transactions {
   flex-grow: 2;
   overflow-y: scroll;
+}
+
+.transactions__no-transactions-image {
+  padding: 0.5rem;
+  max-width: 8.5rem;
+}
+
+.transactions__no-transactions-text {
+  padding: 0.5rem 1rem;
+  color: #B3B3B3;
 }
 
 .transaction {

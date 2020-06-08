@@ -1,5 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import noTransactions from './img/no-transactions.svg';
 
 function Transactions(props) {
   const { transactionsList } = props;
@@ -29,11 +30,20 @@ function Transactions(props) {
 
   return (
     <section className="transactions padding-vertical-sm">
-      <div className="container">
-        <ul>
-          {transactionsList.map(getTransaction)}
-        </ul>
-      </div>
+      {transactionsList.length
+        ? (
+          <div className="container">
+            <ul>
+              {transactionsList.map(getTransaction)}
+            </ul>
+          </div>
+        )
+        : (
+          <div className="flex-center-column full-parent-height">
+            <img className="transactions__no-transactions-image" src={noTransactions} alt="No transactions" />
+            <p className="transactions__no-transactions-text text-align-center">No transactions to show... Why not to file one?</p>
+          </div>
+        )}
     </section>
   )
 }
