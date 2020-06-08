@@ -199,6 +199,13 @@ body {
   text-decoration: underline;
 }
 
+.button-no-style {
+  border: none;
+  background: none;
+  color: white;
+  font-family: 'Open Sans', sans-serif;
+}
+
 @keyframes loading {
   from {transform: rotate(0deg);}
   to {transform: rotate(360deg);}
