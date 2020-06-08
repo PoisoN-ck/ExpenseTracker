@@ -198,7 +198,7 @@ class ExpenseTracker extends Component {
       isFiltered = true;
     });
 
-    filteredTransactions = filteredTransactions.sort((a, b) => b.transDate - a.transDate);
+    filteredTransactions = filteredTransactions.sort(sortTransactionsByDate);
     filteredTransactions = [...new Set(filteredTransactions)];
 
     this.setState({
