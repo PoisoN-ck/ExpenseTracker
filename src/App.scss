@@ -321,7 +321,7 @@ body {
 .action-bar__input-field {
   border: 1px solid #BFC5CE;
   border-radius: 1rem;
-  font-size: .875rem;
+  font-size: 16px; /* to avoid auto zoom on iOS */
   padding: .375rem .75rem;
   margin-right: .5rem;
   width: 70%;

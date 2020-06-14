@@ -22,14 +22,15 @@ class ExpenseTracker extends Component {
   categories = [
     'Groceries',
     'Clothes',
-    'Transport',
-    'Utilities',
-    'Fees',
     'Eateries',
+    'Entertainment',
+    'Utilities',
+    'Transport',
     'Self-care',
-    'Partying',
     'Presents',
     'Holidays',
+    'Fees',
+    'Appliance',
   ];
 
   datesFilters = [
