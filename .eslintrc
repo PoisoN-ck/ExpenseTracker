@@ -1,24 +1,35 @@
 {
-  "extends": [
-    "react-app",
-    "airbnb",
-    "plugin:jsx-a11y/recommended"
-  ],
-  "plugins": [
-    "jsx-a11y"
-  ],
-  "rules": {
-    "react/no-array-index-key": "off",
-    "arrow-body-style": "off",
-    "no-else-return": "off",
-    "class-methods-use-this": "off",
-    "import/prefer-default-export": "off",
-    "semi": 0,
-    "react/jsx-filename-extension": [
-      1,
-      { "extensions":
-          [".js", ".jsx"]
-      }
-    ]
-  }
+    "env": {
+        "browser": true,
+        "commonjs": true,
+        "es6": true,
+        "node": true
+    },
+    "plugins": ["react", "react-hooks", "jsx-a11y"],
+    "extends": [
+        "eslint:recommended",
+        "plugin:react/recommended",
+        "plugin:prettier/recommended"
+    ],
+    "parserOptions": {
+        "sourceType": "module",
+        "ecmaVersion": 2021
+    },
+    "settings": {
+        "react": {
+            "version": "detect"
+        }
+    },
+    "rules": {
+        "semi": 1,
+        "react/jsx-filename-extension": [
+            1,
+            {
+                "extensions": [".js", ".jsx"]
+            }
+        ],
+        "react/jsx-indent": ["error", 4],
+        "indent": ["error", 4],
+        "react/jsx-indent-props": ["error", 4]
+    }
 }
