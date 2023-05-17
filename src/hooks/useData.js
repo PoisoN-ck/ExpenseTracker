@@ -76,32 +76,59 @@ const useData = (isVerified) => {
         async (transaction) => {
             if (!transaction.value) return;
 
-            resetMessages();
+            const connectionRef = ref(db, '.info/connected');
+
+            let isFailedAttempt = false;
 
             try {
-                if (isVerified) {
-                    setIsLoading(true);
-                    set(ref(db, `${auth.currentUser?.uid}/transactionsList`), [
-                        transaction,
-                        ...transactions,
-                    ])
-                        .then(() => {
-                            setSuccessMessage({ code: 'added-transaction' });
-                        })
-                        .catch((error) => {
-                            setDataError(error);
-                        })
-                        .finally(() => {
-                            setIsLoading(false);
-                        });
-                } else {
-                    setDataError({ code: 'no-data-saved' });
-                    setTransactions([transaction, ...transactions]);
-                }
+                onValue(connectionRef, (snapshot) => {
+                    const isNetworkExist = snapshot.val();
+
+                    if (!isNetworkExist) {
+                        isFailedAttempt = true;
+                        setDataError({ code: 'no-network' });
+                        return;
+                    }
+
+                    resetMessages();
+
+                    // Making sure that transactions
+                    // are not registred in offline mode
+                    if (isFailedAttempt) return;
+
+                    try {
+                        if (isVerified) {
+                            setIsLoading(true);
+                            set(
+                                ref(
+                                    db,
+                                    `${auth.currentUser?.uid}/transactionsList`,
+                                ),
+                                [transaction, ...transactions],
+                            )
+                                .then(() => {
+                                    setSuccessMessage({
+                                        code: 'added-transaction',
+                                    });
+                                })
+                                .catch((error) => {
+                                    setDataError(error);
+                                })
+                                .finally(() => {
+                                    setIsLoading(false);
+                                });
+                        } else {
+                            setDataError({ code: 'no-data-saved' });
+                            setTransactions([transaction, ...transactions]);
+                        }
+                    } catch (error) {
+                        setDataError(error);
+                    } finally {
+                        setIsLoading(false);
+                    }
+                });
             } catch (error) {
                 setDataError(error);
-            } finally {
-                setIsLoading(false);
             }
         },
         [successMessage, transactions],

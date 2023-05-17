@@ -73,6 +73,8 @@ export const translateMessage = (message) => {
             return 'Please enter transaction amount.';
         case 'no-data-saved':
             return 'No data was saved. Verify your email.';
+        case 'no-network':
+            return 'Network issues. Transactions will not be saved.';
 
         default:
             return 'Something went wrong. Please try again.';
