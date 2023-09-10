@@ -29,7 +29,6 @@ const ExpenseTracker = ({ isVerified, logOut }) => {
         resetMessages,
         sendVerificationEmail,
         setDataError,
-        testMessage,
     } = useData(isVerified);
 
     useEffect(() => {
@@ -76,8 +75,6 @@ const ExpenseTracker = ({ isVerified, logOut }) => {
                 shownTransactions={shownTransactions}
                 transactions={transactions}
             />
-
-            <p>{testMessage}</p>
 
             <AllTransactionsToggler
                 isShownAllTransactions={isShownAllTransactions}
