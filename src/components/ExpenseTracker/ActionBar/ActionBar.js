@@ -10,8 +10,6 @@ const ActionBar = ({ addTransaction, setError }) => {
     const [isModalOpen, setIsModalOpen] = useState(false);
 
     const handleOpenModal = () => {
-        // resetMessages();
-
         if (!transactionAmount) {
             setError({ code: 'empty-value' });
             return;

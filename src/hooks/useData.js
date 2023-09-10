@@ -6,6 +6,7 @@ import { sendEmailVerification } from 'firebase/auth';
 import { sortTransactionsByDate } from '../utils/utils';
 
 const useData = (isVerified) => {
+    const [testMessage, setTestMessage] = useState('');
     const [transactions, setTransactions] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [dataError, setDataError] = useState(null);
@@ -89,6 +90,7 @@ const useData = (isVerified) => {
                             setSuccessMessage({ code: 'added-transaction' });
                         })
                         .catch((error) => {
+                            setTestMessage(error.toString());
                             setDataError(error);
                         })
                         .finally(() => {
@@ -99,6 +101,7 @@ const useData = (isVerified) => {
                     setTransactions([transaction, ...transactions]);
                 }
             } catch (error) {
+                setTestMessage(error.toString());
                 setDataError(error);
             } finally {
                 setIsLoading(false);
@@ -139,6 +142,7 @@ const useData = (isVerified) => {
         resetMessages,
         sendVerificationEmail,
         setDataError,
+        testMessage,
     };
 };
 
