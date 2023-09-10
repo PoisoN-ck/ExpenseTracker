@@ -51,11 +51,13 @@ export const categories = [
     'Eateries',
     'Entertainment',
     'Utilities',
+    'School',
     'Transport',
     'Self-care',
     'Presents',
     'Holidays',
     'Fees',
+    'Pets',
     'Appliance',
 ];
 
