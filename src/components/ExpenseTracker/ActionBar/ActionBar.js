@@ -5,7 +5,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { categories } from '../../../constants/constants';
 import Modal from '../../common/Modal';
 
-const ActionBar = ({ addTransaction, setError }) => {
+const ActionBar = ({ addTransaction, setError, isDisabled }) => {
     const [transactionAmount, setTransactionAmount] = useState('');
     const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -80,6 +80,7 @@ const ActionBar = ({ addTransaction, setError }) => {
                     placeholder="Enter the amount..."
                 />
                 <button
+                    disabled={isDisabled}
                     className="action-bar__button button button--round button--blue"
                     type="button"
                     data-modal="addTransactionModal"
@@ -102,8 +103,8 @@ const ActionBar = ({ addTransaction, setError }) => {
 
 ActionBar.propTypes = {
     addTransaction: PropTypes.func.isRequired,
-    resetMessages: PropTypes.func.isRequired,
     setError: PropTypes.func.isRequired,
+    isDisabled: PropTypes.bool,
 };
 
 export default ActionBar;
