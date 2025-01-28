@@ -106,8 +106,9 @@ const ExpenseTracker = ({ isVerified, logOut }) => {
             />
 
             <ActionBar
-                className="action-bar"
                 addTransaction={addTransaction}
+                className="action-bar"
+                isDisabled={isLoading}
                 resetMessages={resetMessages}
                 setError={setDataError}
             />

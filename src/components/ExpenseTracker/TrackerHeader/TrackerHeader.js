@@ -40,16 +40,12 @@ const TrackerHeader = ({
                     className="upper-menu__sign-out upper-menu__button"
                     type="button"
                     onClick={handleSignOut}
-                >
-                    {' '}
-                </button>
+                />
                 <button
                     className="upper-menu__filter-trigger upper-menu__button"
                     type="button"
                     onClick={handleOpenFiltersModal}
-                >
-                    {' '}
-                </button>
+                />
                 {isFilterModalOpen && (
                     <FiltersModal
                         filters={filters}
