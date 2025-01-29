@@ -28,10 +28,7 @@ const UserSettings = ({
         );
 
         if (selectedUser) {
-            sessionStorage.setItem(
-                'userSettings',
-                JSON.stringify(selectedUser),
-            );
+            localStorage.setItem('userSettings', JSON.stringify(selectedUser));
 
             setChosenUser(selectedUser);
         }
