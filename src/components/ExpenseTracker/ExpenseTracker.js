@@ -52,7 +52,7 @@ const ExpenseTracker = ({ isVerified, logOut }) => {
     }, [dataError, successMessage]);
 
     useEffect(() => {
-        const previouslySelectedUser = sessionStorage.getItem('userSettings');
+        const previouslySelectedUser = localStorage.getItem('userSettings');
 
         if (previouslySelectedUser) {
             const selectedUser = JSON.parse(previouslySelectedUser);
