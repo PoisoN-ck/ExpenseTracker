@@ -81,6 +81,8 @@ export const DEFAULT_LOGIN_DETAILS = {
     confirmPassword: '',
 };
 
+export const MAIN_COLOR = '#328dff';
+
 export default {
     transactionTypes,
     datesFilters,
@@ -89,4 +91,5 @@ export default {
     FilterTypes,
     DEFAULT_FILTERS_STATE,
     DEFAULT_LOGIN_DETAILS,
+    MAIN_COLOR,
 };

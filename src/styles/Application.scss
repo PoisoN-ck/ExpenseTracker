@@ -21,6 +21,10 @@ body {
     color: #000000;
 }
 
+ul {
+    list-style-type: none;
+}
+
 // General classes
 
 .main-color {
@@ -37,6 +41,12 @@ body {
     width: 90%;
     max-width: 400px;
     margin: 0 auto;
+}
+
+.transactions-container {
+    @media (max-width: 500px) {
+        width: 100%;
+    }
 }
 
 .button {
@@ -99,6 +109,10 @@ body {
     border: none;
     font-size: 1rem;
     background: none;
+}
+
+.button-big-text {
+    font-size: 1rem;
 }
 
 .text-xs {
@@ -264,13 +278,19 @@ body {
     cursor: pointer;
 }
 
+.upper-menu__settings-trigger {
+    left: 0.5rem;
+    background-image: url('../img/settings.svg');
+}
+
 .upper-menu__filter-trigger {
     right: 0.5rem;
     background-image: url('../img/filter.svg');
 }
 
 .upper-menu__sign-out {
-    left: 0.5rem;
+    left: 0.75rem;
+    top: 0.6rem;
     background-image: url('../img/signout.svg');
 }
 
@@ -334,7 +354,7 @@ body {
     justify-content: center;
 }
 
-.action-bar__input-field {
+.input-field {
     border: 1px solid #bfc5ce;
     border-radius: 1rem;
     font-size: 16px;
@@ -344,7 +364,7 @@ body {
     width: 70%;
 }
 
-.action-bar__input-field:focus {
+.input-field:focus {
     outline: none;
 }
 
@@ -387,6 +407,7 @@ body {
 .transaction {
     list-style: none;
     border-bottom: 1px solid rgba(209, 209, 209, 0.4);
+    padding: 0.5rem 0.75rem;
 }
 
 .transaction:last-child {
@@ -582,4 +603,175 @@ body {
 .login-container__error {
     font-weight: 700;
     min-height: 3rem;
+}
+
+// Side menu
+.menu {
+    display: flex;
+    position: fixed;
+    width: 25%;
+    inset: 0;
+    background-color: $white;
+    z-index: 15;
+    transition: 0.3s;
+    transform: translateX(-100%);
+    border-right: 5px solid $main-color;
+
+    @media (max-width: 1200px) {
+        width: 35%;
+    }
+
+    @media (max-width: 900px) {
+        width: 45%;
+    }
+
+    @media (max-width: 600px) {
+        width: 100%;
+        border-right: none;
+    }
+}
+
+.menu--shown {
+    transform: translateX(0);
+}
+
+.menu-list {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex-wrap: wrap;
+    padding: 3rem 0.75rem 1rem;
+}
+
+.menu-item:not(:last-child) {
+    width: 100%;
+    text-align: center;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid rgba(209, 209, 209, 0.6);
+}
+
+.menu-subsection {
+    margin-top: 0.5rem;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.close-button-menu {
+    top: 0.5rem;
+    right: 0.5rem;
+    font-size: 0.75rem;
+}
+
+.menu-label {
+    font-size: 0.875rem;
+}
+
+.user-settings-section {
+    transition: height 0.15s ease;
+    height: 0;
+    overflow: hidden;
+}
+
+.section-shown {
+    height: 100%;
+}
+
+.user-settings__label {
+    color: #808080;
+    margin: 0 0 0.5rem 0;
+}
+
+.user-settings__user-select-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.user-settings__user-select {
+    font-weight: 600;
+}
+
+.user-settings-container {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    font-weight: 600;
+    margin: 0rem 0.75rem 0.5rem;
+    width: 70%;
+
+    @media (max-width: 1200px) {
+        width: 80%;
+    }
+
+    @media (max-width: 600px) {
+        width: 50%;
+    }
+
+    @media (max-width: 500px) {
+        width: 65%;
+    }
+}
+
+.user-settings__user-input-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.75rem;
+
+    @media (max-width: 600px) {
+        gap: 0.75rem;
+    }
+}
+
+.user-settings__userName-input {
+    font-size: 0.75rem;
+    padding: 0.375rem 0.75rem;
+    margin-right: 0;
+    width: 90%;
+
+    @media (max-width: 1200px) {
+        width: 80%;
+    }
+
+    @media (max-width: 600px) {
+        width: 85%;
+    }
+}
+
+.user-settings__userName-color {
+    width: 50%;
+}
+
+input[type='color'] {
+    appearance: none;
+    -moz-appearance: none;
+    -webkit-appearance: none;
+    background: none;
+    border: 1px solid #cbcbcb;
+    border-radius: 15px;
+    cursor: pointer;
+    height: 1.65rem;
+    padding: 0;
+    width: 1.7rem;
+    vertical-align: middle;
+}
+
+input[type='color']:disabled {
+    cursor: default;
+}
+
+::-webkit-color-swatch-wrapper {
+    padding: 0;
+}
+
+::-webkit-color-swatch {
+    border: 0;
+    border-radius: 0;
+}
+
+.full-width {
+    width: 100%;
 }

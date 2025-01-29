@@ -3,9 +3,10 @@ import React, { useCallback, useMemo, useState } from 'react';
 import PropTypes from 'prop-types';
 import { v4 as uuidv4 } from 'uuid';
 import { categories } from '../../../constants/constants';
+import { UserSetting } from '../../../types';
 import Modal from '../../common/Modal';
 
-const ActionBar = ({ addTransaction, setError, isDisabled }) => {
+const ActionBar = ({ addTransaction, setError, isDisabled, chosenUser }) => {
     const [transactionAmount, setTransactionAmount] = useState('');
     const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -45,6 +46,7 @@ const ActionBar = ({ addTransaction, setError, isDisabled }) => {
                 transType: isProfit ? 'Income' : 'Expense',
                 transDate: new Date().getTime(),
                 id: uuidv4(),
+                ...(chosenUser?.id ? { userId: chosenUser?.id } : {}),
             };
 
             addTransaction(transaction);
@@ -74,7 +76,7 @@ const ActionBar = ({ addTransaction, setError, isDisabled }) => {
         <section className="action-bar padding-vertical-md">
             <div className="flex-center container">
                 <input
-                    className="action-bar__input-field"
+                    className="input-field"
                     onChange={handleAmountChange}
                     value={transactionAmount}
                     placeholder="Enter the amount..."
@@ -105,6 +107,7 @@ ActionBar.propTypes = {
     addTransaction: PropTypes.func.isRequired,
     setError: PropTypes.func.isRequired,
     isDisabled: PropTypes.bool,
+    chosenUser: UserSetting,
 };
 
 export default ActionBar;

@@ -1,19 +1,18 @@
 import React, { useMemo, useState } from 'react';
 
 import PropTypes from 'prop-types';
-import { Filter } from '../../../types/Filter';
-import { Transaction } from '../../../types/Transaction';
+import { Filter, Transaction } from '../../../types';
 import Balance from './Balance';
 import FiltersModal from './FiltersModal';
 
 const TrackerHeader = ({
     filters,
-    handleSignOut,
     setFilters,
     setIsFilterApplied,
     setFilteredTransactions,
     shownTransactions,
     transactions,
+    setIsMenuShown,
 }) => {
     const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
 
@@ -32,14 +31,15 @@ const TrackerHeader = ({
 
     const handleOpenFiltersModal = () => setIsFilterModalOpen(true);
     const handleCloseFiltersModal = () => setIsFilterModalOpen(false);
+    const handleMenuShown = () => setIsMenuShown((prevState) => !prevState);
 
     return (
         <header>
             <div className="upper-menu container">
                 <button
-                    className="upper-menu__sign-out upper-menu__button"
+                    className="upper-menu__settings-trigger upper-menu__button"
                     type="button"
-                    onClick={handleSignOut}
+                    onClick={handleMenuShown}
                 />
                 <button
                     className="upper-menu__filter-trigger upper-menu__button"
@@ -71,12 +71,12 @@ const TrackerHeader = ({
 
 TrackerHeader.propTypes = {
     filters: PropTypes.shape(Filter).isRequired,
-    handleSignOut: PropTypes.func.isRequired,
     setFilters: PropTypes.func.isRequired,
     setIsFilterApplied: PropTypes.func.isRequired,
     setFilteredTransactions: PropTypes.func.isRequired,
     shownTransactions: PropTypes.arrayOf(Transaction).isRequired,
     transactions: PropTypes.arrayOf(Transaction).isRequired,
+    setIsMenuShown: PropTypes.func.isRequired,
 };
 
 export default TrackerHeader;

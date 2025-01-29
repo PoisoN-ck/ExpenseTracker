@@ -9,6 +9,7 @@ import PropTypes from 'prop-types';
 import useData from '../../hooks/useData';
 import ActionBar from './ActionBar';
 import AllTransactionsToggler from './AllTransactionsToggler';
+import SideMenu from './SideMenu';
 import TrackerHeader from './TrackerHeader';
 import TrackerStatus from './TrackerStatus';
 import Transactions from './Transactions';
@@ -19,16 +20,20 @@ const ExpenseTracker = ({ isVerified, logOut }) => {
     const [filters, setFilters] = useState(DEFAULT_FILTERS_STATE);
     const [isFilterApplied, setIsFilterApplied] = useState(false);
     const [messageText, setMessageText] = useState(null);
+    const [isMenuShown, setIsMenuShown] = useState(false);
+    const [chosenUser, setChosenUser] = useState({ name: '', color: '' });
 
     const {
         dataError,
         isLoading,
         successMessage,
         transactions,
+        usersSettings,
         addTransaction,
         resetMessages,
         sendVerificationEmail,
         setDataError,
+        addUserSettings,
     } = useData(isVerified);
 
     useEffect(() => {
@@ -45,6 +50,18 @@ const ExpenseTracker = ({ isVerified, logOut }) => {
 
         setMessageText(text);
     }, [dataError, successMessage]);
+
+    useEffect(() => {
+        const previouslySelectedUser = sessionStorage.getItem('userSettings');
+
+        if (previouslySelectedUser) {
+            const selectedUser = JSON.parse(previouslySelectedUser);
+
+            setChosenUser(selectedUser);
+
+            return;
+        }
+    }, []);
 
     const shownTransactions = useMemo(() => {
         return isFilterApplied
@@ -66,14 +83,24 @@ const ExpenseTracker = ({ isVerified, logOut }) => {
 
     return (
         <>
+            <SideMenu
+                isShown={isMenuShown}
+                setIsShown={setIsMenuShown}
+                addUserSettings={addUserSettings}
+                usersSettings={usersSettings}
+                chosenUser={chosenUser}
+                setChosenUser={setChosenUser}
+                handleSignOut={handleSignOut}
+            />
+
             <TrackerHeader
                 filters={filters}
-                handleSignOut={handleSignOut}
                 setFilters={setFilters}
                 setIsFilterApplied={setIsFilterApplied}
                 setFilteredTransactions={setFilteredTransactions}
                 shownTransactions={shownTransactions}
                 transactions={transactions}
+                setIsMenuShown={setIsMenuShown}
             />
 
             <AllTransactionsToggler
@@ -83,6 +110,7 @@ const ExpenseTracker = ({ isVerified, logOut }) => {
             />
 
             <Transactions
+                usersSettings={usersSettings}
                 isLoading={isLoading}
                 transactions={
                     isShownAllTransactions
@@ -109,8 +137,8 @@ const ExpenseTracker = ({ isVerified, logOut }) => {
                 addTransaction={addTransaction}
                 className="action-bar"
                 isDisabled={isLoading}
-                resetMessages={resetMessages}
                 setError={setDataError}
+                chosenUser={chosenUser}
             />
         </>
     );

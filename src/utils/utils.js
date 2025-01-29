@@ -75,6 +75,10 @@ export const translateMessage = (message) => {
             return 'No data was saved. Verify your email.';
         case 'no-network':
             return 'Network issues. Transactions will not be saved.';
+        case 'no-network-users-settings':
+            return 'Network issues. User settings will not be saved.';
+        case 'added-user-settings':
+            return 'User settings has been added successfully.';
 
         default:
             return 'Something went wrong. Please try again.';

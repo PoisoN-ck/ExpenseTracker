@@ -2,19 +2,29 @@ import React, { useMemo } from 'react';
 
 import PropTypes from 'prop-types';
 import noTransactions from '../../../img/no-transactions.svg';
+import { UserSetting } from '../../../types';
 import { convertToString } from '../../../utils';
 import Loader from '../../common/Loader/Loader';
 
-const Transactions = ({ isLoading, transactions }) => {
+const Transactions = ({ isLoading, transactions, usersSettings }) => {
     const transactionsList = useMemo(
         () =>
-            transactions.map((transaction, index) => {
-                const { value, category, transDate } = transaction;
+            transactions.map((transaction) => {
+                const { value, category, transDate, userId, id } = transaction;
 
                 return (
                     <li
-                        className="transactions__transaction transaction padding-vertical-sm"
-                        key={`transaction_${index}`}
+                        className="transactions__transaction transaction"
+                        key={id}
+                        style={{
+                            backgroundColor:
+                                (userId &&
+                                    usersSettings.find(
+                                        (userSetting) =>
+                                            userSetting?.id === userId,
+                                    )?.color) ||
+                                'none',
+                        }}
                     >
                         <p className="transaction__header text-sm">
                             <span>{category}</span>
@@ -33,7 +43,7 @@ const Transactions = ({ isLoading, transactions }) => {
         <section className="transactions padding-vertical-sm">
             <Loader isLoading={isLoading}>
                 {transactionsList?.length ? (
-                    <div className="container">
+                    <div className="container transactions-container">
                         <ul>{transactionsList}</ul>
                     </div>
                 ) : (
@@ -63,6 +73,7 @@ const transaction = {
 Transactions.propTypes = {
     isLoading: PropTypes.bool.isRequired,
     transactions: PropTypes.arrayOf(PropTypes.shape(transaction)).isRequired,
+    usersSettings: PropTypes.arrayOf(UserSetting),
 };
 
 export default Transactions;
