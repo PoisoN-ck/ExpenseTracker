@@ -3,11 +3,11 @@ import {
     categories,
     datesFilters,
     transactionTypes as typeFilters,
-} from '../../../../constants/constants';
+} from '../../../../constants';
 
 import PropTypes from 'prop-types';
 import React from 'react';
-import { filterTransactions } from '../../../../utils/utils';
+import { filterTransactions } from '../../../../utils';
 import Modal from '../../../common/Modal/Modal';
 import FilterGroup from './FilterGroup';
 

@@ -2,8 +2,9 @@ import React, { useCallback, useMemo, useState } from 'react';
 
 import PropTypes from 'prop-types';
 import { v4 as uuidv4 } from 'uuid';
-import { categories } from '../../../constants/constants';
+import { categories } from '../../../constants';
 import { UserSetting } from '../../../types';
+import AmountInput from '../../common/AmountInput';
 import Modal from '../../common/Modal';
 
 const ActionBar = ({ addTransaction, setError, isDisabled, chosenUser }) => {
@@ -21,19 +22,7 @@ const ActionBar = ({ addTransaction, setError, isDisabled, chosenUser }) => {
 
     const handleCloseModal = () => setIsModalOpen(false);
 
-    const handleAmountChange = (event) => {
-        const { value } = event.target;
-        const convertedValue = Number(value);
-
-        if (Number.isNaN(convertedValue)) return;
-
-        if (convertedValue < 1) {
-            setTransactionAmount('');
-            return;
-        }
-
-        setTransactionAmount(convertedValue);
-    };
+    const handleAmountChange = (value) => setTransactionAmount(value);
 
     const handleAddTransaction = useCallback(
         (event) => {
@@ -75,9 +64,8 @@ const ActionBar = ({ addTransaction, setError, isDisabled, chosenUser }) => {
     return (
         <section className="action-bar padding-vertical-md">
             <div className="flex-center container">
-                <input
-                    className="input-field"
-                    onChange={handleAmountChange}
+                <AmountInput
+                    handleChange={handleAmountChange}
                     value={transactionAmount}
                     placeholder="Enter the amount..."
                 />

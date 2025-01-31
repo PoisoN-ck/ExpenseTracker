@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { MAIN_COLOR } from '../../../../constants';
 import { UserSetting } from '../../../../types';
+import Dropdown from '../../../common/Dropdown';
 
 const UserSettings = ({
     usersSettings,
@@ -50,7 +51,11 @@ const UserSettings = ({
     };
 
     return (
-        <div className={`user-settings-section ${isShown && 'section-shown'}`}>
+        <div
+            className={`menu-section ${
+                isShown && 'section-shown'
+            } flex-column flex-align-center`}
+        >
             <div className="menu-subsection">
                 <label
                     className="menu-label user-settings__label"
@@ -61,18 +66,14 @@ const UserSettings = ({
                 {/* TODO: Move to a separate common component */}
                 <div className="user-settings-container">
                     <div className="user-settings__user-input-container">
-                        <select
-                            className={`${
-                                chosenUser.color ? '' : 'full-width'
-                            } button--white button--round user-settings__user-select user-settings__userName-input`}
-                            name="userNames"
-                            id="userNames"
-                            onChange={handleUserSelect}
-                            value={chosenUser?.id}
-                        >
-                            <option>Select</option>
-                            {availableUsersOptions}
-                        </select>
+                        <Dropdown
+                            style={`${chosenUser.color ? '' : 'full-width'}`}
+                            isRounded
+                            options={availableUsersOptions}
+                            size="sm"
+                            selectedValue={chosenUser?.id}
+                            handleSelect={handleUserSelect}
+                        />
                         {chosenUser.color && (
                             <input
                                 className="user-settings__userName-color"
@@ -98,7 +99,7 @@ const UserSettings = ({
                 <div className="user-settings-container">
                     <div className="user-settings__user-input-container">
                         <input
-                            className="input-field user-settings__userName-input"
+                            className="input-field input-field--sm width-90"
                             name="newUserName"
                             id="newUserName"
                             value={newUserName}

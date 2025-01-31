@@ -14,6 +14,8 @@ import TrackerHeader from './TrackerHeader';
 import TrackerStatus from './TrackerStatus';
 import Transactions from './Transactions';
 
+const DEFAULT_USER_STATE = { name: '', color: '', id: '' };
+
 const ExpenseTracker = ({ isVerified, logOut }) => {
     const [isShownAllTransactions, setIsShownAllTransactions] = useState(false);
     const [filteredTransactions, setFilteredTransactions] = useState([]);
@@ -21,7 +23,7 @@ const ExpenseTracker = ({ isVerified, logOut }) => {
     const [isFilterApplied, setIsFilterApplied] = useState(false);
     const [messageText, setMessageText] = useState(null);
     const [isMenuShown, setIsMenuShown] = useState(false);
-    const [chosenUser, setChosenUser] = useState({ name: '', color: '' });
+    const [chosenUser, setChosenUser] = useState(DEFAULT_USER_STATE);
 
     const {
         dataError,

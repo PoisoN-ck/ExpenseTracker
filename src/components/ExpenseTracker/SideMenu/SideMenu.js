@@ -58,7 +58,7 @@ const SideMenu = ({
                     >
                         Constant expenses
                     </button>
-                    {isExpensesShown && <ConstantExpenses />}
+                    <ConstantExpenses isShown={isExpensesShown} />
                 </li>
             </ul>
         </div>

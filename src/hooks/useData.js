@@ -3,7 +3,7 @@ import { useCallback, useEffect, useState } from 'react';
 import db, { auth } from '../services/db';
 
 import { sendEmailVerification } from 'firebase/auth';
-import { sortTransactionsByDate } from '../utils/utils';
+import { sortTransactionsByDate } from '../utils';
 
 const useData = (isVerified) => {
     const [transactions, setTransactions] = useState([]);

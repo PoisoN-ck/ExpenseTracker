@@ -22,4 +22,13 @@ export const Transaction = PropTypes.shape({
 export const UserSetting = PropTypes.shape({
     name: PropTypes.string.isRequired,
     color: PropTypes.string.isRequired,
+    id: PropTypes.string.isRequired,
+});
+
+export const ConstantExpense = PropTypes.shape({
+    name: PropTypes.string.isRequired,
+    amount: PropTypes.oneOfType([PropTypes.number, PropTypes.string])
+        .isRequired,
+    category: PropTypes.string.isRequired,
+    id: PropTypes.string.isRequired,
 });
