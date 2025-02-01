@@ -88,11 +88,9 @@ const UserSettings = ({
                         )}
                     </div>
                 </div>
-            </div>
-            <div className="menu-subsection padding-vertical-md">
-                <h3 className="text-md text-uppercase text-muted">or</h3>
-            </div>
-            <div className="menu-subsection">
+                <h3 className="text-md text-uppercase text-muted padding-vertical-md">
+                    or
+                </h3>
                 <label
                     className="menu-label user-settings__label"
                     htmlFor="newUserName"
@@ -125,9 +123,7 @@ const UserSettings = ({
                         Add new user
                     </button>
                 </div>
-            </div>
-            <div className="menu-subsection">
-                <h3 className="text-sm text-muted">
+                <h3 className="text-sm text-muted text-center">
                     *To be able to differentiate your transactions by color
                 </h3>
             </div>

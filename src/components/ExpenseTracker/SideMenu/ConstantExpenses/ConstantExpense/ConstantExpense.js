@@ -59,8 +59,8 @@ const ConstantExpense = ({
     ));
 
     return (
-        <div className="full-width">
-            <div className="flex-center gap-10 margin-vertical-sm">
+        <div className="flex-center-column full-width">
+            <div className="flex-center gap-10 margin-vertical-sm full-width">
                 <TextInput
                     isDisabled={isDisabled}
                     size="sm"
