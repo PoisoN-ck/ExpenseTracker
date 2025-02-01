@@ -30,5 +30,5 @@ export const ConstantExpense = PropTypes.shape({
     amount: PropTypes.oneOfType([PropTypes.number, PropTypes.string])
         .isRequired,
     category: PropTypes.string.isRequired,
-    id: PropTypes.string.isRequired,
+    id: PropTypes.string,
 });

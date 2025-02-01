@@ -1,5 +1,7 @@
 import PropTypes from 'prop-types';
-import React, { useState } from 'react';
+import React, { useCallback, useState } from 'react';
+import { v4 as uuidv4 } from 'uuid';
+import { ConstantExpense as ConstantExpenseType } from '../../../../types';
 import Button from '../../../common/Button/Button';
 import ConstantExpense from './ConstantExpense';
 
@@ -11,6 +13,7 @@ const DEFAULT_CONSTANT_EXPENSE_STATE = {
 };
 
 const ConstantExpenses = ({
+    constantExpenses,
     isShown,
     onAddExpense,
     // onEditExpense,
@@ -19,8 +22,61 @@ const ConstantExpenses = ({
     const [newConstantExpense, setNewConstantExpense] = useState(
         DEFAULT_CONSTANT_EXPENSE_STATE,
     );
-    const handleAddConstantExpense = async () =>
-        await onAddExpense(newConstantExpense);
+    const [edittedExpenses, setEdittedExpenses] = useState([]);
+
+    const isConstantExpensesExist = constantExpenses.length > 0;
+
+    const handleAddConstantExpense = async () => {
+        const newExpenseWithId = {
+            ...newConstantExpense,
+            id: uuidv4(),
+        };
+        const isExpenseAdded = await onAddExpense(newExpenseWithId);
+
+        if (isExpenseAdded) {
+            setNewConstantExpense(DEFAULT_CONSTANT_EXPENSE_STATE);
+        }
+    };
+
+    const modifyChosenExpenseData = useCallback(
+        (edittedExpense) => {
+            const currentExpense = constantExpenses.find(
+                (constantExpene) => constantExpene.id === edittedExpense.id,
+            );
+
+            if (currentExpense) {
+                setEdittedExpenses((edittedExpensesState) => {
+                    const stateWithoutOldExpense = edittedExpensesState.filter(
+                        (expense) => expense.id !== edittedExpense.id,
+                    );
+
+                    return [...stateWithoutOldExpense, edittedExpense];
+                });
+            }
+        },
+        [constantExpenses, setEdittedExpenses],
+    );
+
+    const editExpense = (edittedExpense) =>
+        setEdittedExpenses((edittedExpensesState) => [
+            ...edittedExpensesState,
+            edittedExpense,
+        ]);
+
+    const undoEditExpense = (edittedExpense) => {
+        setEdittedExpenses((edittedExpensesState) => {
+            const stateWithoutOldExpense = edittedExpensesState.filter(
+                (expense) => expense.id !== edittedExpense.id,
+            );
+
+            return stateWithoutOldExpense;
+        });
+    };
+
+    const isBeingCurrentlyEditted = (expenseId) =>
+        !!edittedExpenses.find(
+            (edittedExpense) => edittedExpense.id === expenseId,
+        );
 
     return (
         <div
@@ -36,24 +92,61 @@ const ConstantExpenses = ({
                     />
                     <Button
                         text="Add expense"
-                        style="text-sm full-width"
+                        style="full-width"
                         isRounded
                         handleClick={handleAddConstantExpense}
                     />
                 </div>
-                <h4 className="text-muted margin-bottom-md">
-                    Existing Constant Expenses
-                </h4>
-                <ul className="flex-column">
-                    <li>{/* <ConstantExpense /> */}</li>
-                    <li>{/* <ConstantExpense /> */}</li>
-                </ul>
+                {isConstantExpensesExist && (
+                    <>
+                        <h4 className="text-muted margin-bottom-md">
+                            Existing Constant Expenses
+                        </h4>
+                        <ul className="flex-column">
+                            {constantExpenses.map((constantExpense) => {
+                                const isCurrentlyBeingEditted =
+                                    isBeingCurrentlyEditted(constantExpense.id);
+                                const isDisabled = !isCurrentlyBeingEditted;
+
+                                return (
+                                    <li key={constantExpense.id}>
+                                        <ConstantExpense
+                                            isDisabled={isDisabled}
+                                            constantExpense={constantExpense}
+                                            setConstantExpense={
+                                                modifyChosenExpenseData
+                                            }
+                                        />
+                                        {isCurrentlyBeingEditted ? (
+                                            <Button
+                                                text="Cancel"
+                                                handleClick={() =>
+                                                    undoEditExpense(
+                                                        constantExpense,
+                                                    )
+                                                }
+                                            />
+                                        ) : (
+                                            <Button
+                                                text="Edit"
+                                                handleClick={() =>
+                                                    editExpense(constantExpense)
+                                                }
+                                            />
+                                        )}
+                                    </li>
+                                );
+                            })}
+                        </ul>
+                    </>
+                )}
             </div>
         </div>
     );
 };
 
 ConstantExpenses.propTypes = {
+    constantExpenses: PropTypes.arrayOf(ConstantExpenseType),
     isShown: PropTypes.bool.isRequired,
     onAddExpense: PropTypes.func,
     onEditExpense: PropTypes.func,

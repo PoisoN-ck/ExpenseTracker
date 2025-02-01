@@ -4,6 +4,7 @@ import { INPUT_SIZE_DICT } from '../../../constants';
 
 // TODO: All inputs in the to be replaced with this component!
 const TextInput = ({
+    isDisabled,
     id,
     label,
     labelStyle,
@@ -22,6 +23,7 @@ const TextInput = ({
                 </label>
             )}
             <input
+                disabled={isDisabled}
                 className={`input-field ${style} ${INPUT_SIZE_DICT[size]}`}
                 name={name}
                 id={id}
@@ -34,6 +36,7 @@ const TextInput = ({
 };
 
 TextInput.propTypes = {
+    isDisabled: PropTypes.bool,
     id: PropTypes.string,
     label: PropTypes.string,
     labelStyle: PropTypes.string,

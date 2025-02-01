@@ -43,11 +43,13 @@ const UserSettings = ({
             id: userId,
         };
 
-        await addUserSettings(newUser);
+        const isUserSettingsAdded = await addUserSettings(newUser);
 
-        setChosenUser(newUser);
-        setNewUserName('');
-        setNewUserColor(MAIN_COLOR);
+        if (isUserSettingsAdded) {
+            setChosenUser(newUser);
+            setNewUserName('');
+            setNewUserColor(MAIN_COLOR);
+        }
     };
 
     return (
@@ -67,7 +69,9 @@ const UserSettings = ({
                 <div className="user-settings-container">
                     <div className="user-settings__user-input-container">
                         <Dropdown
-                            style={`${chosenUser.color ? '' : 'full-width'}`}
+                            style={`${
+                                chosenUser.color ? '' : 'full-width'
+                            } user-settings-input`}
                             isRounded
                             options={availableUsersOptions}
                             size="sm"
@@ -99,7 +103,7 @@ const UserSettings = ({
                 <div className="user-settings-container">
                     <div className="user-settings__user-input-container">
                         <input
-                            className="input-field input-field--sm width-90"
+                            className="input-field input-field--sm user-settings-input"
                             name="newUserName"
                             id="newUserName"
                             value={newUserName}

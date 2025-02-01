@@ -3,6 +3,7 @@ import React from 'react';
 import { INPUT_SIZE_DICT } from '../../../constants';
 
 const AmountInput = ({
+    isDisabled,
     id,
     label,
     labelStyle,
@@ -35,6 +36,7 @@ const AmountInput = ({
                 </label>
             )}
             <input
+                disabled={isDisabled}
                 className={`input-field ${style} ${INPUT_SIZE_DICT[size]}`}
                 name={name}
                 id={id}
@@ -47,6 +49,7 @@ const AmountInput = ({
 };
 
 AmountInput.propTypes = {
+    isDisabled: PropTypes.bool,
     id: PropTypes.string,
     label: PropTypes.string,
     labelStyle: PropTypes.string,

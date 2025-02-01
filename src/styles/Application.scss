@@ -96,6 +96,10 @@ ul {
     margin-right: 0.5rem;
 }
 
+.select-dropdown:disabled {
+    background-color: rgba(239, 239, 239, 0.3);
+}
+
 .button--round {
     border-radius: 1rem;
 }
@@ -774,6 +778,14 @@ ul {
     }
 }
 
+.user-settings-input {
+    width: 90%;
+
+    @media (max-width: 1200px) {
+        width: 85%;
+    }
+}
+
 .user-settings__userName-color {
     width: 50%;
     overflow: hidden;
@@ -808,16 +820,4 @@ input[type='color']:disabled {
 
 .full-width {
     width: 100%;
-}
-
-.width-90 {
-    width: 90%;
-
-    @media (max-width: 1200px) {
-        width: 80%;
-    }
-
-    @media (max-width: 600px) {
-        width: 85%;
-    }
 }

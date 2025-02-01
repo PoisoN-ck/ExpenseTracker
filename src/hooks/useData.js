@@ -6,11 +6,13 @@ import { sendEmailVerification } from 'firebase/auth';
 import { sortTransactionsByDate } from '../utils';
 
 const useData = (isVerified) => {
+    // TODO: Potentially need separation of transactions, userSettings and constantExpenses to different files
     const [transactions, setTransactions] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [dataError, setDataError] = useState(null);
     const [successMessage, setSuccessMessage] = useState(null);
     const [usersSettings, setUsersSettings] = useState([]);
+    const [constantExpenses, setConstantExpenses] = useState([]);
 
     const resetMessages = () => {
         setDataError(null);
@@ -73,34 +75,71 @@ const useData = (isVerified) => {
         }
     };
 
-    const fetchAndUpdateUsersSettings = () => {
-        try {
-            const usersSettingsRef = ref(
-                db,
-                `${auth.currentUser?.uid}/usersSettings`,
-            );
+    const fetchAndUpdateUsersSettings = async () =>
+        await new Promise((res, rej) => {
+            try {
+                const usersSettingsRef = ref(
+                    db,
+                    `${auth.currentUser?.uid}/usersSettings`,
+                );
 
-            onValue(
-                usersSettingsRef,
-                (snapshot) => {
-                    const fetchedUsersSettings = snapshot
-                        .val()
-                        ?.filter((transaction) => transaction);
+                onValue(
+                    usersSettingsRef,
+                    (snapshot) => {
+                        const fetchedUsersSettings = snapshot
+                            .val()
+                            ?.filter((transaction) => transaction);
 
-                    if (fetchedUsersSettings?.length) {
-                        setUsersSettings(fetchedUsersSettings);
-                    }
-                },
-                (error) => {
-                    setDataError(error);
-                    setIsLoading(false);
-                },
-            );
-        } catch (error) {
-            setDataError(error);
-            setIsLoading(false);
-        }
-    };
+                        if (fetchedUsersSettings?.length) {
+                            setUsersSettings(fetchedUsersSettings);
+                            res(fetchedUsersSettings);
+                        }
+                    },
+                    (error) => {
+                        setDataError(error);
+                        setIsLoading(false);
+                        rej(false);
+                    },
+                );
+            } catch (error) {
+                setDataError(error);
+                setIsLoading(false);
+                rej(false);
+            }
+        });
+
+    const fetchAndUpdateConstantExpenses = async () =>
+        await new Promise((res, rej) => {
+            try {
+                const constantExpensesRef = ref(
+                    db,
+                    `${auth.currentUser?.uid}/constantExpenses`,
+                );
+
+                onValue(
+                    constantExpensesRef,
+                    (snapshot) => {
+                        const fetchedConstantExpenses = snapshot
+                            .val()
+                            ?.filter((expense) => expense);
+
+                        if (fetchedConstantExpenses?.length) {
+                            setConstantExpenses(fetchedConstantExpenses);
+                            res(fetchedConstantExpenses);
+                        }
+                    },
+                    (error) => {
+                        setDataError(error);
+                        setIsLoading(false);
+                        rej(false);
+                    },
+                );
+            } catch (error) {
+                setDataError(error);
+                setIsLoading(false);
+                rej(false);
+            }
+        });
 
     const addTransaction = useCallback(
         async (transaction) => {
@@ -166,64 +205,178 @@ const useData = (isVerified) => {
 
     const addUserSettings = useCallback(
         async (userSetting) => {
-            if (!userSetting.name || !userSetting.color) return;
+            if (!userSetting.name || !userSetting.color) {
+                setDataError({ code: 'add-missing-fields' });
+                return false;
+            }
 
             const connectionRef = ref(db, '.info/connected');
 
-            let isFailedAttempt = false;
-
-            try {
-                onValue(connectionRef, (snapshot) => {
-                    const isNetworkExist = snapshot.val();
-
-                    if (!isNetworkExist) {
-                        isFailedAttempt = true;
-                        setDataError({ code: 'no-network-users-settings' });
-                        return;
-                    }
-
-                    resetMessages();
-
-                    // Making sure that settings
-                    // are not saved in offline mode
-                    if (isFailedAttempt) return;
-
+            const addUserSettingsPromise = async () =>
+                await new Promise((res, rej) => {
+                    let isFailedAttempt = false;
                     try {
-                        if (isVerified) {
-                            setIsLoading(true);
-                            set(
-                                ref(
-                                    db,
-                                    `${auth.currentUser?.uid}/usersSettings`,
-                                ),
-                                [userSetting, ...usersSettings],
-                            )
-                                .then(() => {
-                                    setSuccessMessage({
-                                        code: 'added-user-settings',
-                                    });
-                                })
-                                .catch((error) => {
-                                    setDataError(error);
-                                })
-                                .finally(() => {
-                                    setIsLoading(false);
+                        onValue(connectionRef, (snapshot) => {
+                            const isNetworkExist = snapshot.val();
+
+                            if (!isNetworkExist) {
+                                isFailedAttempt = true;
+                                setDataError({
+                                    code: 'no-network-users-settings',
                                 });
-                        } else {
-                            setDataError({ code: 'no-data-saved' });
-                            setTransactions([userSetting, ...usersSettings]);
-                        }
+                                rej(false);
+                                return;
+                            }
+
+                            resetMessages();
+
+                            // Making sure that settings
+                            // are not saved in offline mode
+                            if (isFailedAttempt) {
+                                rej(false);
+                                return;
+                            }
+
+                            try {
+                                if (isVerified) {
+                                    setIsLoading(true);
+                                    set(
+                                        ref(
+                                            db,
+                                            `${auth.currentUser?.uid}/usersSettings`,
+                                        ),
+                                        [userSetting, ...usersSettings],
+                                    )
+                                        .then(() => {
+                                            setSuccessMessage({
+                                                code: 'added-user-settings',
+                                            });
+                                            res(true);
+                                        })
+                                        .catch((error) => {
+                                            setDataError(error);
+                                            rej(false);
+                                        })
+                                        .finally(() => {
+                                            setIsLoading(false);
+                                        });
+                                } else {
+                                    setDataError({ code: 'no-data-saved' });
+                                    setTransactions([
+                                        userSetting,
+                                        ...usersSettings,
+                                    ]);
+                                    rej(false);
+                                }
+                            } catch (error) {
+                                setDataError(error);
+                                rej(false);
+                            } finally {
+                                setIsLoading(false);
+                            }
+                        });
                     } catch (error) {
                         setDataError(error);
-                    } finally {
-                        setIsLoading(false);
+                        rej(false);
                     }
                 });
-            } catch (error) {
-                setDataError(error);
-            }
+
+            const result = await addUserSettingsPromise();
+
+            return result;
         },
         [successMessage, usersSettings],
+    );
+
+    // TODO: Refactor similar methods and move to utils
+    const addConstantExpense = useCallback(
+        async (constantExpense) => {
+            if (
+                !constantExpense.id ||
+                !constantExpense.category ||
+                !constantExpense.name ||
+                !constantExpense.amount
+            ) {
+                setDataError({ code: 'add-missing-fields' });
+                return false;
+            }
+
+            const connectionRef = ref(db, '.info/connected');
+            const addConstantExpensePromise = async () =>
+                await new Promise((res, rej) => {
+                    let isFailedAttempt = false;
+
+                    try {
+                        onValue(connectionRef, (snapshot) => {
+                            const isNetworkExist = snapshot.val();
+
+                            if (!isNetworkExist) {
+                                isFailedAttempt = true;
+                                setDataError({
+                                    code: 'no-network-users-settings',
+                                });
+                                rej(false);
+                                return;
+                            }
+
+                            resetMessages();
+
+                            // Making sure that settings
+                            // are not saved in offline mode
+                            if (isFailedAttempt) {
+                                rej(false);
+                                return;
+                            }
+
+                            try {
+                                if (isVerified) {
+                                    setIsLoading(true);
+                                    set(
+                                        ref(
+                                            db,
+                                            `${auth.currentUser?.uid}/constantExpenses`,
+                                        ),
+                                        [constantExpense, ...constantExpenses],
+                                    )
+                                        .then(() => {
+                                            setSuccessMessage({
+                                                code: 'added-user-settings',
+                                            });
+                                            res(true);
+                                        })
+                                        .catch((error) => {
+                                            setDataError(error);
+                                            rej(false);
+                                        })
+                                        .finally(() => {
+                                            setIsLoading(false);
+                                        });
+                                } else {
+                                    setDataError({ code: 'no-data-saved' });
+                                    setTransactions([
+                                        constantExpense,
+                                        ...constantExpenses,
+                                    ]);
+                                    rej(false);
+                                }
+                            } catch (error) {
+                                setDataError(error);
+                                rej(false);
+                            } finally {
+                                setIsLoading(false);
+                            }
+                        });
+                    } catch (error) {
+                        setDataError(error);
+                        rej(false);
+                    }
+                });
+
+            const result = await addConstantExpensePromise();
+
+            return result;
+        },
+        [successMessage, constantExpenses],
     );
 
     const sendVerificationEmail = async () => {
@@ -244,9 +397,14 @@ const useData = (isVerified) => {
         }
     };
 
-    useEffect(() => {
-        fetchAndUpdateUsersSettings();
+    const initialLoad = useCallback(async () => {
+        await fetchAndUpdateUsersSettings();
+        await fetchAndUpdateConstantExpenses();
         fetchAndUpdateTransactions();
+    }, []);
+
+    useEffect(() => {
+        initialLoad();
     }, []);
 
     return {
@@ -255,12 +413,15 @@ const useData = (isVerified) => {
         successMessage,
         transactions,
         usersSettings,
+        constantExpenses,
         addTransaction,
         fetchTransactions,
         resetMessages,
         sendVerificationEmail,
         setDataError,
         addUserSettings,
+        addConstantExpense,
+        setConstantExpenses,
     };
 };
 

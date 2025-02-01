@@ -31,10 +31,12 @@ const ExpenseTracker = ({ isVerified, logOut }) => {
         successMessage,
         transactions,
         usersSettings,
+        constantExpenses,
         addTransaction,
         resetMessages,
         sendVerificationEmail,
         setDataError,
+        addConstantExpense,
         addUserSettings,
     } = useData(isVerified);
 
@@ -93,6 +95,8 @@ const ExpenseTracker = ({ isVerified, logOut }) => {
                 chosenUser={chosenUser}
                 setChosenUser={setChosenUser}
                 handleSignOut={handleSignOut}
+                constantExpenses={constantExpenses}
+                addConstantExpense={addConstantExpense}
             />
 
             <TrackerHeader

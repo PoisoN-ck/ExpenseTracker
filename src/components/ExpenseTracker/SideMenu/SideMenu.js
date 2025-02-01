@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types';
 import React, { useState } from 'react';
 
-import { UserSetting } from '../../../types';
+import { ConstantExpense, UserSetting } from '../../../types';
 import ConstantExpenses from './ConstantExpenses';
 import UserSettings from './UserSettings';
 
@@ -9,10 +9,12 @@ const SideMenu = ({
     isShown,
     setIsShown,
     usersSettings,
+    constantExpenses,
     addUserSettings,
     chosenUser,
     setChosenUser,
     handleSignOut,
+    addConstantExpense,
 }) => {
     const [isUserSettingsShown, setIsUserSettingsShown] = useState(false);
     const [isExpensesShown, setIsExpensesShown] = useState(false);
@@ -58,7 +60,11 @@ const SideMenu = ({
                     >
                         Constant expenses
                     </button>
-                    <ConstantExpenses isShown={isExpensesShown} />
+                    <ConstantExpenses
+                        constantExpenses={constantExpenses}
+                        isShown={isExpensesShown}
+                        onAddExpense={addConstantExpense}
+                    />
                 </li>
             </ul>
         </div>
@@ -73,6 +79,8 @@ SideMenu.propTypes = {
     chosenUser: UserSetting,
     setChosenUser: PropTypes.func.isRequired,
     handleSignOut: PropTypes.func.isRequired,
+    constantExpenses: PropTypes.arrayOf(ConstantExpense),
+    addConstantExpense: PropTypes.func.isRequired,
 };
 
 export default SideMenu;

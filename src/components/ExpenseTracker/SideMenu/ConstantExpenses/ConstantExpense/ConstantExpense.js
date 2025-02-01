@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import { v4 as uuidv4 } from 'uuid';
 
 import PropTypes from 'prop-types';
 import { categoriesWithoutProfit } from '../../../../../constants';
@@ -8,35 +7,45 @@ import AmountInput from '../../../../common/AmountInput/AmountInput';
 import Dropdown from '../../../../common/Dropdown/Dropdown';
 import TextInput from '../../../../common/TextInput/TextInput';
 
-const transactionId = uuidv4();
-
 const ConstantExpense = ({
-    constantExpense = {
-        name: '',
-        amount: '',
-        selectedCategory: '',
-        id: transactionId,
-    },
+    constantExpense,
     setConstantExpense,
-    isEditMode,
+    isDisabled,
 }) => {
-    const { name, amount, category } = constantExpense;
+    const { name, amount, category, id } = constantExpense;
     const [expenseName, setExpenseName] = useState(name);
     const [expenseAmount, setExpenseAmount] = useState(amount);
     const [expenseCategory, setExpenseCategory] = useState(category);
 
     useEffect(() => {
+        setExpenseName(name);
         setExpenseAmount(amount);
-    }, [amount]);
+        setExpenseCategory(category);
+    }, []);
+
+    // Reset expense details when Edit mode is canceled
+    useEffect(() => {
+        if (isDisabled) {
+            setExpenseName(name);
+            setExpenseAmount(amount);
+            setExpenseCategory(category);
+        }
+    }, [isDisabled]);
 
     useEffect(() => {
-        setConstantExpense({
-            name: expenseName,
-            amount: expenseAmount,
-            category: expenseCategory,
-            // Make sure NOT to add id during Edit mode!
-            ...(isEditMode ? {} : { id: transactionId }),
-        });
+        const isSameData =
+            name === expenseName &&
+            amount === expenseAmount &&
+            category === expenseCategory;
+
+        if (!isSameData) {
+            setConstantExpense({
+                name: expenseName,
+                amount: expenseAmount,
+                category: expenseCategory,
+                ...(id ? { id } : {}),
+            });
+        }
     }, [expenseName, expenseAmount, expenseCategory]);
 
     const handleNameChange = (e) => setExpenseName(e.target.value);
@@ -53,12 +62,14 @@ const ConstantExpense = ({
         <div className="full-width">
             <div className="flex-center gap-10 margin-vertical-sm">
                 <TextInput
+                    isDisabled={isDisabled}
                     size="sm"
                     placeholder="Expense name"
                     value={expenseName}
                     handleChange={handleNameChange}
                 />
                 <AmountInput
+                    isDisabled={isDisabled}
                     size="sm"
                     placeholder="Amount"
                     value={expenseAmount}
@@ -66,6 +77,7 @@ const ConstantExpense = ({
                 />
             </div>
             <Dropdown
+                isDisabled={isDisabled}
                 isRounded
                 options={categoryOptions}
                 size="sm"
@@ -80,7 +92,7 @@ const ConstantExpense = ({
 ConstantExpense.propTypes = {
     constantExpense: ConstantExpenseType,
     setConstantExpense: PropTypes.func,
-    isEditMode: PropTypes.bool,
+    isDisabled: PropTypes.bool,
 };
 
 export default ConstantExpense;
