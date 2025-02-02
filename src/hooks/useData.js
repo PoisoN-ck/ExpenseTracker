@@ -438,7 +438,7 @@ const useData = (isVerified) => {
                                     )
                                         .then(() => {
                                             setSuccessMessage({
-                                                code: 'editted-constant-expense',
+                                                code: 'edited-constant-expense',
                                             });
                                             res(true);
                                         })
@@ -468,6 +468,97 @@ const useData = (isVerified) => {
                 });
 
             const result = await editConstantExpensePromise();
+
+            return result;
+        },
+        [successMessage, constantExpenses],
+    );
+
+    const deleteConstantExpense = useCallback(
+        async (deletedExpense) => {
+            if (!deletedExpense.id) {
+                setDataError({ code: 'delete-expense-missing-id' });
+                return false;
+            }
+
+            const connectionRef = ref(db, '.info/connected');
+            const deleteConstantExpensePromise = async () =>
+                await new Promise((res, rej) => {
+                    let isFailedAttempt = false;
+
+                    try {
+                        onValue(connectionRef, (snapshot) => {
+                            const isNetworkExist = snapshot.val();
+
+                            if (!isNetworkExist) {
+                                isFailedAttempt = true;
+                                setDataError({
+                                    code: 'no-network-users-settings',
+                                });
+                                rej(false);
+                                return;
+                            }
+
+                            resetMessages();
+
+                            // Making sure that settings
+                            // are not saved in offline mode
+                            if (isFailedAttempt) {
+                                rej(false);
+                                return;
+                            }
+
+                            // Paste into the array of data the expense replaced with new data
+                            const expensesWithoutDeletedExpense =
+                                constantExpenses.filter(
+                                    (expense) =>
+                                        expense.id !== deletedExpense.id,
+                                );
+
+                            try {
+                                if (isVerified) {
+                                    setIsLoading(true);
+                                    set(
+                                        ref(
+                                            db,
+                                            `${auth.currentUser?.uid}/constantExpenses`,
+                                        ),
+                                        expensesWithoutDeletedExpense,
+                                    )
+                                        .then(() => {
+                                            setSuccessMessage({
+                                                code: 'deleted-constant-expense',
+                                            });
+                                            res(true);
+                                        })
+                                        .catch((error) => {
+                                            setDataError(error);
+                                            rej(false);
+                                        })
+                                        .finally(() => {
+                                            setIsLoading(false);
+                                        });
+                                } else {
+                                    setDataError({ code: 'no-data-saved' });
+                                    setTransactions(
+                                        expensesWithoutDeletedExpense,
+                                    );
+                                    rej(false);
+                                }
+                            } catch (error) {
+                                setDataError(error);
+                                rej(false);
+                            } finally {
+                                setIsLoading(false);
+                            }
+                        });
+                    } catch (error) {
+                        setDataError(error);
+                        rej(false);
+                    }
+                });
+
+            const result = await deleteConstantExpensePromise();
 
             return result;
         },
@@ -517,7 +608,7 @@ const useData = (isVerified) => {
         addUserSettings,
         addConstantExpense,
         editConstantExpense,
-        setConstantExpenses,
+        deleteConstantExpense,
     };
 };
 

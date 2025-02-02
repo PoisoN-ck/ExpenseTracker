@@ -16,6 +16,7 @@ const SideMenu = ({
     handleSignOut,
     addConstantExpense,
     editConstantExpense,
+    deleteConstantExpense,
 }) => {
     const [isUserSettingsShown, setIsUserSettingsShown] = useState(false);
     const [isExpensesShown, setIsExpensesShown] = useState(false);
@@ -66,6 +67,7 @@ const SideMenu = ({
                         isShown={isExpensesShown}
                         addConstantExpense={addConstantExpense}
                         editConstantExpense={editConstantExpense}
+                        deleteConstantExpense={deleteConstantExpense}
                     />
                 </li>
             </ul>

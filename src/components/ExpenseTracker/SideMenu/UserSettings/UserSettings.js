@@ -77,6 +77,7 @@ const UserSettings = ({
                             size="sm"
                             selectedValue={chosenUser?.id}
                             handleSelect={handleUserSelect}
+                            placedholder="Select user"
                         />
                         {chosenUser.color && (
                             <input

@@ -21,7 +21,7 @@ const ConstantExpense = ({
         setExpenseName(name);
         setExpenseAmount(amount);
         setExpenseCategory(category);
-    }, []);
+    }, [name, amount, category]);
 
     // Reset expense details when Edit mode is canceled
     useEffect(() => {
@@ -71,7 +71,7 @@ const ConstantExpense = ({
                 <AmountInput
                     isDisabled={isDisabled}
                     size="sm"
-                    placeholder="Amount"
+                    placeholder="Expected amount"
                     value={expenseAmount}
                     handleChange={handleAmountChange}
                 />
@@ -84,6 +84,7 @@ const ConstantExpense = ({
                 style="margin-bottom-sm"
                 selectedValue={expenseCategory}
                 handleSelect={handleCategorySelect}
+                placedholder="Select category"
             />
         </div>
     );

@@ -24,6 +24,7 @@ const ConstantExpenses = ({
         DEFAULT_CONSTANT_EXPENSE_STATE,
     );
     const [editedExpenses, setEditedExpenses] = useState([]);
+    const [deletedExpenses, setDeletedExpenses] = useState([]);
 
     const isConstantExpensesExist = constantExpenses.length > 0;
 
@@ -74,13 +75,28 @@ const ConstantExpenses = ({
         });
     };
 
+    const initiateDeleteExpense = (deletedExpense) =>
+        setDeletedExpenses((prevState) => [...prevState, deletedExpense]);
+
+    const undoDeleteExpense = (deletedExpense) => {
+        setDeletedExpenses((deletedExpensesState) => {
+            const stateWithoutOldExpense = deletedExpensesState.filter(
+                (expense) => expense.id !== deletedExpense.id,
+            );
+
+            return stateWithoutOldExpense;
+        });
+    };
+
     const isBeingCurrentlyEdited = (expenseId) =>
         !!editedExpenses.find(
             (editedExpense) => editedExpense.id === expenseId,
         );
 
-    const handleDeleteExpense = async (expense) =>
+    const handleDeleteExpense = async (expense) => {
         await deleteConstantExpense(expense);
+    };
+
     const handleEditExpense = async (modifiedExpense) => {
         const editedExpense = editedExpenses.find(
             (expense) => expense.id === modifiedExpense.id,
@@ -125,10 +141,14 @@ const ConstantExpenses = ({
                                 const isCurrentlyBeingEdited =
                                     isBeingCurrentlyEdited(constantExpense.id);
                                 const isDisabled = !isCurrentlyBeingEdited;
+                                const isToBeDeleted = !!deletedExpenses.find(
+                                    (expense) =>
+                                        expense.id === constantExpense.id,
+                                );
 
                                 return (
                                     <li
-                                        className="flex-center gap-10 margin-bottom-sm full-width"
+                                        className="flex-center gap-10 margin-bottom-sm full-width constant-expense_container"
                                         key={constantExpense.id}
                                     >
                                         <ConstantExpense
@@ -171,12 +191,41 @@ const ConstantExpenses = ({
                                                 <ButtonIcon
                                                     icon="fa-solid fa-trash-can fa-xs"
                                                     handleClick={() =>
-                                                        handleDeleteExpense(
+                                                        initiateDeleteExpense(
                                                             constantExpense,
                                                         )
                                                     }
                                                 />
                                             )}
+                                        </div>
+                                        <div
+                                            className={`flex-column flex-justify-center gap-10 constant-expense_delete-question text-center ${
+                                                isToBeDeleted &&
+                                                'delete-text-shown'
+                                            }`}
+                                        >
+                                            <h5>
+                                                Delete expense{' '}
+                                                {`'${constantExpense.name}'`}?
+                                            </h5>
+                                            <div className="flex-center gap-10">
+                                                <ButtonIcon
+                                                    icon="fas fa-check fa-xs"
+                                                    handleClick={() =>
+                                                        handleDeleteExpense(
+                                                            constantExpense,
+                                                        )
+                                                    }
+                                                />
+                                                <ButtonIcon
+                                                    icon="fa-solid fa-xmark fa-xs"
+                                                    handleClick={() =>
+                                                        undoDeleteExpense(
+                                                            constantExpense,
+                                                        )
+                                                    }
+                                                />
+                                            </div>
                                         </div>
                                     </li>
                                 );

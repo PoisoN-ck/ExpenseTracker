@@ -13,6 +13,7 @@ const Dropdown = ({
     options,
     handleSelect,
     selectedValue,
+    placedholder = 'Select',
 }) => {
     return (
         <select
@@ -25,7 +26,7 @@ const Dropdown = ({
             onChange={handleSelect}
             value={selectedValue}
         >
-            <option>Select</option>
+            <option>{placedholder}</option>
             {options}
         </select>
     );
@@ -42,6 +43,7 @@ Dropdown.propTypes = {
     style: PropTypes.string,
     variant: PropTypes.oneOf([Object.keys(INPUT_VARIANT_DICT)]),
     handleSelect: PropTypes.func.isRequired,
+    placedholder: PropTypes.string,
 };
 
 export default Dropdown;

@@ -84,8 +84,12 @@ export const translateMessage = (message) => {
             return 'Please fill in all fields.';
         case 'added-constant-expense':
             return 'Constant expense has been added successfully.';
-        case 'editted-constant-expense':
-            return 'Constant expense has been editted successfully.';
+        case 'edited-constant-expense':
+            return 'Constant expense has been edited successfully.';
+        case 'deleted-constant-expense':
+            return 'Constant expense has been deleted successfully.';
+        case 'delete-expense-missing-id':
+            return 'Cannot delete expense without id.';
 
         default:
             return 'Something went wrong. Please try again.';

@@ -38,6 +38,7 @@ const ExpenseTracker = ({ isVerified, logOut }) => {
         setDataError,
         addConstantExpense,
         editConstantExpense,
+        deleteConstantExpense,
         addUserSettings,
     } = useData(isVerified);
 
@@ -99,6 +100,7 @@ const ExpenseTracker = ({ isVerified, logOut }) => {
                 constantExpenses={constantExpenses}
                 addConstantExpense={addConstantExpense}
                 editConstantExpense={editConstantExpense}
+                deleteConstantExpense={deleteConstantExpense}
             />
 
             <TrackerHeader
