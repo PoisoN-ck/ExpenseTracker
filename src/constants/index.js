@@ -44,6 +44,10 @@ export const datesFilters = [
     },
 ];
 
+export const { value: thisMonthFilter } = datesFilters.find(
+    (dateFilter) => dateFilter.name === 'This Month',
+);
+
 export const categories = [
     'Profit',
     'Groceries',
@@ -98,3 +102,5 @@ export const INPUT_SIZE_DICT = {
     default: 'input-field',
     lg: 'inpit-field--lg', // does not exist yet
 };
+
+export const CONSTANT_EXPENSE_FILTERS = ['All', 'Not paid', 'Paid'];

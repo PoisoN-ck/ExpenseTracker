@@ -32,6 +32,7 @@ const ExpenseTracker = ({ isVerified, logOut }) => {
         transactions,
         usersSettings,
         constantExpenses,
+        filteredConstantExpense,
         addTransaction,
         resetMessages,
         sendVerificationEmail,
@@ -101,6 +102,7 @@ const ExpenseTracker = ({ isVerified, logOut }) => {
                 addConstantExpense={addConstantExpense}
                 editConstantExpense={editConstantExpense}
                 deleteConstantExpense={deleteConstantExpense}
+                filteredConstantExpense={filteredConstantExpense}
             />
 
             <TrackerHeader

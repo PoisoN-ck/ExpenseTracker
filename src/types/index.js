@@ -32,3 +32,8 @@ export const ConstantExpense = PropTypes.shape({
     category: PropTypes.string.isRequired,
     id: PropTypes.string,
 });
+
+export const FilteredConstantExpenses = PropTypes.shape({
+    // Paid: PropTypes.arrayOf(ConstantExpense),
+    // 'Not paid': PropTypes.arrayOf(ConstantExpense),
+});

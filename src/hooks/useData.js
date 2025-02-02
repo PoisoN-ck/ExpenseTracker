@@ -3,7 +3,8 @@ import { useCallback, useEffect, useState } from 'react';
 import db, { auth } from '../services/db';
 
 import { sendEmailVerification } from 'firebase/auth';
-import { sortTransactionsByDate } from '../utils';
+import { CONSTANT_EXPENSE_FILTERS, thisMonthFilter } from '../constants';
+import { filterTransactions, sortTransactionsByDate } from '../utils';
 
 const useData = (isVerified) => {
     // TODO: Potentially need separation of transactions, userSettings and constantExpenses to different files
@@ -13,6 +14,7 @@ const useData = (isVerified) => {
     const [successMessage, setSuccessMessage] = useState(null);
     const [usersSettings, setUsersSettings] = useState([]);
     const [constantExpenses, setConstantExpenses] = useState([]);
+    const [filteredConstantExpense, setFilteredConstantExpenses] = useState({});
 
     const resetMessages = () => {
         setDataError(null);
@@ -583,6 +585,48 @@ const useData = (isVerified) => {
         }
     };
 
+    const updateFilteredConstantExpenses = useCallback(() => {
+        const [, notPaid, paid] = CONSTANT_EXPENSE_FILTERS;
+        const thisMonthTransactions = filterTransactions(
+            transactions,
+            'date',
+            JSON.stringify(thisMonthFilter),
+        );
+
+        const constantExpensesTransactionsOnly = thisMonthTransactions.filter(
+            (transaction) =>
+                transaction.transType === 'Expense' &&
+                transaction.constantExpenseId,
+        );
+
+        const paidConstantExpenses = constantExpenses.filter(
+            (constantExpense) =>
+                constantExpensesTransactionsOnly.find(
+                    (transaction) =>
+                        transaction.constantExpenseId === constantExpense.id,
+                ),
+        );
+
+        const notPaidConstantExpenses = constantExpenses.filter(
+            (constantExpense) => {
+                const isNotPaid = paidConstantExpenses.reduce(
+                    (acc, transaction) =>
+                        !acc || transaction.id === constantExpense.id
+                            ? false
+                            : true,
+                    true,
+                );
+
+                return isNotPaid;
+            },
+        );
+
+        setFilteredConstantExpenses({
+            [paid]: paidConstantExpenses,
+            [notPaid]: notPaidConstantExpenses,
+        });
+    }, [constantExpenses, transactions]);
+
     const initialLoad = useCallback(async () => {
         await fetchAndUpdateUsersSettings();
         await fetchAndUpdateConstantExpenses();
@@ -593,6 +637,10 @@ const useData = (isVerified) => {
         initialLoad();
     }, []);
 
+    useEffect(() => {
+        updateFilteredConstantExpenses();
+    }, [updateFilteredConstantExpenses]);
+
     return {
         dataError,
         isLoading,
@@ -600,6 +648,7 @@ const useData = (isVerified) => {
         transactions,
         usersSettings,
         constantExpenses,
+        filteredConstantExpense,
         addTransaction,
         fetchTransactions,
         resetMessages,

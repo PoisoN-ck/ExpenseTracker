@@ -1,7 +1,11 @@
 import PropTypes from 'prop-types';
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
-import { ConstantExpense as ConstantExpenseType } from '../../../../types';
+import { CONSTANT_EXPENSE_FILTERS } from '../../../../constants';
+import {
+    ConstantExpense as ConstantExpenseType,
+    FilteredConstantExpenses,
+} from '../../../../types';
 import Button from '../../../common/Button';
 import ButtonIcon from '../../../common/ButtonIcon';
 import ConstantExpense from './ConstantExpense';
@@ -13,20 +17,26 @@ const DEFAULT_CONSTANT_EXPENSE_STATE = {
     id: '',
 };
 
+const [DEFAULT_FILTER] = CONSTANT_EXPENSE_FILTERS;
+
 const ConstantExpenses = ({
     constantExpenses,
     isShown,
     addConstantExpense,
     editConstantExpense,
     deleteConstantExpense,
+    filteredConstantExpense,
 }) => {
     const [newConstantExpense, setNewConstantExpense] = useState(
         DEFAULT_CONSTANT_EXPENSE_STATE,
     );
     const [editedExpenses, setEditedExpenses] = useState([]);
     const [deletedExpenses, setDeletedExpenses] = useState([]);
+    const [currentlyFilteredExpenses, setCurrentlyFilteredExpenses] =
+        useState(constantExpenses);
+    const [currentFilter, setCurrentFilter] = useState(DEFAULT_FILTER);
 
-    const isConstantExpensesExist = constantExpenses.length > 0;
+    const isConstantExpensesExist = currentlyFilteredExpenses.length > 0;
 
     const handleAddConstantExpense = async () => {
         const newExpenseWithId = {
@@ -42,7 +52,7 @@ const ConstantExpenses = ({
 
     const modifyChosenExpenseData = useCallback(
         (editedExpense) => {
-            const currentExpense = constantExpenses.find(
+            const currentExpense = currentlyFilteredExpenses.find(
                 (constantExpene) => constantExpene.id === editedExpense.id,
             );
 
@@ -56,7 +66,7 @@ const ConstantExpenses = ({
                 });
             }
         },
-        [constantExpenses, setEditedExpenses],
+        [currentlyFilteredExpenses, setEditedExpenses],
     );
 
     const initiateEditExpense = (editedExpense) =>
@@ -112,6 +122,18 @@ const ConstantExpenses = ({
         }
     };
 
+    const handleFilterSelect = (filter) => setCurrentFilter(filter);
+
+    useEffect(() => {
+        if (currentFilter === DEFAULT_FILTER) {
+            setCurrentlyFilteredExpenses(constantExpenses);
+
+            return;
+        }
+
+        setCurrentlyFilteredExpenses(filteredConstantExpense[currentFilter]);
+    }, [currentFilter, constantExpenses, filteredConstantExpense]);
+
     return (
         <div
             className={`menu-section ${
@@ -134,102 +156,125 @@ const ConstantExpenses = ({
                 {isConstantExpensesExist && (
                     <>
                         <h4 className="text-muted margin-bottom-md text-center">
-                            Existing Constant Expenses
+                            Existing constant expenses
                         </h4>
+                        <ul className="flex flex-justify-space-between full-width margin-bottom-sm">
+                            {CONSTANT_EXPENSE_FILTERS.map((filter) => (
+                                <li
+                                    className={`filter-constant-expense-container padding-vertical-sm text-center ${
+                                        filter === currentFilter &&
+                                        'constant-expense-filter__selected'
+                                    }`}
+                                    key={filter}
+                                    onClick={() => handleFilterSelect(filter)}
+                                >
+                                    {filter}
+                                </li>
+                            ))}
+                        </ul>
                         <ul className="flex-column full-width">
-                            {constantExpenses.map((constantExpense) => {
-                                const isCurrentlyBeingEdited =
-                                    isBeingCurrentlyEdited(constantExpense.id);
-                                const isDisabled = !isCurrentlyBeingEdited;
-                                const isToBeDeleted = !!deletedExpenses.find(
-                                    (expense) =>
-                                        expense.id === constantExpense.id,
-                                );
+                            {currentlyFilteredExpenses.map(
+                                (constantExpense) => {
+                                    const isCurrentlyBeingEdited =
+                                        isBeingCurrentlyEdited(
+                                            constantExpense.id,
+                                        );
+                                    const isDisabled = !isCurrentlyBeingEdited;
+                                    const isToBeDeleted =
+                                        !!deletedExpenses.find(
+                                            (expense) =>
+                                                expense.id ===
+                                                constantExpense.id,
+                                        );
 
-                                return (
-                                    <li
-                                        className="flex-center gap-10 margin-bottom-sm full-width constant-expense_container"
-                                        key={constantExpense.id}
-                                    >
-                                        <ConstantExpense
-                                            isDisabled={isDisabled}
-                                            constantExpense={constantExpense}
-                                            setConstantExpense={
-                                                modifyChosenExpenseData
-                                            }
-                                        />
-                                        <div className="flex-center-column gap-5">
-                                            {isCurrentlyBeingEdited ? (
-                                                <ButtonIcon
-                                                    icon="fas fa-check fa-xs"
-                                                    handleClick={() =>
-                                                        handleEditExpense(
-                                                            constantExpense,
-                                                        )
-                                                    }
-                                                />
-                                            ) : (
-                                                <ButtonIcon
-                                                    icon="fa-solid fa-pen fa-xs"
-                                                    handleClick={() =>
-                                                        initiateEditExpense(
-                                                            constantExpense,
-                                                        )
-                                                    }
-                                                />
-                                            )}
-                                            {isCurrentlyBeingEdited ? (
-                                                <ButtonIcon
-                                                    icon="fa-solid fa-xmark fa-xs"
-                                                    handleClick={() =>
-                                                        undoEditExpense(
-                                                            constantExpense,
-                                                        )
-                                                    }
-                                                />
-                                            ) : (
-                                                <ButtonIcon
-                                                    icon="fa-solid fa-trash-can fa-xs"
-                                                    handleClick={() =>
-                                                        initiateDeleteExpense(
-                                                            constantExpense,
-                                                        )
-                                                    }
-                                                />
-                                            )}
-                                        </div>
-                                        <div
-                                            className={`flex-column flex-justify-center gap-10 constant-expense_delete-question text-center ${
-                                                isToBeDeleted &&
-                                                'delete-text-shown'
-                                            }`}
+                                    return (
+                                        <li
+                                            className="flex-center gap-10 margin-bottom-sm full-width constant-expense_container"
+                                            key={constantExpense.id}
                                         >
-                                            <h5>
-                                                Delete expense{' '}
-                                                {`'${constantExpense.name}'`}?
-                                            </h5>
-                                            <div className="flex-center gap-10">
-                                                <ButtonIcon
-                                                    icon="fas fa-check fa-xs"
-                                                    handleClick={() =>
-                                                        handleDeleteExpense(
-                                                            constantExpense,
-                                                        )
-                                                    }
-                                                />
-                                                <ButtonIcon
-                                                    icon="fa-solid fa-xmark fa-xs"
-                                                    handleClick={() =>
-                                                        undoDeleteExpense(
-                                                            constantExpense,
-                                                        )
-                                                    }
-                                                />
+                                            <ConstantExpense
+                                                isDisabled={isDisabled}
+                                                constantExpense={
+                                                    constantExpense
+                                                }
+                                                setConstantExpense={
+                                                    modifyChosenExpenseData
+                                                }
+                                            />
+                                            <div className="flex-center-column gap-5">
+                                                {isCurrentlyBeingEdited ? (
+                                                    <ButtonIcon
+                                                        icon="fas fa-check fa-xs"
+                                                        handleClick={() =>
+                                                            handleEditExpense(
+                                                                constantExpense,
+                                                            )
+                                                        }
+                                                    />
+                                                ) : (
+                                                    <ButtonIcon
+                                                        icon="fa-solid fa-pen fa-xs"
+                                                        handleClick={() =>
+                                                            initiateEditExpense(
+                                                                constantExpense,
+                                                            )
+                                                        }
+                                                    />
+                                                )}
+                                                {isCurrentlyBeingEdited ? (
+                                                    <ButtonIcon
+                                                        icon="fa-solid fa-xmark fa-xs"
+                                                        handleClick={() =>
+                                                            undoEditExpense(
+                                                                constantExpense,
+                                                            )
+                                                        }
+                                                    />
+                                                ) : (
+                                                    <ButtonIcon
+                                                        icon="fa-solid fa-trash-can fa-xs"
+                                                        handleClick={() =>
+                                                            initiateDeleteExpense(
+                                                                constantExpense,
+                                                            )
+                                                        }
+                                                    />
+                                                )}
                                             </div>
-                                        </div>
-                                    </li>
-                                );
-                            })}
+                                            <div
+                                                className={`flex-column flex-justify-center gap-10 constant-expense_delete-question text-center ${
+                                                    isToBeDeleted &&
+                                                    'delete-text-shown'
+                                                }`}
+                                            >
+                                                <h5>
+                                                    Delete expense{' '}
+                                                    {`'${constantExpense.name}'`}
+                                                    ?
+                                                </h5>
+                                                <div className="flex-center gap-10">
+                                                    <ButtonIcon
+                                                        icon="fas fa-check fa-xs"
+                                                        handleClick={() =>
+                                                            handleDeleteExpense(
+                                                                constantExpense,
+                                                            )
+                                                        }
+                                                    />
+                                                    <ButtonIcon
+                                                        icon="fa-solid fa-xmark fa-xs"
+                                                        handleClick={() =>
+                                                            undoDeleteExpense(
+                                                                constantExpense,
+                                                            )
+                                                        }
+                                                    />
+                                                </div>
+                                            </div>
+                                        </li>
+                                    );
+                                },
+                            )}
                         </ul>
                     </>
                 )}
@@ -244,6 +289,7 @@ ConstantExpenses.propTypes = {
     addConstantExpense: PropTypes.func.isRequired,
     editConstantExpense: PropTypes.func.isRequired,
     deleteConstantExpense: PropTypes.func.isRequired,
+    filteredConstantExpense: FilteredConstantExpenses,
 };
 
 export default ConstantExpenses;

@@ -218,6 +218,10 @@ ul {
     text-align: center;
 }
 
+.flex {
+    display: flex;
+}
+
 .flex-center {
     display: flex;
     justify-content: center;
@@ -245,6 +249,10 @@ ul {
 
 .flex-justify-center {
     justify-content: center;
+}
+
+.flex-justify-space-between {
+    justify-content: space-between;
 }
 
 .gap-10 {
@@ -883,4 +891,17 @@ input[type='color']:disabled {
 
 .delete-text-shown {
     transform: translate(0);
+}
+
+.filter-constant-expense-container {
+    flex: 1;
+    color: #8a8a8a;
+}
+
+.filter-constant-expense-container:hover {
+    cursor: pointer;
+}
+
+.constant-expense-filter__selected {
+    border-bottom: 3px solid $main-color;
 }
