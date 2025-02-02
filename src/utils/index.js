@@ -80,9 +80,12 @@ export const translateMessage = (message) => {
         case 'added-user-settings':
             return 'User settings has been added successfully.';
         case 'add-missing-fields':
+        case 'edit-missing-field':
             return 'Please fill in all fields.';
         case 'added-constant-expense':
             return 'Constant expense has been added successfully.';
+        case 'editted-constant-expense':
+            return 'Constant expense has been editted successfully.';
 
         default:
             return 'Something went wrong. Please try again.';

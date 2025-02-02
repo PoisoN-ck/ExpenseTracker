@@ -16,14 +16,14 @@ const DEFAULT_CONSTANT_EXPENSE_STATE = {
 const ConstantExpenses = ({
     constantExpenses,
     isShown,
-    onAddExpense,
-    // onEditExpense,
-    // onDeleteExpense,
+    addConstantExpense,
+    editConstantExpense,
+    deleteConstantExpense,
 }) => {
     const [newConstantExpense, setNewConstantExpense] = useState(
         DEFAULT_CONSTANT_EXPENSE_STATE,
     );
-    const [edittedExpenses, setEdittedExpenses] = useState([]);
+    const [editedExpenses, setEditedExpenses] = useState([]);
 
     const isConstantExpensesExist = constantExpenses.length > 0;
 
@@ -32,7 +32,7 @@ const ConstantExpenses = ({
             ...newConstantExpense,
             id: uuidv4(),
         };
-        const isExpenseAdded = await onAddExpense(newExpenseWithId);
+        const isExpenseAdded = await addConstantExpense(newExpenseWithId);
 
         if (isExpenseAdded) {
             setNewConstantExpense(DEFAULT_CONSTANT_EXPENSE_STATE);
@@ -40,44 +40,61 @@ const ConstantExpenses = ({
     };
 
     const modifyChosenExpenseData = useCallback(
-        (edittedExpense) => {
+        (editedExpense) => {
             const currentExpense = constantExpenses.find(
-                (constantExpene) => constantExpene.id === edittedExpense.id,
+                (constantExpene) => constantExpene.id === editedExpense.id,
             );
 
             if (currentExpense) {
-                setEdittedExpenses((edittedExpensesState) => {
-                    const stateWithoutOldExpense = edittedExpensesState.filter(
-                        (expense) => expense.id !== edittedExpense.id,
+                setEditedExpenses((editedExpensesState) => {
+                    const stateWithoutOldExpense = editedExpensesState.filter(
+                        (expense) => expense.id !== editedExpense.id,
                     );
 
-                    return [...stateWithoutOldExpense, edittedExpense];
+                    return [...stateWithoutOldExpense, editedExpense];
                 });
             }
         },
-        [constantExpenses, setEdittedExpenses],
+        [constantExpenses, setEditedExpenses],
     );
 
-    const editExpense = (edittedExpense) =>
-        setEdittedExpenses((edittedExpensesState) => [
-            ...edittedExpensesState,
-            edittedExpense,
+    const initiateEditExpense = (editedExpense) =>
+        setEditedExpenses((editedExpensesState) => [
+            ...editedExpensesState,
+            editedExpense,
         ]);
 
-    const undoEditExpense = (edittedExpense) => {
-        setEdittedExpenses((edittedExpensesState) => {
-            const stateWithoutOldExpense = edittedExpensesState.filter(
-                (expense) => expense.id !== edittedExpense.id,
+    const undoEditExpense = (editedExpense) => {
+        setEditedExpenses((editedExpensesState) => {
+            const stateWithoutOldExpense = editedExpensesState.filter(
+                (expense) => expense.id !== editedExpense.id,
             );
 
             return stateWithoutOldExpense;
         });
     };
 
-    const isBeingCurrentlyEditted = (expenseId) =>
-        !!edittedExpenses.find(
-            (edittedExpense) => edittedExpense.id === expenseId,
+    const isBeingCurrentlyEdited = (expenseId) =>
+        !!editedExpenses.find(
+            (editedExpense) => editedExpense.id === expenseId,
         );
+
+    const handleDeleteExpense = async (expense) =>
+        await deleteConstantExpense(expense);
+    const handleEditExpense = async (modifiedExpense) => {
+        const editedExpense = editedExpenses.find(
+            (expense) => expense.id === modifiedExpense.id,
+        );
+
+        if (editedExpense) {
+            await editConstantExpense(editedExpense);
+            setEditedExpenses((prevState) =>
+                prevState.filter(
+                    (expense) => expense.id !== modifiedExpense.id,
+                ),
+            );
+        }
+    };
 
     return (
         <div
@@ -105,9 +122,9 @@ const ConstantExpenses = ({
                         </h4>
                         <ul className="flex-column full-width">
                             {constantExpenses.map((constantExpense) => {
-                                const isCurrentlyBeingEditted =
-                                    isBeingCurrentlyEditted(constantExpense.id);
-                                const isDisabled = !isCurrentlyBeingEditted;
+                                const isCurrentlyBeingEdited =
+                                    isBeingCurrentlyEdited(constantExpense.id);
+                                const isDisabled = !isCurrentlyBeingEdited;
 
                                 return (
                                     <li
@@ -122,11 +139,11 @@ const ConstantExpenses = ({
                                             }
                                         />
                                         <div className="flex-center-column gap-5">
-                                            {isCurrentlyBeingEditted ? (
+                                            {isCurrentlyBeingEdited ? (
                                                 <ButtonIcon
                                                     icon="fas fa-check fa-xs"
                                                     handleClick={() =>
-                                                        undoEditExpense(
+                                                        handleEditExpense(
                                                             constantExpense,
                                                         )
                                                     }
@@ -135,13 +152,13 @@ const ConstantExpenses = ({
                                                 <ButtonIcon
                                                     icon="fa-solid fa-pen fa-xs"
                                                     handleClick={() =>
-                                                        editExpense(
+                                                        initiateEditExpense(
                                                             constantExpense,
                                                         )
                                                     }
                                                 />
                                             )}
-                                            {isCurrentlyBeingEditted ? (
+                                            {isCurrentlyBeingEdited ? (
                                                 <ButtonIcon
                                                     icon="fa-solid fa-xmark fa-xs"
                                                     handleClick={() =>
@@ -154,7 +171,7 @@ const ConstantExpenses = ({
                                                 <ButtonIcon
                                                     icon="fa-solid fa-trash-can fa-xs"
                                                     handleClick={() =>
-                                                        editExpense(
+                                                        handleDeleteExpense(
                                                             constantExpense,
                                                         )
                                                     }
@@ -175,9 +192,9 @@ const ConstantExpenses = ({
 ConstantExpenses.propTypes = {
     constantExpenses: PropTypes.arrayOf(ConstantExpenseType),
     isShown: PropTypes.bool.isRequired,
-    onAddExpense: PropTypes.func,
-    onEditExpense: PropTypes.func,
-    onDeleteExpense: PropTypes.func,
+    addConstantExpense: PropTypes.func.isRequired,
+    editConstantExpense: PropTypes.func.isRequired,
+    deleteConstantExpense: PropTypes.func.isRequired,
 };
 
 export default ConstantExpenses;

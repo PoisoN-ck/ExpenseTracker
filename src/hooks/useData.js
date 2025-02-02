@@ -340,7 +340,7 @@ const useData = (isVerified) => {
                                     )
                                         .then(() => {
                                             setSuccessMessage({
-                                                code: 'added-user-settings',
+                                                code: 'added-constant-expense',
                                             });
                                             res(true);
                                         })
@@ -373,6 +373,101 @@ const useData = (isVerified) => {
                 });
 
             const result = await addConstantExpensePromise();
+
+            return result;
+        },
+        [successMessage, constantExpenses],
+    );
+
+    const editConstantExpense = useCallback(
+        async (modifiedExpense) => {
+            if (
+                !modifiedExpense.id ||
+                !modifiedExpense.category ||
+                !modifiedExpense.name ||
+                !modifiedExpense.amount
+            ) {
+                setDataError({ code: 'edit-missing-field' });
+                return false;
+            }
+
+            const connectionRef = ref(db, '.info/connected');
+            const editConstantExpensePromise = async () =>
+                await new Promise((res, rej) => {
+                    let isFailedAttempt = false;
+
+                    try {
+                        onValue(connectionRef, (snapshot) => {
+                            const isNetworkExist = snapshot.val();
+
+                            if (!isNetworkExist) {
+                                isFailedAttempt = true;
+                                setDataError({
+                                    code: 'no-network-users-settings',
+                                });
+                                rej(false);
+                                return;
+                            }
+
+                            resetMessages();
+
+                            // Making sure that settings
+                            // are not saved in offline mode
+                            if (isFailedAttempt) {
+                                rej(false);
+                                return;
+                            }
+
+                            // Paste into the array of data the expense replaced with new data
+                            const modifiedExpenses = constantExpenses.map(
+                                (expense) =>
+                                    expense.id === modifiedExpense.id
+                                        ? modifiedExpense
+                                        : expense,
+                            );
+
+                            try {
+                                if (isVerified) {
+                                    setIsLoading(true);
+                                    set(
+                                        ref(
+                                            db,
+                                            `${auth.currentUser?.uid}/constantExpenses`,
+                                        ),
+                                        modifiedExpenses,
+                                    )
+                                        .then(() => {
+                                            setSuccessMessage({
+                                                code: 'editted-constant-expense',
+                                            });
+                                            res(true);
+                                        })
+                                        .catch((error) => {
+                                            setDataError(error);
+                                            rej(false);
+                                        })
+                                        .finally(() => {
+                                            setIsLoading(false);
+                                        });
+                                } else {
+                                    setDataError({ code: 'no-data-saved' });
+                                    setTransactions(modifiedExpenses);
+                                    rej(false);
+                                }
+                            } catch (error) {
+                                setDataError(error);
+                                rej(false);
+                            } finally {
+                                setIsLoading(false);
+                            }
+                        });
+                    } catch (error) {
+                        setDataError(error);
+                        rej(false);
+                    }
+                });
+
+            const result = await editConstantExpensePromise();
 
             return result;
         },
@@ -421,6 +516,7 @@ const useData = (isVerified) => {
         setDataError,
         addUserSettings,
         addConstantExpense,
+        editConstantExpense,
         setConstantExpenses,
     };
 };
