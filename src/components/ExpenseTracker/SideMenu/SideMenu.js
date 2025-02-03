@@ -22,6 +22,7 @@ const SideMenu = ({
     editConstantExpense,
     deleteConstantExpense,
     filteredConstantExpense,
+    doRegisterExpenseAsPaid,
 }) => {
     const [isUserSettingsShown, setIsUserSettingsShown] = useState(false);
     const [isExpensesShown, setIsExpensesShown] = useState(false);
@@ -29,9 +30,11 @@ const SideMenu = ({
     const handleClose = () => setIsShown(false);
 
     useEffect(() => {
+        const noScrollClass = 'no-scroll';
+
         isShown
-            ? document.body.classList.add('no-scroll')
-            : document.body.classList.remove('no-scroll');
+            ? document.body.classList.add(noScrollClass)
+            : document.body.classList.remove(noScrollClass);
     }, [isShown]);
 
     return (
@@ -80,6 +83,7 @@ const SideMenu = ({
                         editConstantExpense={editConstantExpense}
                         deleteConstantExpense={deleteConstantExpense}
                         filteredConstantExpense={filteredConstantExpense}
+                        doRegisterExpenseAsPaid={doRegisterExpenseAsPaid}
                     />
                 </li>
             </ul>
@@ -99,6 +103,7 @@ SideMenu.propTypes = {
     addConstantExpense: PropTypes.func.isRequired,
     editConstantExpense: PropTypes.func.isRequired,
     deleteConstantExpense: PropTypes.func,
+    doRegisterExpenseAsPaid: PropTypes.func,
     filteredConstantExpense: FilteredConstantExpenses,
 };
 

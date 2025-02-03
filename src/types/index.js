@@ -17,6 +17,7 @@ export const Transaction = PropTypes.shape({
     transDate: PropTypes.number.isRequired,
     transType: TransType,
     value: PropTypes.number.isRequired,
+    constantExpenseId: PropTypes.string,
 }).isRequired;
 
 export const UserSetting = PropTypes.shape({

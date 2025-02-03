@@ -2,6 +2,7 @@ import PropTypes from 'prop-types';
 import React, { useCallback, useEffect, useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { CONSTANT_EXPENSE_FILTERS } from '../../../../constants';
+import noTransactions from '../../../../img/no-transactions.svg';
 import {
     ConstantExpense as ConstantExpenseType,
     FilteredConstantExpenses,
@@ -18,6 +19,7 @@ const DEFAULT_CONSTANT_EXPENSE_STATE = {
 };
 
 const [DEFAULT_FILTER] = CONSTANT_EXPENSE_FILTERS;
+const [, , paid] = CONSTANT_EXPENSE_FILTERS;
 
 const ConstantExpenses = ({
     constantExpenses,
@@ -26,12 +28,15 @@ const ConstantExpenses = ({
     editConstantExpense,
     deleteConstantExpense,
     filteredConstantExpense,
+    doRegisterExpenseAsPaid,
 }) => {
+    // TODO: Implement Loader in this section
     const [newConstantExpense, setNewConstantExpense] = useState(
         DEFAULT_CONSTANT_EXPENSE_STATE,
     );
     const [editedExpenses, setEditedExpenses] = useState([]);
     const [deletedExpenses, setDeletedExpenses] = useState([]);
+    const [markedAsPaidExpenseId, setMarkedAsPaidExpenseId] = useState();
     const [currentlyFilteredExpenses, setCurrentlyFilteredExpenses] =
         useState(constantExpenses);
     const [currentFilter, setCurrentFilter] = useState(DEFAULT_FILTER);
@@ -124,6 +129,14 @@ const ConstantExpenses = ({
 
     const handleFilterSelect = (filter) => setCurrentFilter(filter);
 
+    const handleMarkAsPaid = (expenseId) => setMarkedAsPaidExpenseId(expenseId);
+    const handleUndoMarkAsPaid = () => setMarkedAsPaidExpenseId('');
+    const handleRegisterAsPaid = async (expense) => {
+        await doRegisterExpenseAsPaid(expense);
+
+        handleUndoMarkAsPaid();
+    };
+
     useEffect(() => {
         if (currentFilter === DEFAULT_FILTER) {
             setCurrentlyFilteredExpenses(constantExpenses);
@@ -153,144 +166,190 @@ const ConstantExpenses = ({
                         handleClick={handleAddConstantExpense}
                     />
                 </div>
-                {isConstantExpensesExist && (
-                    <>
-                        <h4 className="text-muted margin-bottom-sm text-center">
-                            Existing constant expenses
-                        </h4>
-                        {/* TODO: Move to separate component */}
-                        <div className="full-width">
-                            <ul className="flex flex-justify-space-between full-width">
-                                {CONSTANT_EXPENSE_FILTERS.map((filter) => (
-                                    <li
-                                        className={`filter-constant-expense-container padding-vertical-sm text-center`}
-                                        key={filter}
-                                        onClick={() =>
-                                            handleFilterSelect(filter)
-                                        }
-                                    >
-                                        {filter}
-                                    </li>
-                                ))}
-                            </ul>
-                            <div
-                                className="constant-expense-filter__selected margin-bottom-sm"
-                                style={{
-                                    transform: `translateX(${
-                                        100 *
-                                        CONSTANT_EXPENSE_FILTERS.indexOf(
-                                            currentFilter,
-                                        )
-                                    }%)`,
-                                }}
-                            />
-                        </div>
-                        {/* TODO: Move to separate component */}
-                        <ul className="flex-column full-width container__vertical-scroll">
-                            {currentlyFilteredExpenses.map(
-                                (constantExpense) => {
-                                    const isCurrentlyBeingEdited =
-                                        isBeingCurrentlyEdited(
-                                            constantExpense.id,
-                                        );
-                                    const isDisabled = !isCurrentlyBeingEdited;
-                                    const isToBeDeleted =
-                                        !!deletedExpenses.find(
-                                            (expense) =>
-                                                expense.id ===
-                                                constantExpense.id,
-                                        );
+                <h4 className="text-muted margin-bottom-sm text-center">
+                    Existing constant expenses
+                </h4>
+                {/* TODO: Move to separate component */}
+                <div className="full-width">
+                    <ul className="flex flex-justify-space-between full-width">
+                        {CONSTANT_EXPENSE_FILTERS.map((filter) => (
+                            <li
+                                className={`filter-constant-expense-container padding-vertical-sm text-center`}
+                                key={filter}
+                                onClick={() => handleFilterSelect(filter)}
+                            >
+                                {filter}
+                            </li>
+                        ))}
+                    </ul>
+                    <div
+                        className="constant-expense-filter__selected margin-bottom-sm"
+                        style={{
+                            transform: `translateX(${
+                                100 *
+                                CONSTANT_EXPENSE_FILTERS.indexOf(currentFilter)
+                            }%)`,
+                        }}
+                    />
+                </div>
+                {/* TODO: Move to separate component */}
+                {isConstantExpensesExist ? (
+                    <ul className="flex-column full-width container__vertical-scroll">
+                        {currentlyFilteredExpenses.map((constantExpense) => {
+                            const isCurrentlyBeingEdited =
+                                isBeingCurrentlyEdited(constantExpense.id);
+                            const isDisabled = !isCurrentlyBeingEdited;
+                            const isToBeDeleted = !!deletedExpenses.find(
+                                (expense) => expense.id === constantExpense.id,
+                            );
+                            const isBeingMarkedAsPaid =
+                                markedAsPaidExpenseId === constantExpense.id;
+                            const isPaid = !!filteredConstantExpense[paid].find(
+                                (expense) => expense.id === constantExpense.id,
+                            );
 
-                                    return (
-                                        <li
-                                            className="flex-center gap-10 margin-bottom-sm full-width constant-expense_container"
-                                            key={constantExpense.id}
-                                        >
-                                            <ConstantExpense
-                                                isDisabled={isDisabled}
-                                                constantExpense={
-                                                    constantExpense
-                                                }
-                                                setConstantExpense={
-                                                    modifyChosenExpenseData
+                            const deleteContent = (
+                                <>
+                                    <h5>
+                                        Delete expense{' '}
+                                        {`'${constantExpense.name}'`}?
+                                    </h5>
+                                    <div className="flex-center gap-10">
+                                        <ButtonIcon
+                                            icon="fas fa-check fa-xs"
+                                            handleClick={() =>
+                                                handleDeleteExpense(
+                                                    constantExpense,
+                                                )
+                                            }
+                                        />
+                                        <ButtonIcon
+                                            icon="fa-solid fa-xmark fa-xs"
+                                            handleClick={() =>
+                                                undoDeleteExpense(
+                                                    constantExpense,
+                                                )
+                                            }
+                                        />
+                                    </div>
+                                </>
+                            );
+
+                            const toBePaidContent = (
+                                <>
+                                    <h5>
+                                        Register expense as paid{' '}
+                                        {`'${constantExpense.name}'`}?
+                                    </h5>
+                                    <div className="flex-center gap-10">
+                                        <ButtonIcon
+                                            icon="fas fa-check fa-xs"
+                                            handleClick={() =>
+                                                handleRegisterAsPaid(
+                                                    constantExpense,
+                                                )
+                                            }
+                                        />
+                                        <ButtonIcon
+                                            icon="fa-solid fa-xmark fa-xs"
+                                            handleClick={handleUndoMarkAsPaid}
+                                        />
+                                    </div>
+                                </>
+                            );
+
+                            const isQuestionShown =
+                                isToBeDeleted || isBeingMarkedAsPaid;
+
+                            return (
+                                <li
+                                    className="flex-center gap-10 margin-bottom-sm full-width constant-expense_container"
+                                    key={constantExpense.id}
+                                >
+                                    <div className="flex-center-column">
+                                        <ButtonIcon
+                                            isDisabled={isPaid}
+                                            icon="fa-solid fa-circle-dollar-to-slot"
+                                            style="button-icon__no-border button-icon__small"
+                                            handleClick={() =>
+                                                handleMarkAsPaid(
+                                                    constantExpense.id,
+                                                )
+                                            }
+                                        />
+                                    </div>
+                                    <ConstantExpense
+                                        isDisabled={isDisabled}
+                                        constantExpense={constantExpense}
+                                        setConstantExpense={
+                                            modifyChosenExpenseData
+                                        }
+                                    />
+                                    <div className="flex-center-column gap-5">
+                                        {isCurrentlyBeingEdited ? (
+                                            <ButtonIcon
+                                                icon="fas fa-check fa-xs"
+                                                handleClick={() =>
+                                                    handleEditExpense(
+                                                        constantExpense,
+                                                    )
                                                 }
                                             />
-                                            <div className="flex-center-column gap-5">
-                                                {isCurrentlyBeingEdited ? (
-                                                    <ButtonIcon
-                                                        icon="fas fa-check fa-xs"
-                                                        handleClick={() =>
-                                                            handleEditExpense(
-                                                                constantExpense,
-                                                            )
-                                                        }
-                                                    />
-                                                ) : (
-                                                    <ButtonIcon
-                                                        icon="fa-solid fa-pen fa-xs"
-                                                        handleClick={() =>
-                                                            initiateEditExpense(
-                                                                constantExpense,
-                                                            )
-                                                        }
-                                                    />
-                                                )}
-                                                {isCurrentlyBeingEdited ? (
-                                                    <ButtonIcon
-                                                        icon="fa-solid fa-xmark fa-xs"
-                                                        handleClick={() =>
-                                                            undoEditExpense(
-                                                                constantExpense,
-                                                            )
-                                                        }
-                                                    />
-                                                ) : (
-                                                    <ButtonIcon
-                                                        icon="fa-solid fa-trash-can fa-xs"
-                                                        handleClick={() =>
-                                                            initiateDeleteExpense(
-                                                                constantExpense,
-                                                            )
-                                                        }
-                                                    />
-                                                )}
-                                            </div>
-                                            <div
-                                                className={`flex-column flex-justify-center gap-10 constant-expense_delete-question text-center ${
-                                                    isToBeDeleted &&
-                                                    'delete-text-shown'
-                                                }`}
-                                            >
-                                                <h5>
-                                                    Delete expense{' '}
-                                                    {`'${constantExpense.name}'`}
-                                                    ?
-                                                </h5>
-                                                <div className="flex-center gap-10">
-                                                    <ButtonIcon
-                                                        icon="fas fa-check fa-xs"
-                                                        handleClick={() =>
-                                                            handleDeleteExpense(
-                                                                constantExpense,
-                                                            )
-                                                        }
-                                                    />
-                                                    <ButtonIcon
-                                                        icon="fa-solid fa-xmark fa-xs"
-                                                        handleClick={() =>
-                                                            undoDeleteExpense(
-                                                                constantExpense,
-                                                            )
-                                                        }
-                                                    />
-                                                </div>
-                                            </div>
-                                        </li>
-                                    );
-                                },
-                            )}
-                        </ul>
-                    </>
+                                        ) : (
+                                            <ButtonIcon
+                                                icon="fa-solid fa-pen fa-xs"
+                                                handleClick={() =>
+                                                    initiateEditExpense(
+                                                        constantExpense,
+                                                    )
+                                                }
+                                            />
+                                        )}
+                                        {isCurrentlyBeingEdited ? (
+                                            <ButtonIcon
+                                                icon="fa-solid fa-xmark fa-xs"
+                                                handleClick={() =>
+                                                    undoEditExpense(
+                                                        constantExpense,
+                                                    )
+                                                }
+                                            />
+                                        ) : (
+                                            <ButtonIcon
+                                                icon="fa-solid fa-trash-can fa-xs"
+                                                handleClick={() =>
+                                                    initiateDeleteExpense(
+                                                        constantExpense,
+                                                    )
+                                                }
+                                            />
+                                        )}
+                                    </div>
+                                    <div
+                                        className={`flex-column flex-justify-center gap-10 constant-expense_delete-question text-center ${
+                                            isQuestionShown &&
+                                            'is-confirmation-text-shown'
+                                        }`}
+                                    >
+                                        {isBeingMarkedAsPaid && toBePaidContent}
+                                        {isToBeDeleted && deleteContent}
+                                    </div>
+                                </li>
+                            );
+                        })}
+                    </ul>
+                ) : (
+                    // TODO: Move to a separate component (same as in Transactions)
+                    <div className="transactions__no-transactions container">
+                        <img
+                            className="transactions__no-transactions-image"
+                            src={noTransactions}
+                            alt="No transactions"
+                        />
+                        <p className="transactions__no-transactions-text">
+                            No constants expenses found... Wanna create a few?
+                        </p>
+                    </div>
                 )}
             </div>
         </div>
@@ -304,6 +363,7 @@ ConstantExpenses.propTypes = {
     editConstantExpense: PropTypes.func.isRequired,
     deleteConstantExpense: PropTypes.func.isRequired,
     filteredConstantExpense: FilteredConstantExpenses,
+    doRegisterExpenseAsPaid: PropTypes.func,
 };
 
 export default ConstantExpenses;

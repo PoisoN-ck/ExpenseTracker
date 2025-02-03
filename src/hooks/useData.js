@@ -15,6 +15,7 @@ const useData = (isVerified) => {
     const [usersSettings, setUsersSettings] = useState([]);
     const [constantExpenses, setConstantExpenses] = useState([]);
     const [filteredConstantExpense, setFilteredConstantExpenses] = useState({});
+    const [thisMonthTransactions, setThisMonthTransactions] = useState([]);
 
     const resetMessages = () => {
         setDataError(null);
@@ -587,11 +588,6 @@ const useData = (isVerified) => {
 
     const updateFilteredConstantExpenses = useCallback(() => {
         const [, notPaid, paid] = CONSTANT_EXPENSE_FILTERS;
-        const thisMonthTransactions = filterTransactions(
-            transactions,
-            'date',
-            JSON.stringify(thisMonthFilter),
-        );
 
         const constantExpensesTransactionsOnly = thisMonthTransactions.filter(
             (transaction) =>
@@ -625,7 +621,157 @@ const useData = (isVerified) => {
             [paid]: paidConstantExpenses,
             [notPaid]: notPaidConstantExpenses,
         });
-    }, [constantExpenses, transactions]);
+    }, [constantExpenses, transactions, thisMonthTransactions]);
+
+    const addConstantExpenseIdToExistingTransaction = useCallback(
+        async (transactionWithConstantId) => {
+            if (
+                !transactionWithConstantId.value ||
+                !transactionWithConstantId.constantExpenseId
+            )
+                return;
+
+            const connectionRef = ref(db, '.info/connected');
+            const addConstantExpenseIdPromise = async () =>
+                await new Promise((res, rej) => {
+                    let isFailedAttempt = false;
+
+                    try {
+                        onValue(connectionRef, (snapshot) => {
+                            const isNetworkExist = snapshot.val();
+
+                            if (!isNetworkExist) {
+                                isFailedAttempt = true;
+                                setDataError({ code: 'no-network' });
+                                rej(false);
+                                return;
+                            }
+
+                            resetMessages();
+
+                            // Making sure that transactions
+                            // are not registred in offline mode
+                            if (isFailedAttempt) return;
+
+                            const updatedTransactions = transactions.map(
+                                (transaction) =>
+                                    transaction.id ===
+                                    transactionWithConstantId.id
+                                        ? transactionWithConstantId
+                                        : transaction,
+                            );
+
+                            try {
+                                if (isVerified) {
+                                    setIsLoading(true);
+                                    set(
+                                        ref(
+                                            db,
+                                            `${auth.currentUser?.uid}/transactionsList`,
+                                        ),
+                                        updatedTransactions,
+                                    )
+                                        .then(() => {
+                                            setSuccessMessage({
+                                                code: 'paid-constant-expense',
+                                            });
+                                            res(true);
+                                        })
+                                        .catch((error) => {
+                                            setDataError(error);
+                                            rej(false);
+                                        })
+                                        .finally(() => {
+                                            setIsLoading(false);
+                                        });
+                                } else {
+                                    setDataError({ code: 'no-data-saved' });
+                                    setTransactions(updatedTransactions);
+                                }
+                            } catch (error) {
+                                setDataError(error);
+                                rej(false);
+                            } finally {
+                                setIsLoading(false);
+                            }
+                        });
+                    } catch (error) {
+                        setDataError(error);
+                        rej(false);
+                    }
+                });
+
+            const result = await addConstantExpenseIdPromise();
+
+            return result;
+        },
+        [successMessage, transactions],
+    );
+
+    const doRegisterExpenseAsPaid = useCallback(
+        async (constantExpense) => {
+            const rangeAmount = 3000;
+            const getMinAmount = (amount) =>
+                amount - 3000 <= 0 ? 0 : amount - rangeAmount;
+            const getMaxAmount = (amount) => amount + rangeAmount;
+
+            const { amount, id, category } = constantExpense;
+
+            const filteredTransactionsByCategory = thisMonthTransactions.filter(
+                (transaction) => transaction.category === category,
+            );
+
+            if (filteredTransactionsByCategory.length) {
+                const exactMatchExpense = filteredTransactionsByCategory.find(
+                    (transaction) => transaction.value * -1 === amount,
+                );
+
+                if (exactMatchExpense) {
+                    const isPaid =
+                        await addConstantExpenseIdToExistingTransaction({
+                            ...exactMatchExpense,
+                            constantExpenseId: id,
+                        });
+
+                    return isPaid;
+                }
+
+                // If exact match was not found, try to find a match within a range amount
+                const potentialMatchExpense =
+                    filteredTransactionsByCategory.find((transaction) => {
+                        const transValue = transaction.value * -1;
+
+                        return (
+                            getMinAmount(amount) <= transValue &&
+                            transValue <= getMaxAmount(amount)
+                        );
+                    });
+
+                if (potentialMatchExpense) {
+                    const isPaid =
+                        await addConstantExpenseIdToExistingTransaction({
+                            ...potentialMatchExpense,
+                            constantExpenseId: id,
+                        });
+
+                    return isPaid;
+                }
+
+                // If pontential match was not found - fallback option - take first transaction from this category
+                const isPaid = await addConstantExpenseIdToExistingTransaction({
+                    ...filteredTransactionsByCategory[0],
+                    constantExpenseId: id,
+                });
+
+                return isPaid;
+            }
+
+            setDataError({ code: 'constant-expense-cannot-be-paid' });
+
+            return false;
+        },
+        [thisMonthTransactions, addConstantExpenseIdToExistingTransaction],
+    );
 
     const initialLoad = useCallback(async () => {
         await fetchAndUpdateUsersSettings();
@@ -636,6 +782,16 @@ const useData = (isVerified) => {
     useEffect(() => {
         initialLoad();
     }, []);
+
+    useEffect(() => {
+        setThisMonthTransactions(
+            filterTransactions(
+                transactions,
+                'date',
+                JSON.stringify(thisMonthFilter),
+            ),
+        );
+    }, [transactions]);
 
     useEffect(() => {
         updateFilteredConstantExpenses();
@@ -658,6 +814,7 @@ const useData = (isVerified) => {
         addConstantExpense,
         editConstantExpense,
         deleteConstantExpense,
+        doRegisterExpenseAsPaid,
     };
 };
 

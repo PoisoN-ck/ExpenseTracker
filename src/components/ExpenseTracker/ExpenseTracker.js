@@ -41,6 +41,7 @@ const ExpenseTracker = ({ isVerified, logOut }) => {
         editConstantExpense,
         deleteConstantExpense,
         addUserSettings,
+        doRegisterExpenseAsPaid,
     } = useData(isVerified);
 
     useEffect(() => {
@@ -103,6 +104,7 @@ const ExpenseTracker = ({ isVerified, logOut }) => {
                 editConstantExpense={editConstantExpense}
                 deleteConstantExpense={deleteConstantExpense}
                 filteredConstantExpense={filteredConstantExpense}
+                doRegisterExpenseAsPaid={doRegisterExpenseAsPaid}
             />
 
             <TrackerHeader

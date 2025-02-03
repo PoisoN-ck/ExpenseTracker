@@ -2,7 +2,7 @@ import React, { useMemo } from 'react';
 
 import PropTypes from 'prop-types';
 import noTransactions from '../../../img/no-transactions.svg';
-import { UserSetting } from '../../../types';
+import { Transaction, UserSetting } from '../../../types';
 import { convertToString } from '../../../utils';
 import Loader from '../../common/Loader/Loader';
 
@@ -47,6 +47,7 @@ const Transactions = ({ isLoading, transactions, usersSettings }) => {
                         <ul>{transactionsList}</ul>
                     </div>
                 ) : (
+                    // TODO: Move to a separate component
                     <div className="transactions__no-transactions container">
                         <img
                             className="transactions__no-transactions-image"
@@ -63,16 +64,9 @@ const Transactions = ({ isLoading, transactions, usersSettings }) => {
     );
 };
 
-const transaction = {
-    category: PropTypes.string.isRequired,
-    transDate: PropTypes.number.isRequired,
-    transType: PropTypes.string.isRequired,
-    value: PropTypes.number.isRequired,
-};
-
 Transactions.propTypes = {
     isLoading: PropTypes.bool.isRequired,
-    transactions: PropTypes.arrayOf(PropTypes.shape(transaction)).isRequired,
+    transactions: PropTypes.arrayOf(PropTypes.shape(Transaction)).isRequired,
     usersSettings: PropTypes.arrayOf(UserSetting),
 };
 
