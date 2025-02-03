@@ -141,7 +141,7 @@ const ConstantExpenses = ({
             } flex-column flex-align-center`}
         >
             <div className="menu-subsection">
-                <div className="margin-bottom-md full-width">
+                <div className="margin-bottom-lg full-width">
                     <ConstantExpense
                         constantExpense={newConstantExpense}
                         setConstantExpense={setNewConstantExpense}
@@ -155,24 +155,38 @@ const ConstantExpenses = ({
                 </div>
                 {isConstantExpensesExist && (
                     <>
-                        <h4 className="text-muted margin-bottom-md text-center">
+                        <h4 className="text-muted margin-bottom-sm text-center">
                             Existing constant expenses
                         </h4>
-                        <ul className="flex flex-justify-space-between full-width margin-bottom-sm">
-                            {CONSTANT_EXPENSE_FILTERS.map((filter) => (
-                                <li
-                                    className={`filter-constant-expense-container padding-vertical-sm text-center ${
-                                        filter === currentFilter &&
-                                        'constant-expense-filter__selected'
-                                    }`}
-                                    key={filter}
-                                    onClick={() => handleFilterSelect(filter)}
-                                >
-                                    {filter}
-                                </li>
-                            ))}
-                        </ul>
-                        <ul className="flex-column full-width">
+                        {/* TODO: Move to separate component */}
+                        <div className="full-width">
+                            <ul className="flex flex-justify-space-between full-width">
+                                {CONSTANT_EXPENSE_FILTERS.map((filter) => (
+                                    <li
+                                        className={`filter-constant-expense-container padding-vertical-sm text-center`}
+                                        key={filter}
+                                        onClick={() =>
+                                            handleFilterSelect(filter)
+                                        }
+                                    >
+                                        {filter}
+                                    </li>
+                                ))}
+                            </ul>
+                            <div
+                                className="constant-expense-filter__selected margin-bottom-sm"
+                                style={{
+                                    transform: `translateX(${
+                                        100 *
+                                        CONSTANT_EXPENSE_FILTERS.indexOf(
+                                            currentFilter,
+                                        )
+                                    }%)`,
+                                }}
+                            />
+                        </div>
+                        {/* TODO: Move to separate component */}
+                        <ul className="flex-column full-width container__vertical-scroll">
                             {currentlyFilteredExpenses.map(
                                 (constantExpense) => {
                                     const isCurrentlyBeingEdited =

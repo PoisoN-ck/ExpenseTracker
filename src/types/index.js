@@ -34,6 +34,6 @@ export const ConstantExpense = PropTypes.shape({
 });
 
 export const FilteredConstantExpenses = PropTypes.shape({
-    // Paid: PropTypes.arrayOf(ConstantExpense),
-    // 'Not paid': PropTypes.arrayOf(ConstantExpense),
+    Paid: PropTypes.arrayOf(ConstantExpense),
+    'Not paid': PropTypes.arrayOf(ConstantExpense),
 });

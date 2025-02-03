@@ -56,7 +56,7 @@ const UserSettings = ({
         <div
             className={`menu-section ${
                 isShown && 'section-shown'
-            } flex-column flex-align-center`}
+            } flex-column flex-align-center text-center`}
         >
             <div className="menu-subsection">
                 <label

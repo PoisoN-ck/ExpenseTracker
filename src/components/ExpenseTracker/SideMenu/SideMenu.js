@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 import {
     ConstantExpense,
@@ -27,6 +27,12 @@ const SideMenu = ({
     const [isExpensesShown, setIsExpensesShown] = useState(false);
 
     const handleClose = () => setIsShown(false);
+
+    useEffect(() => {
+        isShown
+            ? document.body.classList.add('no-scroll')
+            : document.body.classList.remove('no-scroll');
+    }, [isShown]);
 
     return (
         <div className={`menu ${isShown ? 'menu--shown' : ''}`}>
