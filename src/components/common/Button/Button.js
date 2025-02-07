@@ -30,7 +30,7 @@ Button.propTypes = {
     isRounded: PropTypes.bool,
     style: PropTypes.string,
     text: PropTypes.string.isRequired,
-    variant: PropTypes.oneOf([Object.keys(INPUT_VARIANT_DICT)]),
+    variant: PropTypes.oneOf(Object.keys(INPUT_VARIANT_DICT)),
     handleClick: PropTypes.func.isRequired,
 };
 

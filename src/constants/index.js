@@ -103,4 +103,7 @@ export const INPUT_SIZE_DICT = {
     lg: 'inpit-field--lg', // does not exist yet
 };
 
-export const CONSTANT_EXPENSE_FILTERS = ['All', 'Not paid', 'Paid'];
+export const ALL = 'All';
+export const NOT_PAID = 'Not paid';
+export const PAID = 'Paid';
+export const CONSTANT_EXPENSE_FILTERS = [ALL, NOT_PAID, PAID];

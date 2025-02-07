@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types';
 import React, { useCallback, useEffect, useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
-import { CONSTANT_EXPENSE_FILTERS } from '../../../../constants';
+import { CONSTANT_EXPENSE_FILTERS, PAID } from '../../../../constants';
 import noTransactions from '../../../../img/no-transactions.svg';
 import {
     ConstantExpense as ConstantExpenseType,
@@ -19,7 +19,6 @@ const DEFAULT_CONSTANT_EXPENSE_STATE = {
 };
 
 const [DEFAULT_FILTER] = CONSTANT_EXPENSE_FILTERS;
-const [, , paid] = CONSTANT_EXPENSE_FILTERS;
 
 const ConstantExpenses = ({
     constantExpenses,
@@ -204,7 +203,7 @@ const ConstantExpenses = ({
                             );
                             const isBeingMarkedAsPaid =
                                 markedAsPaidExpenseId === constantExpense.id;
-                            const isPaid = !!filteredConstantExpense[paid].find(
+                            const isPaid = !!filteredConstantExpense[PAID].find(
                                 (expense) => expense.id === constantExpense.id,
                             );
 

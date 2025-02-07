@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import {
     DEFAULT_FILTERS_STATE,
     DEFAULT_NUM_OF_TRANSACTIONS,
+    NOT_PAID,
 } from '../../constants';
 import { sortTransactionsByDate, translateMessage } from '../../utils';
 
@@ -42,6 +43,7 @@ const ExpenseTracker = ({ isVerified, logOut }) => {
         deleteConstantExpense,
         addUserSettings,
         doRegisterExpenseAsPaid,
+        payConstantExpenses,
     } = useData(isVerified);
 
     useEffect(() => {
@@ -153,6 +155,8 @@ const ExpenseTracker = ({ isVerified, logOut }) => {
                 isDisabled={isLoading}
                 setError={setDataError}
                 chosenUser={chosenUser}
+                notPaidConstantExpenses={filteredConstantExpense[NOT_PAID]}
+                payConstantExpenses={payConstantExpenses}
             />
         </>
     );

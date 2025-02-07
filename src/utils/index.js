@@ -90,9 +90,11 @@ export const translateMessage = (message) => {
             return 'Constant expense has been deleted successfully.';
         case 'delete-expense-missing-id':
             return 'Cannot delete expense without id.';
-        case 'paid-constant-expense':
+        case 'constant-expense-marked-as-paid':
             return 'Successfully registered Constant Expense as paid.';
         case 'constant-expense-cannot-be-paid':
+            return "Cannot find any transaction of this category. Maybe, you didn't pay it?";
+        case 'constant-expenses-paid':
             return "Cannot find any transaction of this category. Maybe, you didn't pay it?";
 
         default:

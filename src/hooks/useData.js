@@ -1,5 +1,6 @@
 import { child, get, onValue, ref, set } from 'firebase/database';
 import { useCallback, useEffect, useState } from 'react';
+import { v4 as uuidv4 } from 'uuid';
 import db, { auth } from '../services/db';
 
 import { sendEmailVerification } from 'firebase/auth';
@@ -673,7 +674,7 @@ const useData = (isVerified) => {
                                     )
                                         .then(() => {
                                             setSuccessMessage({
-                                                code: 'paid-constant-expense',
+                                                code: 'constant-expense-marked-as-paid',
                                             });
                                             res(true);
                                         })
@@ -773,6 +774,97 @@ const useData = (isVerified) => {
         [thisMonthTransactions, addConstantExpenseIdToExistingTransaction],
     );
 
+    const payConstantExpenses = useCallback(
+        async (constantExpenses) => {
+            if (!constantExpenses.length) return;
+
+            // TODO: Make a common addTransaction method to handle this case as well
+            const newTransactions = constantExpenses.map((expense) => ({
+                category: expense.category,
+                id: uuidv4(),
+                transDate: Date.now(),
+                transType: 'Expense',
+                value: expense.amount * -1,
+                constantExpenseId: expense.id,
+                userId: expense.userId,
+            }));
+
+            const connectionRef = ref(db, '.info/connected');
+            const payConstantExpensesPromise = async () =>
+                await new Promise((res, rej) => {
+                    let isFailedAttempt = false;
+
+                    try {
+                        onValue(connectionRef, (snapshot) => {
+                            const isNetworkExist = snapshot.val();
+
+                            if (!isNetworkExist) {
+                                isFailedAttempt = true;
+                                setDataError({ code: 'no-network' });
+                                rej(false);
+                                return;
+                            }
+
+                            resetMessages();
+
+                            // Making sure that transactions
+                            // are not registred in offline mode
+                            if (isFailedAttempt) {
+                                rej(false);
+                                return;
+                            }
+
+                            try {
+                                if (isVerified) {
+                                    setIsLoading(true);
+                                    set(
+                                        ref(
+                                            db,
+                                            `${auth.currentUser?.uid}/transactionsList`,
+                                        ),
+                                        [...transactions, ...newTransactions],
+                                    )
+                                        .then(() => {
+                                            setSuccessMessage({
+                                                code: 'constant-expenses-paid',
+                                            });
+                                            res(true);
+                                        })
+                                        .catch((error) => {
+                                            setDataError(error);
+                                            rej(false);
+                                        })
+                                        .finally(() => {
+                                            setIsLoading(false);
+                                        });
+                                } else {
+                                    setDataError({ code: 'no-data-saved' });
+                                    setTransactions([
+                                        ...transactions,
+                                        ...newTransactions,
+                                    ]);
+                                    rej(false);
+                                }
+                            } catch (error) {
+                                setDataError(error);
+                                rej(false);
+                            } finally {
+                                setIsLoading(false);
+                            }
+                        });
+                    } catch (error) {
+                        setDataError(error);
+                        rej(false);
+                    }
+                });
+
+            const result = await payConstantExpensesPromise();
+
+            return result;
+        },
+        [successMessage, transactions],
+    );
+
     const initialLoad = useCallback(async () => {
         await fetchAndUpdateUsersSettings();
         await fetchAndUpdateConstantExpenses();
@@ -815,6 +907,7 @@ const useData = (isVerified) => {
         editConstantExpense,
         deleteConstantExpense,
         doRegisterExpenseAsPaid,
+        payConstantExpenses,
     };
 };
 
