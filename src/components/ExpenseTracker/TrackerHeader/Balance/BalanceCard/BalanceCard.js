@@ -20,8 +20,11 @@ const BalanceCard = ({ balance, showBalance, showHideNumbers }) => (
 );
 
 BalanceCard.propTypes = {
-    balance: PropTypes.number.isRequired,
-    showBalance: PropTypes.func.isRequired,
+    balance: PropTypes.shape({
+        title: PropTypes.string.isRequired,
+        value: PropTypes.number.isRequired,
+    }).isRequired,
+    showBalance: PropTypes.bool.isRequired,
     showHideNumbers: PropTypes.func.isRequired,
 };
 
