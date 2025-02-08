@@ -79,6 +79,7 @@ const useData = (isVerified) => {
             );
         } catch (error) {
             setDataError(error);
+        } finally {
             setIsLoading(false);
         }
     };
@@ -111,8 +112,9 @@ const useData = (isVerified) => {
                 );
             } catch (error) {
                 setDataError(error);
-                setIsLoading(false);
                 rej(false);
+            } finally {
+                setIsLoading(false);
             }
         });
 
@@ -144,8 +146,9 @@ const useData = (isVerified) => {
                 );
             } catch (error) {
                 setDataError(error);
-                setIsLoading(false);
                 rej(false);
+            } finally {
+                setIsLoading(false);
             }
         });
 

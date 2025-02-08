@@ -339,7 +339,7 @@ const ConstantExpenses = ({
                     </ul>
                 ) : (
                     // TODO: Move to a separate component (same as in Transactions)
-                    <div className="transactions__no-transactions container">
+                    <div className="container no-constant-expenses">
                         <img
                             className="transactions__no-transactions-image"
                             src={noTransactions}
