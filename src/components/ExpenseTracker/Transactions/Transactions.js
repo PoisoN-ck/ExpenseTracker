@@ -3,7 +3,7 @@ import React, { useMemo } from 'react';
 import PropTypes from 'prop-types';
 import noTransactions from '../../../img/no-transactions.svg';
 import { Transaction, UserSetting } from '../../../types';
-import { convertToString } from '../../../utils';
+import { convertAmountToString } from '../../../utils';
 import Loader from '../../common/Loader/Loader';
 
 const Transactions = ({ isLoading, transactions, usersSettings }) => {
@@ -28,7 +28,7 @@ const Transactions = ({ isLoading, transactions, usersSettings }) => {
                     >
                         <p className="transaction__header text-sm">
                             <span>{category}</span>
-                            <span>{`${convertToString(value)} HUF`}</span>
+                            <span>{`${convertAmountToString(value)} HUF`}</span>
                         </p>
                         <p className="transaction__date text-xs text-bold">
                             {new Date(transDate).toLocaleString()}

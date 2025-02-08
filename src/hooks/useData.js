@@ -1,10 +1,14 @@
 import { child, get, onValue, ref, set } from 'firebase/database';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import db, { auth } from '../services/db';
 
 import { sendEmailVerification } from 'firebase/auth';
-import { CONSTANT_EXPENSE_FILTERS, thisMonthFilter } from '../constants';
+import {
+    CONSTANT_EXPENSE_FILTERS,
+    NOT_PAID,
+    thisMonthFilter,
+} from '../constants';
 import { filterTransactions, sortTransactionsByDate } from '../utils';
 
 const useData = (isVerified) => {
@@ -865,6 +869,29 @@ const useData = (isVerified) => {
         [successMessage, transactions],
     );
 
+    const totalBalance = useMemo(
+        () =>
+            transactions?.reduce(
+                (acc, transaction) => acc + transaction.value,
+                0,
+            ) || 0,
+        [transactions],
+    );
+
+    const totalConstantExpensesToBePaid = useMemo(
+        () =>
+            filteredConstantExpense[NOT_PAID]?.reduce(
+                (acc, constantExpense) => acc + constantExpense.amount,
+                0,
+            ) || 0,
+        [filteredConstantExpense],
+    );
+
+    const freeCashAvailable = useMemo(
+        () => totalBalance - totalConstantExpensesToBePaid,
+        [totalConstantExpensesToBePaid, totalBalance],
+    );
+
     const initialLoad = useCallback(async () => {
         await fetchAndUpdateUsersSettings();
         await fetchAndUpdateConstantExpenses();
@@ -897,6 +924,8 @@ const useData = (isVerified) => {
         usersSettings,
         constantExpenses,
         filteredConstantExpense,
+        totalConstantExpensesToBePaid,
+        freeCashAvailable,
         addTransaction,
         fetchTransactions,
         resetMessages,

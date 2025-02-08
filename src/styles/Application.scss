@@ -283,6 +283,10 @@ ul {
     justify-content: space-between;
 }
 
+.gap-20 {
+    gap: 20px;
+}
+
 .gap-10 {
     gap: 10px;
 }
@@ -420,6 +424,19 @@ ul {
 .balance__content {
     text-align: center;
     color: $white;
+}
+
+.balance__total-container {
+    width: 100%;
+    position: relative;
+    overflow: hidden;
+    height: 60px;
+}
+
+.balance__shown {
+    position: absolute;
+    width: 100%;
+    transition: 0.3s;
 }
 
 .balance__amount {
@@ -1030,6 +1047,18 @@ input[type='color']:disabled {
     border-top: 3px solid $main-color;
 }
 
+.bottom-border__main-color {
+    border-bottom: 3px solid $main-color;
+}
+
 .no-border {
     border: none;
+}
+
+.color--white {
+    color: $white;
+}
+
+.no-background {
+    background-color: transparent;
 }

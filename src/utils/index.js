@@ -102,4 +102,4 @@ export const translateMessage = (message) => {
     }
 };
 
-export const convertToString = (num) => num.toLocaleString();
+export const convertAmountToString = (num = 0) => num?.toLocaleString();

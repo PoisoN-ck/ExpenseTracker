@@ -34,6 +34,8 @@ const ExpenseTracker = ({ isVerified, logOut }) => {
         usersSettings,
         constantExpenses,
         filteredConstantExpense,
+        totalConstantExpensesToBePaid,
+        freeCashAvailable,
         addTransaction,
         resetMessages,
         sendVerificationEmail,
@@ -117,6 +119,8 @@ const ExpenseTracker = ({ isVerified, logOut }) => {
                 shownTransactions={shownTransactions}
                 transactions={transactions}
                 setIsMenuShown={setIsMenuShown}
+                totalConstantExpensesToBePaid={totalConstantExpensesToBePaid}
+                freeCashAvailable={freeCashAvailable}
             />
 
             <AllTransactionsToggler

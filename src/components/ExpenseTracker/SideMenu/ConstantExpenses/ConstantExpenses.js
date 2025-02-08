@@ -173,7 +173,7 @@ const ConstantExpenses = ({
                     <ul className="flex flex-justify-space-between full-width">
                         {CONSTANT_EXPENSE_FILTERS.map((filter) => (
                             <li
-                                className={`filter-constant-expense-container padding-vertical-sm text-center`}
+                                className="filter-constant-expense-container padding-vertical-sm text-center"
                                 key={filter}
                                 onClick={() => handleFilterSelect(filter)}
                             >
@@ -193,7 +193,7 @@ const ConstantExpenses = ({
                 </div>
                 {/* TODO: Move to separate component */}
                 {isConstantExpensesExist ? (
-                    <ul className="flex-column full-width container__vertical-scroll">
+                    <ul className="flex-column full-width container__vertical-scroll bottom-border__main-color">
                         {currentlyFilteredExpenses.map((constantExpense) => {
                             const isCurrentlyBeingEdited =
                                 isBeingCurrentlyEdited(constantExpense.id);
