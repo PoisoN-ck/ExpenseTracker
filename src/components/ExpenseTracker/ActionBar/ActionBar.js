@@ -9,6 +9,7 @@ import {
     UserSetting,
 } from '../../../types';
 import AmountInput from '../../common/AmountInput';
+import Button from '../../common/Button';
 import ConstantExpensePayModal from '../../common/ConstantExpensePayModal/ConstantExpensePayModal';
 import Modal from '../../common/Modal';
 
@@ -19,6 +20,7 @@ const ActionBar = ({
     chosenUser,
     notPaidConstantExpenses,
     payConstantExpenses,
+    handleShowSideMenu,
 }) => {
     const [transactionAmount, setTransactionAmount] = useState('');
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -99,18 +101,17 @@ const ActionBar = ({
                     value={transactionAmount}
                     placeholder="Enter the amount..."
                 />
-                <button
-                    disabled={isDisabled}
-                    className={`action-bar__button button button--round button--blue ${
+                <Button
+                    text="Add"
+                    isDisabled={isDisabled}
+                    style={`action-bar__button ${
                         isAddButtonAnimated && 'animated-button'
                     }`}
-                    type="button"
+                    isRounded
                     data-modal="addTransactionModal"
-                    onClick={handleOpenModal}
+                    handleClick={handleOpenModal}
                     {...longPressButtonAttributes}
-                >
-                    Add
-                </button>
+                />
                 {isModalOpen && (
                     <Modal
                         closeModal={handleCloseModal}
@@ -125,6 +126,7 @@ const ActionBar = ({
                         handleClose={handleConstantExpenseClose}
                         payConstantExpenses={payConstantExpenses}
                         chosenUser={chosenUser}
+                        handleShowSideMenu={handleShowSideMenu}
                     />
                 )}
             </div>
@@ -139,6 +141,7 @@ ActionBar.propTypes = {
     chosenUser: UserSetting,
     notPaidConstantExpenses: PropTypes.arrayOf(ConstantExpenseType),
     payConstantExpenses: PropTypes.func.isRequired,
+    handleShowSideMenu: PropTypes.func.isRequired,
 };
 
 export default ActionBar;

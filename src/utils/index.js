@@ -95,7 +95,7 @@ export const translateMessage = (message) => {
         case 'constant-expense-cannot-be-paid':
             return "Cannot find any transaction of this category. Maybe, you didn't pay it?";
         case 'constant-expenses-paid':
-            return "Cannot find any transaction of this category. Maybe, you didn't pay it?";
+            return 'Successfully paid selected Constant Expenses.';
 
         default:
             return 'Something went wrong. Please try again.';

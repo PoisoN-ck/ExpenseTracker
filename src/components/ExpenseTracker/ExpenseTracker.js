@@ -36,6 +36,7 @@ const ExpenseTracker = ({ isVerified, logOut }) => {
         filteredConstantExpense,
         totalConstantExpensesToBePaid,
         freeCashAvailable,
+        totalBalance,
         addTransaction,
         resetMessages,
         sendVerificationEmail,
@@ -75,6 +76,12 @@ const ExpenseTracker = ({ isVerified, logOut }) => {
         }
     }, []);
 
+    useEffect(() => {
+        if (chosenUser) {
+            localStorage.setItem('userSettings', JSON.stringify(chosenUser));
+        }
+    }, [chosenUser]);
+
     const shownTransactions = useMemo(() => {
         return isFilterApplied
             ? filteredTransactions.sort(sortTransactionsByDate)
@@ -92,6 +99,8 @@ const ExpenseTracker = ({ isVerified, logOut }) => {
     };
 
     const handleSignOut = async () => await logOut();
+
+    const handleShowMenuFromModal = () => setIsMenuShown(true);
 
     return (
         <>
@@ -121,6 +130,8 @@ const ExpenseTracker = ({ isVerified, logOut }) => {
                 setIsMenuShown={setIsMenuShown}
                 totalConstantExpensesToBePaid={totalConstantExpensesToBePaid}
                 freeCashAvailable={freeCashAvailable}
+                totalBalance={totalBalance}
+                isDiffBalancesShown={!!constantExpenses.length}
             />
 
             <AllTransactionsToggler
@@ -161,6 +172,7 @@ const ExpenseTracker = ({ isVerified, logOut }) => {
                 chosenUser={chosenUser}
                 notPaidConstantExpenses={filteredConstantExpense[NOT_PAID]}
                 payConstantExpenses={payConstantExpenses}
+                handleShowSideMenu={handleShowMenuFromModal}
             />
         </>
     );

@@ -29,8 +29,6 @@ const UserSettings = ({
         );
 
         if (selectedUser) {
-            localStorage.setItem('userSettings', JSON.stringify(selectedUser));
-
             setChosenUser(selectedUser);
         }
     };

@@ -10,6 +10,8 @@ const Button = ({
     text,
     variant = 'blue',
     handleClick,
+    // mainly for useLongPress attributes
+    ...otherProps
 }) => {
     return (
         <button
@@ -19,6 +21,8 @@ const Button = ({
             }`}
             type="button"
             onClick={handleClick}
+            onContextMenu={(e) => e.preventDefault()}
+            {...otherProps}
         >
             {text}
         </button>

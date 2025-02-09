@@ -53,18 +53,26 @@ const FiltersModal = ({
     };
 
     const toggleFilter = (filter) => {
-        const newFilters = { ...filters };
+        const newFiltersShallowCopy = {
+            ...Object.entries(filters).reduce(
+                (acc, [filterCategory, filtersApplied]) => ({
+                    ...acc,
+                    [filterCategory]: [...filtersApplied],
+                }),
+                {},
+            ),
+        };
 
-        if (newFilters[filter.name].includes(filter.value)) {
-            newFilters[filter.name].splice(
-                newFilters[filter.name].indexOf(filter.value),
+        if (newFiltersShallowCopy[filter.name].includes(filter.value)) {
+            newFiltersShallowCopy[filter.name].splice(
+                newFiltersShallowCopy[filter.name].indexOf(filter.value),
                 1,
             );
         } else {
-            newFilters[filter.name].push(filter.value);
+            newFiltersShallowCopy[filter.name].push(filter.value);
         }
 
-        setFilters(newFilters);
+        setFilters(newFiltersShallowCopy);
     };
 
     return (

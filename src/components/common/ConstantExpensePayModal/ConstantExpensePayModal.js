@@ -5,12 +5,14 @@ import AmountInput from '../AmountInput';
 import Button from '../Button';
 import ButtonIcon from '../ButtonIcon';
 import Modal from '../Modal';
+import NoDataScreen from '../NoDataScreen';
 
 const ConstantExpensePayModal = ({
     payConstantExpenses,
     notPaidConstantExpenses,
     handleClose,
     chosenUser,
+    handleShowSideMenu,
 }) => {
     const [notPaidExpenses, setNotPaidExpenses] = useState([]);
 
@@ -124,6 +126,8 @@ const ConstantExpensePayModal = ({
         [notPaidExpenses],
     );
 
+    const isConstantExpensesExist = constantExpensesToBePaid.length;
+
     useEffect(() => {
         const notPaidExpenses = notPaidConstantExpenses.map((expense) => ({
             ...expense,
@@ -139,17 +143,38 @@ const ConstantExpensePayModal = ({
             closeModal={handleClose}
             title="Pay constant expenses"
         >
-            <ul className="flex-column flex-align-center container__vertical-scroll small-height-container padding-md">
-                {constantExpensesToBePaid}
-            </ul>
+            {isConstantExpensesExist ? (
+                <ul className="flex-column flex-align-center container__vertical-scroll small-height-container padding-md">
+                    {constantExpensesToBePaid}
+                </ul>
+            ) : (
+                <div className="flex-center-column" style={{ height: '350px' }}>
+                    <NoDataScreen
+                        text="No constants expenses found... Wanna create a few?"
+                        style="no-constant-expenses"
+                    />
+                </div>
+            )}
             <div className="text-center top-border__main-color padding-vertical-md">
-                <Button
-                    isDisabled={!selectedConstantExpenses.length}
-                    variant="blue"
-                    isRounded
-                    text="Pay selected expenses"
-                    handleClick={handlePayConstantExpenses}
-                />
+                {isConstantExpensesExist ? (
+                    <Button
+                        isDisabled={!selectedConstantExpenses.length}
+                        variant="blue"
+                        isRounded
+                        text="Pay selected expenses"
+                        handleClick={handlePayConstantExpenses}
+                    />
+                ) : (
+                    <Button
+                        variant="blue"
+                        isRounded
+                        text="Add new constant expenses"
+                        handleClick={() => {
+                            handleClose();
+                            handleShowSideMenu();
+                        }}
+                    />
+                )}
             </div>
         </Modal>
     );
@@ -160,6 +185,7 @@ ConstantExpensePayModal.propTypes = {
     notPaidConstantExpenses: PropTypes.arrayOf(ConstantExpense),
     handleClose: PropTypes.func.isRequired,
     chosenUser: UserSetting,
+    handleShowSideMenu: PropTypes.func.isRequired,
 };
 
 export default ConstantExpensePayModal;

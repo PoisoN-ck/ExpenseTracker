@@ -1,10 +1,10 @@
 import React, { useMemo } from 'react';
 
 import PropTypes from 'prop-types';
-import noTransactions from '../../../img/no-transactions.svg';
 import { Transaction, UserSetting } from '../../../types';
 import { convertAmountToString } from '../../../utils';
 import Loader from '../../common/Loader/Loader';
+import NoDataScreen from '../../common/NoDataScreen';
 
 const Transactions = ({ isLoading, transactions, usersSettings }) => {
     const transactionsList = useMemo(
@@ -47,17 +47,10 @@ const Transactions = ({ isLoading, transactions, usersSettings }) => {
                         <ul>{transactionsList}</ul>
                     </div>
                 ) : (
-                    // TODO: Move to a separate component
-                    <div className="transactions__no-transactions container">
-                        <img
-                            className="transactions__no-transactions-image"
-                            src={noTransactions}
-                            alt="No transactions"
-                        />
-                        <p className="transactions__no-transactions-text">
-                            No transactions to show... Why not to file one?
-                        </p>
-                    </div>
+                    <NoDataScreen
+                        text="No transactions to show... Why not to file one?"
+                        style="transactions__no-transactions"
+                    />
                 )}
             </Loader>
         </section>

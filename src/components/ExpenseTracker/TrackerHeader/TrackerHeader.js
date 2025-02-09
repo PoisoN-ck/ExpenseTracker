@@ -15,6 +15,8 @@ const TrackerHeader = ({
     setIsMenuShown,
     totalConstantExpensesToBePaid,
     freeCashAvailable,
+    totalBalance,
+    isDiffBalancesShown,
 }) => {
     const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
 
@@ -62,14 +64,12 @@ const TrackerHeader = ({
                 )}
             </div>
             <Balance
-                balance={
-                    (balances.Income || 0) -
-                    (balances.Expense ? balances.Expense * -1 : 0)
-                }
                 earnings={balances.Income ? balances.Income : 0}
                 spendings={balances.Expense ? balances.Expense * -1 : 0}
                 totalConstantExpensesToBePaid={totalConstantExpensesToBePaid}
                 freeCashAvailable={freeCashAvailable}
+                totalBalance={totalBalance}
+                isDiffBalancesShown={isDiffBalancesShown}
             />
         </header>
     );
@@ -85,6 +85,8 @@ TrackerHeader.propTypes = {
     setIsMenuShown: PropTypes.func.isRequired,
     totalConstantExpensesToBePaid: PropTypes.number.isRequired,
     freeCashAvailable: PropTypes.number.isRequired,
+    totalBalance: PropTypes.number.isRequired,
+    isDiffBalancesShown: PropTypes.bool.isRequired,
 };
 
 export default TrackerHeader;

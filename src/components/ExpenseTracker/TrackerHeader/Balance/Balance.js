@@ -5,16 +5,13 @@ import { convertAmountToString } from '../../../../utils';
 import ButtonIcon from '../../../common/ButtonIcon';
 import BalanceCard from './BalanceCard';
 
-// const BALANCE = 'balance';
-// const FREE_CASH = 'freeCash';
-// const TOTAL_CONSTANT_EXPENSES = 'totalConstantExpenses';
-
 const Balance = ({
-    balance,
+    totalBalance,
     earnings,
     spendings,
     totalConstantExpensesToBePaid,
     freeCashAvailable,
+    isDiffBalancesShown,
 }) => {
     const [showBalance, setShowBalance] = useState(false);
     const [currentlyShownBalanceIndex, setCurrentlyShownBalanceIndex] =
@@ -36,9 +33,9 @@ const Balance = ({
 
     const allBalances = useMemo(
         () =>
-            totalConstantExpensesToBePaid > 0
+            isDiffBalancesShown
                 ? [
-                      { title: 'Current balance', value: balance },
+                      { title: 'Current balance', value: totalBalance },
                       {
                           title: 'Free cash available',
                           value: freeCashAvailable,
@@ -48,8 +45,13 @@ const Balance = ({
                           value: totalConstantExpensesToBePaid,
                       },
                   ]
-                : [{ title: 'Current balance', value: balance }],
-        [totalConstantExpensesToBePaid, freeCashAvailable],
+                : [{ title: 'Current balance', value: totalBalance }],
+        [
+            totalConstantExpensesToBePaid,
+            freeCashAvailable,
+            totalBalance,
+            isDiffBalancesShown,
+        ],
     );
 
     const balancesCards = useMemo(
@@ -74,7 +76,6 @@ const Balance = ({
         [allBalances, showBalance, currentlyShownBalanceIndex],
     );
 
-    const isSteppingAvailable = allBalances.length > 1;
     const [currentBalanceData] = allBalances;
 
     return (
@@ -85,33 +86,31 @@ const Balance = ({
                         Overview
                     </h1>
                 </div>
-                <div className="flex-center flex-align-center gap-20 full-width">
-                    {isSteppingAvailable ? (
-                        <>
-                            <ButtonIcon
-                                style="no-background"
-                                icon="fa-solid fa-angle-left color--white"
-                                handleClick={handlePrevClick}
-                            />
-                            <div className="flex-center flex-align-center balance__total-container padding-vertical-lg">
-                                {balancesCards}
-                            </div>
-                            <ButtonIcon
-                                style="no-background"
-                                icon="fa-solid fa-angle-right color--white"
-                                handleClick={handleNextClick}
-                            />
-                        </>
-                    ) : (
-                        <div className="balance__total-container">
-                            <BalanceCard
-                                balance={currentBalanceData}
-                                showHideNumbers={showHideNumbers}
-                                showBalance={showBalance}
-                            />
+                {isDiffBalancesShown ? (
+                    <div className="flex-center flex-align-center gap-20 full-width">
+                        <ButtonIcon
+                            style="no-background"
+                            icon="fa-solid fa-angle-left color--white"
+                            handleClick={handlePrevClick}
+                        />
+                        <div className="flex-center flex-align-center balance__total-container padding-vertical-lg">
+                            {balancesCards}
                         </div>
-                    )}
-                </div>
+                        <ButtonIcon
+                            style="no-background"
+                            icon="fa-solid fa-angle-right color--white"
+                            handleClick={handleNextClick}
+                        />
+                    </div>
+                ) : (
+                    <div className="balance__total-container">
+                        <BalanceCard
+                            balance={currentBalanceData}
+                            showHideNumbers={showHideNumbers}
+                            showBalance={showBalance}
+                        />
+                    </div>
+                )}
                 <div className="balance__breakdown">
                     <span className="balance__type">
                         <p className="text-xs text-uppercase text-bold text-muted">
@@ -141,11 +140,12 @@ const Balance = ({
 };
 
 Balance.propTypes = {
-    balance: PropTypes.number.isRequired,
+    totalBalance: PropTypes.number.isRequired,
     earnings: PropTypes.number.isRequired,
     spendings: PropTypes.number.isRequired,
     totalConstantExpensesToBePaid: PropTypes.number.isRequired,
     freeCashAvailable: PropTypes.number.isRequired,
+    isDiffBalancesShown: PropTypes.bool.isRequired,
 };
 
 export default Balance;

@@ -2,13 +2,13 @@ import PropTypes from 'prop-types';
 import React, { useCallback, useEffect, useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { CONSTANT_EXPENSE_FILTERS, PAID } from '../../../../constants';
-import noTransactions from '../../../../img/no-transactions.svg';
 import {
     ConstantExpense as ConstantExpenseType,
     FilteredConstantExpenses,
 } from '../../../../types';
 import Button from '../../../common/Button';
 import ButtonIcon from '../../../common/ButtonIcon';
+import NoDataScreen from '../../../common/NoDataScreen';
 import ConstantExpense from './ConstantExpense';
 
 const DEFAULT_CONSTANT_EXPENSE_STATE = {
@@ -338,17 +338,10 @@ const ConstantExpenses = ({
                         })}
                     </ul>
                 ) : (
-                    // TODO: Move to a separate component (same as in Transactions)
-                    <div className="container no-constant-expenses">
-                        <img
-                            className="transactions__no-transactions-image"
-                            src={noTransactions}
-                            alt="No transactions"
-                        />
-                        <p className="transactions__no-transactions-text">
-                            No constants expenses found... Wanna create a few?
-                        </p>
-                    </div>
+                    <NoDataScreen
+                        text="No constants expenses found... Wanna create a few?"
+                        style="no-constant-expenses"
+                    />
                 )}
             </div>
         </div>

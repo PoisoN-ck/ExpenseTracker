@@ -14,6 +14,7 @@ import { filterTransactions, sortTransactionsByDate } from '../utils';
 const useData = (isVerified) => {
     // TODO: Potentially need separation of transactions, userSettings and constantExpenses to different files
     const [transactions, setTransactions] = useState([]);
+    // TOOD: Revise appoach with setIsLoading! It seems it is not needed in the methods at all! Only on initial fetch
     const [isLoading, setIsLoading] = useState(true);
     const [dataError, setDataError] = useState(null);
     const [successMessage, setSuccessMessage] = useState(null);
@@ -79,7 +80,6 @@ const useData = (isVerified) => {
             );
         } catch (error) {
             setDataError(error);
-        } finally {
             setIsLoading(false);
         }
     };
@@ -95,14 +95,13 @@ const useData = (isVerified) => {
                 onValue(
                     usersSettingsRef,
                     (snapshot) => {
-                        const fetchedUsersSettings = snapshot
-                            .val()
-                            ?.filter((transaction) => transaction);
+                        const fetchedUsersSettings =
+                            snapshot
+                                .val()
+                                ?.filter((transaction) => transaction) || [];
 
-                        if (fetchedUsersSettings?.length) {
-                            setUsersSettings(fetchedUsersSettings);
-                            res(fetchedUsersSettings);
-                        }
+                        setUsersSettings(fetchedUsersSettings);
+                        res(fetchedUsersSettings);
                     },
                     (error) => {
                         setDataError(error);
@@ -112,9 +111,8 @@ const useData = (isVerified) => {
                 );
             } catch (error) {
                 setDataError(error);
-                rej(false);
-            } finally {
                 setIsLoading(false);
+                rej(false);
             }
         });
 
@@ -129,14 +127,11 @@ const useData = (isVerified) => {
                 onValue(
                     constantExpensesRef,
                     (snapshot) => {
-                        const fetchedConstantExpenses = snapshot
-                            .val()
-                            ?.filter((expense) => expense);
+                        const fetchedConstantExpenses =
+                            snapshot.val()?.filter((expense) => expense) || [];
 
-                        if (fetchedConstantExpenses?.length) {
-                            setConstantExpenses(fetchedConstantExpenses);
-                            res(fetchedConstantExpenses);
-                        }
+                        setConstantExpenses(fetchedConstantExpenses);
+                        res(fetchedConstantExpenses);
                     },
                     (error) => {
                         setDataError(error);
@@ -146,9 +141,8 @@ const useData = (isVerified) => {
                 );
             } catch (error) {
                 setDataError(error);
-                rej(false);
-            } finally {
                 setIsLoading(false);
+                rej(false);
             }
         });
 
@@ -273,7 +267,7 @@ const useData = (isVerified) => {
                                         });
                                 } else {
                                     setDataError({ code: 'no-data-saved' });
-                                    setTransactions([
+                                    setUsersSettings([
                                         userSetting,
                                         ...usersSettings,
                                     ]);
@@ -364,7 +358,7 @@ const useData = (isVerified) => {
                                         });
                                 } else {
                                     setDataError({ code: 'no-data-saved' });
-                                    setTransactions([
+                                    setConstantExpenses([
                                         constantExpense,
                                         ...constantExpenses,
                                     ]);
@@ -462,7 +456,7 @@ const useData = (isVerified) => {
                                         });
                                 } else {
                                     setDataError({ code: 'no-data-saved' });
-                                    setTransactions(modifiedExpenses);
+                                    setConstantExpenses(modifiedExpenses);
                                     rej(false);
                                 }
                             } catch (error) {
@@ -551,7 +545,7 @@ const useData = (isVerified) => {
                                         });
                                 } else {
                                     setDataError({ code: 'no-data-saved' });
-                                    setTransactions(
+                                    setConstantExpenses(
                                         expensesWithoutDeletedExpense,
                                     );
                                     rej(false);
@@ -725,14 +719,18 @@ const useData = (isVerified) => {
 
             const { amount, id, category } = constantExpense;
 
-            const filteredTransactionsByCategory = thisMonthTransactions.filter(
-                (transaction) => transaction.category === category,
-            );
-
-            if (filteredTransactionsByCategory.length) {
-                const exactMatchExpense = filteredTransactionsByCategory.find(
-                    (transaction) => transaction.value * -1 === amount,
+            const filteredTransactionsByCategoryWithConstantExpense =
+                thisMonthTransactions.filter(
+                    (transaction) =>
+                        transaction.category === category &&
+                        !transaction.constantExpenseId,
                 );
+
+            if (filteredTransactionsByCategoryWithConstantExpense.length) {
+                const exactMatchExpense =
+                    filteredTransactionsByCategoryWithConstantExpense.find(
+                        (transaction) => transaction.value * -1 === amount,
+                    );
 
                 if (exactMatchExpense) {
                     const isPaid =
@@ -746,14 +744,16 @@ const useData = (isVerified) => {
 
                 // If exact match was not found, try to find a match within a range amount
                 const potentialMatchExpense =
-                    filteredTransactionsByCategory.find((transaction) => {
-                        const transValue = transaction.value * -1;
+                    filteredTransactionsByCategoryWithConstantExpense.find(
+                        (transaction) => {
+                            const transValue = transaction.value * -1;
 
-                        return (
-                            getMinAmount(amount) <= transValue &&
-                            transValue <= getMaxAmount(amount)
-                        );
-                    });
+                            return (
+                                getMinAmount(amount) <= transValue &&
+                                transValue <= getMaxAmount(amount)
+                            );
+                        },
+                    );
 
                 if (potentialMatchExpense) {
                     const isPaid =
@@ -766,8 +766,10 @@ const useData = (isVerified) => {
                 }
 
                 // If pontential match was not found - fallback option - take first transaction from this category
+                const [transactionFromCategoryWithoutConstantExpenseId] =
+                    filteredTransactionsByCategoryWithConstantExpense;
                 const isPaid = await addConstantExpenseIdToExistingTransaction({
-                    ...filteredTransactionsByCategory[0],
+                    ...transactionFromCategoryWithoutConstantExpenseId,
                     constantExpenseId: id,
                 });
 
@@ -899,7 +901,11 @@ const useData = (isVerified) => {
         await fetchAndUpdateUsersSettings();
         await fetchAndUpdateConstantExpenses();
         fetchAndUpdateTransactions();
-    }, []);
+    }, [
+        fetchAndUpdateUsersSettings,
+        fetchAndUpdateConstantExpenses,
+        fetchAndUpdateTransactions,
+    ]);
 
     useEffect(() => {
         initialLoad();
@@ -929,6 +935,7 @@ const useData = (isVerified) => {
         filteredConstantExpense,
         totalConstantExpensesToBePaid,
         freeCashAvailable,
+        totalBalance,
         addTransaction,
         fetchTransactions,
         resetMessages,
