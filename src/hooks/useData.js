@@ -51,38 +51,37 @@ const useData = (isVerified) => {
     }, []);
 
     // Fetches and updates the states if transactions are updated
-    const fetchAndUpdateTransactions = () => {
-        try {
-            const transactionsRef = ref(
-                db,
-                `${auth.currentUser?.uid}/transactionsList`,
-            );
+    const fetchAndUpdateTransactions = async () =>
+        await new Promise((res, rej) => {
+            try {
+                const transactionsRef = ref(
+                    db,
+                    `${auth.currentUser?.uid}/transactionsList`,
+                );
 
-            onValue(
-                transactionsRef,
-                (snapshot) => {
-                    const fetchedTransactions = snapshot
-                        .val()
-                        // Fallback if some transactions are manually deleted
-                        ?.filter((transaction) => transaction)
-                        .sort(sortTransactionsByDate);
+                onValue(
+                    transactionsRef,
+                    (snapshot) => {
+                        const fetchedTransactions =
+                            snapshot
+                                .val()
+                                // Fallback if some transactions are manually deleted
+                                ?.filter((transaction) => transaction)
+                                .sort(sortTransactionsByDate) || [];
 
-                    if (fetchedTransactions?.length) {
                         setTransactions(fetchedTransactions);
-                    }
-
-                    setIsLoading(false);
-                },
-                (error) => {
-                    setDataError(error);
-                    setIsLoading(false);
-                },
-            );
-        } catch (error) {
-            setDataError(error);
-            setIsLoading(false);
-        }
-    };
+                        res(fetchedTransactions);
+                    },
+                    (error) => {
+                        setDataError(error);
+                        rej(false);
+                    },
+                );
+            } catch (error) {
+                setDataError(error);
+                rej(false);
+            }
+        });
 
     const fetchAndUpdateUsersSettings = async () =>
         await new Promise((res, rej) => {
@@ -898,9 +897,11 @@ const useData = (isVerified) => {
     );
 
     const initialLoad = useCallback(async () => {
+        setIsLoading(true);
         await fetchAndUpdateUsersSettings();
         await fetchAndUpdateConstantExpenses();
-        fetchAndUpdateTransactions();
+        await fetchAndUpdateTransactions();
+        setIsLoading(false);
     }, [
         fetchAndUpdateUsersSettings,
         fetchAndUpdateConstantExpenses,
