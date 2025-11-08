@@ -1,7 +1,12 @@
 import PropTypes from 'prop-types';
 import React from 'react';
 
-const Modal = ({ children, closeModal: handleCloseModal, title }) => {
+const Modal = ({
+    contentClassName,
+    children,
+    closeModal: handleCloseModal,
+    title,
+}) => {
     return (
         <div className="modal">
             <div className="modal__container">
@@ -13,13 +18,16 @@ const Modal = ({ children, closeModal: handleCloseModal, title }) => {
                     type="button"
                     onClick={handleCloseModal}
                 />
-                <div className="modal__content">{children}</div>
+                <div className={`modal__content ${contentClassName}`}>
+                    {children}
+                </div>
             </div>
         </div>
     );
 };
 
 Modal.propTypes = {
+    contentClassName: PropTypes.string,
     children: PropTypes.oneOfType([
         PropTypes.element,
         PropTypes.arrayOf(PropTypes.element),

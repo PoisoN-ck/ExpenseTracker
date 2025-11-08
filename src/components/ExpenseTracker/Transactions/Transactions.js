@@ -1,10 +1,10 @@
 import React, { useMemo } from 'react';
 
 import PropTypes from 'prop-types';
-import noTransactions from '../../../img/no-transactions.svg';
-import { UserSetting } from '../../../types';
-import { convertToString } from '../../../utils';
+import { Transaction, UserSetting } from '../../../types';
+import { convertAmountToString } from '../../../utils';
 import Loader from '../../common/Loader/Loader';
+import NoDataScreen from '../../common/NoDataScreen';
 
 const Transactions = ({ isLoading, transactions, usersSettings }) => {
     const transactionsList = useMemo(
@@ -28,7 +28,7 @@ const Transactions = ({ isLoading, transactions, usersSettings }) => {
                     >
                         <p className="transaction__header text-sm">
                             <span>{category}</span>
-                            <span>{`${convertToString(value)} HUF`}</span>
+                            <span>{`${convertAmountToString(value)} HUF`}</span>
                         </p>
                         <p className="transaction__date text-xs text-bold">
                             {new Date(transDate).toLocaleString()}
@@ -47,32 +47,19 @@ const Transactions = ({ isLoading, transactions, usersSettings }) => {
                         <ul>{transactionsList}</ul>
                     </div>
                 ) : (
-                    <div className="transactions__no-transactions container">
-                        <img
-                            className="transactions__no-transactions-image"
-                            src={noTransactions}
-                            alt="No transactions"
-                        />
-                        <p className="transactions__no-transactions-text">
-                            No transactions to show... Why not to file one?
-                        </p>
-                    </div>
+                    <NoDataScreen
+                        text="No transactions to show... Why not to file one?"
+                        style="transactions__no-transactions"
+                    />
                 )}
             </Loader>
         </section>
     );
 };
 
-const transaction = {
-    category: PropTypes.string.isRequired,
-    transDate: PropTypes.number.isRequired,
-    transType: PropTypes.string.isRequired,
-    value: PropTypes.number.isRequired,
-};
-
 Transactions.propTypes = {
     isLoading: PropTypes.bool.isRequired,
-    transactions: PropTypes.arrayOf(PropTypes.shape(transaction)).isRequired,
+    transactions: PropTypes.arrayOf(PropTypes.shape(Transaction)).isRequired,
     usersSettings: PropTypes.arrayOf(UserSetting),
 };
 

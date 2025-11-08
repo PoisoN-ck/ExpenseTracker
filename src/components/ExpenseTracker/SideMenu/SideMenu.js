@@ -1,7 +1,11 @@
 import PropTypes from 'prop-types';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
-import { UserSetting } from '../../../types';
+import {
+    ConstantExpense,
+    FilteredConstantExpenses,
+    UserSetting,
+} from '../../../types';
 import ConstantExpenses from './ConstantExpenses';
 import UserSettings from './UserSettings';
 
@@ -9,15 +13,29 @@ const SideMenu = ({
     isShown,
     setIsShown,
     usersSettings,
+    constantExpenses,
     addUserSettings,
     chosenUser,
     setChosenUser,
     handleSignOut,
+    addConstantExpense,
+    editConstantExpense,
+    deleteConstantExpense,
+    filteredConstantExpense,
+    doRegisterExpenseAsPaid,
 }) => {
     const [isUserSettingsShown, setIsUserSettingsShown] = useState(false);
     const [isExpensesShown, setIsExpensesShown] = useState(false);
 
     const handleClose = () => setIsShown(false);
+
+    useEffect(() => {
+        const noScrollClass = 'no-scroll';
+
+        isShown
+            ? document.body.classList.add(noScrollClass)
+            : document.body.classList.remove(noScrollClass);
+    }, [isShown]);
 
     return (
         <div className={`menu ${isShown ? 'menu--shown' : ''}`}>
@@ -58,7 +76,15 @@ const SideMenu = ({
                     >
                         Constant expenses
                     </button>
-                    {isExpensesShown && <ConstantExpenses />}
+                    <ConstantExpenses
+                        constantExpenses={constantExpenses}
+                        isShown={isExpensesShown}
+                        addConstantExpense={addConstantExpense}
+                        editConstantExpense={editConstantExpense}
+                        deleteConstantExpense={deleteConstantExpense}
+                        filteredConstantExpense={filteredConstantExpense}
+                        doRegisterExpenseAsPaid={doRegisterExpenseAsPaid}
+                    />
                 </li>
             </ul>
         </div>
@@ -73,6 +99,12 @@ SideMenu.propTypes = {
     chosenUser: UserSetting,
     setChosenUser: PropTypes.func.isRequired,
     handleSignOut: PropTypes.func.isRequired,
+    constantExpenses: PropTypes.arrayOf(ConstantExpense),
+    addConstantExpense: PropTypes.func.isRequired,
+    editConstantExpense: PropTypes.func.isRequired,
+    deleteConstantExpense: PropTypes.func,
+    doRegisterExpenseAsPaid: PropTypes.func,
+    filteredConstantExpense: FilteredConstantExpenses,
 };
 
 export default SideMenu;

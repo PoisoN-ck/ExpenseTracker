@@ -13,21 +13,27 @@ const TrackerHeader = ({
     shownTransactions,
     transactions,
     setIsMenuShown,
+    totalConstantExpensesToBePaid,
+    freeCashAvailable,
+    totalBalance,
+    isDiffBalancesShown,
 }) => {
     const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
 
-    const balances = useMemo(() => {
-        const result = {};
+    // TODO: Move this to model with data?
+    const balances = useMemo(
+        () =>
+            shownTransactions.reduce((acc, transaction) => {
+                const currentTransTypeBalance = acc[transaction.transType] || 0;
 
-        shownTransactions.forEach((transaction) => {
-            result[transaction.transType] =
-                (result[transaction.transType]
-                    ? result[transaction.transType]
-                    : 0) + transaction.value;
-        });
-
-        return result;
-    }, [shownTransactions]);
+                return {
+                    ...acc,
+                    [transaction.transType]:
+                        currentTransTypeBalance + transaction.value,
+                };
+            }, 0),
+        [shownTransactions],
+    );
 
     const handleOpenFiltersModal = () => setIsFilterModalOpen(true);
     const handleCloseFiltersModal = () => setIsFilterModalOpen(false);
@@ -58,12 +64,12 @@ const TrackerHeader = ({
                 )}
             </div>
             <Balance
-                balance={
-                    (balances.Income ? balances.Income : 0) -
-                    (balances.Expense ? balances.Expense * -1 : 0)
-                }
                 earnings={balances.Income ? balances.Income : 0}
                 spendings={balances.Expense ? balances.Expense * -1 : 0}
+                totalConstantExpensesToBePaid={totalConstantExpensesToBePaid}
+                freeCashAvailable={freeCashAvailable}
+                totalBalance={totalBalance}
+                isDiffBalancesShown={isDiffBalancesShown}
             />
         </header>
     );
@@ -77,6 +83,10 @@ TrackerHeader.propTypes = {
     shownTransactions: PropTypes.arrayOf(Transaction).isRequired,
     transactions: PropTypes.arrayOf(Transaction).isRequired,
     setIsMenuShown: PropTypes.func.isRequired,
+    totalConstantExpensesToBePaid: PropTypes.number.isRequired,
+    freeCashAvailable: PropTypes.number.isRequired,
+    totalBalance: PropTypes.number.isRequired,
+    isDiffBalancesShown: PropTypes.bool.isRequired,
 };
 
 export default TrackerHeader;
