@@ -83,19 +83,19 @@ export const translateMessage = (message) => {
         case 'edit-missing-field':
             return 'Please fill in all fields.';
         case 'added-constant-expense':
-            return 'Constant expense has been added successfully.';
+            return 'Recurring expense has been added successfully.';
         case 'edited-constant-expense':
-            return 'Constant expense has been edited successfully.';
+            return 'Recurring expense has been edited successfully.';
         case 'deleted-constant-expense':
-            return 'Constant expense has been deleted successfully.';
+            return 'Recurring expense has been deleted successfully.';
         case 'delete-expense-missing-id':
             return 'Cannot delete expense without id.';
         case 'constant-expense-marked-as-paid':
-            return 'Successfully registered Constant Expense as paid.';
+            return 'Successfully registered Recurring Expense as paid.';
         case 'constant-expense-cannot-be-paid':
             return "Cannot find any transaction of this category. Maybe, you didn't pay it?";
         case 'constant-expenses-paid':
-            return 'Successfully paid selected Constant Expenses.';
+            return 'Successfully paid selected Recurring Expenses.';
 
         default:
             return 'Something went wrong. Please try again.';
