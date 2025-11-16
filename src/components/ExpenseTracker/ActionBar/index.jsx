@@ -47,7 +47,7 @@ const ActionBar = ({
             const isProfit = category === 'Profit';
 
             const transaction = {
-                value: isProfit ? transactionAmount : transactionAmount * -1,
+                value: isProfit ? transactionAmount : -transactionAmount,
                 category,
                 transType: isProfit ? 'Income' : 'Expense',
                 transDate: new Date().getTime(),
