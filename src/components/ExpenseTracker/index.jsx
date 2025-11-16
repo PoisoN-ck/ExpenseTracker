@@ -168,7 +168,6 @@ const ExpenseTracker = ({ isVerified, logOut }) => {
 
             <ActionBar
                 addTransaction={addTransaction}
-                className="action-bar"
                 isDisabled={isLoading}
                 setError={setDataError}
                 chosenUser={chosenUser}

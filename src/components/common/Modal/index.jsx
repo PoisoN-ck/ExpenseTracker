@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types';
 
 const Modal = ({
-    contentClassName,
+    contentClassName = '',
     children,
     closeModal: handleCloseModal,
     title,

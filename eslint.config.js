@@ -22,6 +22,22 @@ export default [
             ...prettierConfig.rules,
             'prettier/prettier': 'error',
         },
+        settings: {
+            'import/resolver': {
+                alias: {
+                    map: [
+                        ['@', './src'],
+                        ['@components/*', './src/components/*'],
+                        ['@hooks/*', './src/hooks/*'],
+                        ['@types', './src/types'],
+                        ['@constants', './src/constants'],
+                        ['@img/*', './src/img/*'],
+                        ['@utils', './src/utils'],
+                    ],
+                    extensions: ['.js', '.jsx', '.ts', '.tsx', '.json'],
+                },
+            },
+        },
     },
     {
         files: ['**/*.jsx', '**/*.tsx'],

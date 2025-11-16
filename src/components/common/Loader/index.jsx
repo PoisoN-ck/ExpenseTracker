@@ -1,12 +1,12 @@
 import PropTypes from 'prop-types';
-import loading from '../../../img/loading.svg';
+import loading from '@img/loading.svg';
 
 const COMPONENT_PROPS = {
     children: PropTypes.node,
     isLoading: PropTypes.bool.isRequired,
 };
 
-const Loader = ({ children, isLoading }) => {
+const Loader = ({ children = null, isLoading }) => {
     if (!children) {
         return (
             <div className="loader">

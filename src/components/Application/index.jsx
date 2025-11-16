@@ -8,12 +8,12 @@ import {
     Routes,
 } from 'react-router-dom';
 
-import useAuth from '../../hooks/useAuth';
-import { translateMessage } from '../../utils';
-import ExpenseTracker from '../ExpenseTracker';
-import Login from '../Login';
-import SignUp from '../SignUp';
-import Loader from '../common/Loader';
+import useAuth from '@hooks/useAuth';
+import { translateMessage } from '@utils';
+import ExpenseTracker from '@components/ExpenseTracker';
+import Login from '@components/Login';
+import SignUp from '@components/SignUp';
+import Loader from '@components/common/Loader';
 
 const Application = () => {
     const [messageText, setMessageText] = useState('');
@@ -34,7 +34,7 @@ const Application = () => {
         logIn,
         logOut,
         signUp,
-    } = useAuth(handleMessage, removeMessageText);
+    } = useAuth();
 
     useEffect(() => {
         if (authError) {
@@ -72,7 +72,6 @@ const Application = () => {
                             path="/"
                             element={
                                 <Login
-                                    handleMessage={handleMessage}
                                     logIn={logIn}
                                     removeMessageText={removeMessageText}
                                     messageText={messageText}
