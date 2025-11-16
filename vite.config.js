@@ -19,11 +19,11 @@ export default defineConfig({
     resolve: {
         alias: {
             '@': resolve(__dirname, 'src'),
-            '@components/*': resolve(__dirname, 'src/components/*'),
-            '@hooks/*': resolve(__dirname, 'src/hooks/*'),
+            '@components': resolve(__dirname, 'src/components'),
+            '@hooks': resolve(__dirname, 'src/hooks'),
             '@types': resolve(__dirname, 'src/types'),
             '@constants': resolve(__dirname, 'src/constants'),
-            '@img/*': resolve(__dirname, 'src/img/*'),
+            '@img': resolve(__dirname, 'src/img'),
             '@utils': resolve(__dirname, 'src/utils'),
         },
     },
