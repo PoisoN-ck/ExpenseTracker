@@ -74,7 +74,7 @@ const SideMenu = ({
                         }
                         className="button button--pure-white button-big-text"
                     >
-                        Recurring expenses
+                        Planned expenses
                     </button>
                     <ConstantExpenses
                         constantExpenses={constantExpenses}

@@ -3,11 +3,11 @@ import { INPUT_SIZE_DICT } from '../../../constants';
 
 // TODO: All inputs in the to be replaced with this component!
 const TextInput = ({
-    isDisabled,
-    id,
-    label,
-    labelStyle,
-    name,
+    isDisabled = false,
+    id = '',
+    label = '',
+    labelStyle = '',
+    name = '',
     placeholder,
     size,
     style = '',

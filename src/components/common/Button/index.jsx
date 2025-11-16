@@ -3,7 +3,7 @@ import { INPUT_VARIANT_DICT } from '../../../constants';
 
 // TODO: All buttons in the to be replaced with this component!
 const Button = ({
-    isDisabled,
+    isDisabled = false,
     isRounded,
     style = '',
     text,

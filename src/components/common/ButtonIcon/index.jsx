@@ -1,6 +1,6 @@
 import PropTypes from 'prop-types';
 
-const ButtonIcon = ({ isDisabled, style = '', icon, handleClick }) => {
+const ButtonIcon = ({ isDisabled = false, style = '', icon, handleClick }) => {
     return (
         <button
             disabled={isDisabled}

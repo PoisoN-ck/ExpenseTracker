@@ -168,7 +168,7 @@ const ConstantExpensePayModal = ({
                     <Button
                         variant="blue"
                         isRounded
-                        text="Add new recurring expenses"
+                        text="Add new planned expenses"
                         handleClick={() => {
                             handleClose();
                             handleShowSideMenu();

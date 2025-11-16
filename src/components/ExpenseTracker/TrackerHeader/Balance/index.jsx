@@ -12,23 +12,23 @@ const Balance = ({
     totalConstantExpensesToBePaid,
     freeCashAvailable,
     isDiffBalancesShown,
+    totalConstantExpensesAmount,
 }) => {
     const [showBalance, setShowBalance] = useState(false);
-    const [currentlyShownBalanceIndex, setCurrentlyShownBalanceIndex] =
-        useState(0);
+    const [showBalanceIndex, setCurrentlyShownBalanceIndex] = useState(0);
 
     const showHideNumbers = () => {
         setShowBalance((prevStatus) => !prevStatus);
     };
 
     const handlePrevClick = () =>
-        setCurrentlyShownBalanceIndex((prevState) =>
-            prevState - 1 < 0 ? allBalances.length - 1 : prevState - 1,
+        setCurrentlyShownBalanceIndex((prevIndex) =>
+            prevIndex === 0 ? allBalances.length - 1 : prevIndex - 1,
         );
 
     const handleNextClick = () =>
-        setCurrentlyShownBalanceIndex((prevState) =>
-            prevState + 1 > allBalances.length - 1 ? 0 : prevState + 1,
+        setCurrentlyShownBalanceIndex((prevIndex) =>
+            prevIndex === allBalances.length - 1 ? 0 : prevIndex + 1,
         );
 
     const allBalances = useMemo(
@@ -41,8 +41,15 @@ const Balance = ({
                           value: freeCashAvailable,
                       },
                       {
-                          title: 'Constant recurring to be paid',
+                          title: 'Planned expenses to be paid',
                           value: totalConstantExpensesToBePaid,
+                          subtitle: `out of total ${
+                              showBalance
+                                  ? convertAmountToString(
+                                        totalConstantExpensesAmount,
+                                    )
+                                  : '••• •••'
+                          } HUF`,
                       },
                   ]
                 : [{ title: 'Current balance', value: totalBalance }],
@@ -51,29 +58,23 @@ const Balance = ({
             freeCashAvailable,
             totalBalance,
             isDiffBalancesShown,
+            showBalance,
         ],
     );
 
     const balancesCards = useMemo(
         () =>
             allBalances.map((balance, i) => (
-                <div
-                    key={balance.title}
-                    className="balance__shown"
-                    style={{
-                        left: `${
-                            (currentlyShownBalanceIndex + i * -1) * -100
-                        }%`,
-                    }}
-                >
+                <div key={balance.title} className="balance__shown">
                     <BalanceCard
+                        isShown={i === showBalanceIndex}
                         balance={balance}
                         showHideNumbers={showHideNumbers}
                         showBalance={showBalance}
                     />
                 </div>
             )),
-        [allBalances, showBalance, currentlyShownBalanceIndex],
+        [allBalances, showBalance, showBalanceIndex],
     );
 
     const [currentBalanceData] = allBalances;
@@ -93,8 +94,15 @@ const Balance = ({
                             icon="fa-solid fa-angle-left color--white"
                             handleClick={handlePrevClick}
                         />
-                        <div className="flex-center flex-align-center balance__total-container padding-vertical-lg">
-                            {balancesCards}
+                        <div className="flex-center flex-align-center balance__total-container">
+                            <div
+                                className="flex-align-center balance__total-track"
+                                style={{
+                                    transform: `translateX(-${showBalanceIndex * 100}%)`,
+                                }}
+                            >
+                                {balancesCards}
+                            </div>
                         </div>
                         <ButtonIcon
                             style="no-background"
@@ -146,6 +154,7 @@ Balance.propTypes = {
     totalConstantExpensesToBePaid: PropTypes.number.isRequired,
     freeCashAvailable: PropTypes.number.isRequired,
     isDiffBalancesShown: PropTypes.bool.isRequired,
+    totalConstantExpensesAmount: PropTypes.number.isRequired,
 };
 
 export default Balance;

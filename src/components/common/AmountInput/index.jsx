@@ -2,11 +2,11 @@ import PropTypes from 'prop-types';
 import { INPUT_SIZE_DICT } from '../../../constants';
 
 const AmountInput = ({
-    isDisabled,
-    id,
-    label,
-    labelStyle,
-    name,
+    isDisabled = false,
+    id = '',
+    label = '',
+    labelStyle = '',
+    name = '',
     placeholder,
     size,
     style = '',

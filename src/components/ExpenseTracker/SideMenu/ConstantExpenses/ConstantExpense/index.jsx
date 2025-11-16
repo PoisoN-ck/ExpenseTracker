@@ -10,7 +10,7 @@ import TextInput from '../../../../common/TextInput';
 const ConstantExpense = ({
     constantExpense,
     setConstantExpense,
-    isDisabled,
+    isDisabled = false,
 }) => {
     const { name, amount, category, id } = constantExpense;
     const [expenseName, setExpenseName] = useState(name);

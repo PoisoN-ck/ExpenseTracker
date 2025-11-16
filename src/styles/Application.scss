@@ -431,16 +431,21 @@ ul {
 
 .balance__total-container {
     width: 100%;
-    position: relative;
     overflow: hidden;
-    height: 60px;
+    padding-bottom: 0.5rem;
+}
+
+.balance__total-track {
+    display: flex;
+    transition: transform 0.3s;
 }
 
 .balance__shown {
-    position: absolute;
-    width: 100%;
-    height: 100%;
     transition: 0.3s;
+    flex: 0 0 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 .balance__amount {

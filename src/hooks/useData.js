@@ -891,6 +891,15 @@ const useData = (isVerified) => {
         [filteredConstantExpense],
     );
 
+    const totalConstantExpensesAmount = useMemo(
+        () =>
+            constantExpenses?.reduce(
+                (acc, constantExpense) => acc + constantExpense.amount,
+                0,
+            ) || 0,
+        [constantExpenses],
+    );
+
     const freeCashAvailable = useMemo(
         () => totalBalance - totalConstantExpensesToBePaid,
         [totalConstantExpensesToBePaid, totalBalance],
@@ -937,6 +946,7 @@ const useData = (isVerified) => {
         totalConstantExpensesToBePaid,
         freeCashAvailable,
         totalBalance,
+        totalConstantExpensesAmount,
         addTransaction,
         fetchTransactions,
         resetMessages,
