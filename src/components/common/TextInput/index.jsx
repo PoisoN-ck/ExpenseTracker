@@ -8,11 +8,12 @@ const TextInput = ({
     label = '',
     labelStyle = '',
     name = '',
-    placeholder,
-    size,
+    placeholder = '',
+    size = 'default',
     style = '',
     value,
-    handleChange,
+    handleChange = () => {},
+    onClick, // optional for some side UI interactions
 }) => {
     return (
         <>
@@ -29,6 +30,7 @@ const TextInput = ({
                 value={value}
                 placeholder={placeholder}
                 onChange={handleChange}
+                onClick={onClick}
             />
         </>
     );
@@ -45,6 +47,7 @@ TextInput.propTypes = {
     style: PropTypes.string,
     value: PropTypes.string.isRequired,
     handleChange: PropTypes.func.isRequired,
+    onClick: PropTypes.func,
 };
 
 export default TextInput;

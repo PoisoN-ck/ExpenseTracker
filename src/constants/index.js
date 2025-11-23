@@ -100,10 +100,17 @@ export const INPUT_VARIANT_DICT = {
 export const INPUT_SIZE_DICT = {
     sm: 'input-field--sm',
     default: 'input-field',
-    lg: 'inpit-field--lg', // does not exist yet
+    lg: 'input-field--lg', // does not exist yet
 };
 
 export const ALL = 'All';
 export const NOT_PAID = 'Not paid';
 export const PAID = 'Paid';
 export const CONSTANT_EXPENSE_FILTERS = [ALL, NOT_PAID, PAID];
+
+export const DAYS_LIST_IN_A_MONTH = Array.from(
+    { length: 31 },
+    (_, day) => day + 1,
+);
+
+export const DEFAULT_REFRESH_DAY = '1';

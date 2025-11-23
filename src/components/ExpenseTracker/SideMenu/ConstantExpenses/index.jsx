@@ -4,11 +4,12 @@ import { v4 as uuidv4 } from 'uuid';
 import {
     ConstantExpense as ConstantExpenseType,
     FilteredConstantExpenses,
-} from '../../../../types';
-import Button from '../../../common/Button';
+} from '@types';
+import Button from '@components/common/Button';
 import ConstantExpense from './ConstantExpense';
 import PlannedExpenseFilters from './PlannedExpenseFilters';
 import ConstantExpensesList from './ConstantExpensesList';
+import DayPicker from './DayPicker';
 
 const DEFAULT_CONSTANT_EXPENSE_STATE = {
     name: '',
@@ -79,6 +80,7 @@ const ConstantExpenses = ({
                     doRegisterExpenseAsPaid={doRegisterExpenseAsPaid}
                     filteredConstantExpense={filteredConstantExpense}
                 />
+                <DayPicker />
             </div>
         </div>
     );

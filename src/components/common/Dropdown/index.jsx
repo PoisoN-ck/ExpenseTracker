@@ -7,7 +7,7 @@ const Dropdown = ({
     isRounded = true,
     name = '',
     size,
-    style,
+    style = '',
     variant = 'white',
     options,
     handleSelect,

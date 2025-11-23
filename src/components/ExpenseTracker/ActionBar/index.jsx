@@ -95,7 +95,7 @@ const ActionBar = ({
 
     return (
         <section className="action-bar padding-vertical-md">
-            <div className="flex-center container">
+            <div className="flex-center container gap-10">
                 <AmountInput
                     handleChange={handleAmountChange}
                     value={transactionAmount}

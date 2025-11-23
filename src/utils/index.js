@@ -1,5 +1,7 @@
 import { isWithinInterval } from 'date-fns';
-import { FilterTypes } from '../constants';
+import { onValue, ref, set } from 'firebase/database';
+import { FilterTypes } from '@constants';
+import db, { auth } from '@/services/db';
 
 export function capitalize(word) {
     return word.charAt(0).toUpperCase() + word.slice(1);
@@ -96,10 +98,113 @@ export const translateMessage = (message) => {
             return "Cannot find any transaction of this category. Maybe, you didn't pay it?";
         case 'constant-expenses-paid':
             return 'Successfully paid selected Planned Expenses.';
-
+        case 'add-missing-refresh-day':
+            return 'Please select a day for planned expense refresh.';
+        case 'updated-planned-expense-day-refresh':
+            return 'Planned expense refresh day has been updated successfully.';
         default:
             return 'Something went wrong. Please try again.';
     }
 };
 
 export const convertAmountToString = (num = 0) => num?.toLocaleString();
+
+export const handleSimpleSnapshotValue = (snapshot) => snapshot?.val();
+
+// const handleFilterArraySnapshotValue = (snapshot) =>
+//     snapshot?.val()?.filter((value) => value);
+
+export const fetchValueAsPromise = async ({
+    refPath,
+    handleFetchedValue,
+    onFetched,
+    defaultValue,
+    handleError,
+}) =>
+    await new Promise((res, rej) => {
+        try {
+            const nodeRef = ref(db, `${auth.currentUser?.uid}/${refPath}`);
+
+            onValue(
+                nodeRef,
+                (snapshot) => {
+                    const value = handleFetchedValue(snapshot) ?? defaultValue;
+
+                    if (typeof onFetched === 'function') {
+                        onFetched(value);
+                    }
+
+                    res(value);
+                },
+                (error) => {
+                    handleError(error);
+                    rej(false);
+                },
+            );
+        } catch (error) {
+            handleError(error);
+            rej(false);
+        }
+    });
+
+export const updateValueWithConnectionCheck = async ({
+    path,
+    value,
+    isVerified,
+    successCode,
+    resetMessages,
+    setSuccessMessage,
+    setError,
+    restoreOnFail,
+}) =>
+    await new Promise((res, rej) => {
+        let isFailedAttempt = false;
+
+        const connectionRef = ref(db, '.info/connected');
+
+        try {
+            onValue(connectionRef, (snapshot) => {
+                const isNetworkExist = snapshot.val();
+
+                if (!isNetworkExist) {
+                    isFailedAttempt = true;
+                    setError({ code: 'no-network-users-settings' });
+                    rej(false);
+                    return;
+                }
+
+                resetMessages();
+
+                if (isFailedAttempt) {
+                    rej(false);
+                    return;
+                }
+
+                try {
+                    if (isVerified) {
+                        set(ref(db, `${auth.currentUser?.uid}/${path}`), value)
+                            .then(() => {
+                                setSuccessMessage({ code: successCode });
+                                res(true);
+                            })
+                            .catch((error) => {
+                                setError(error);
+                                rej(false);
+                            });
+                    } else {
+                        setError({ code: 'no-data-saved' });
+                        if (typeof restoreOnFail === 'function') {
+                            restoreOnFail();
+                        }
+                        rej(false);
+                    }
+                } catch (error) {
+                    setError(error);
+                    rej(false);
+                }
+            });
+        } catch (error) {
+            setError(error);
+            rej(false);
+        }
+    });

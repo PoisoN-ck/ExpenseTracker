@@ -115,7 +115,7 @@ const ConstantExpensesList = ({
                 Total: {convertAmountToString(totalFilteredExpenses)} HUF
             </p>
             {isConstantExpensesExist ? (
-                <ul className="flex-column full-width container__vertical-scroll bottom-border__main-color">
+                <ul className="flex-column full-width container__vertical-scroll bottom-border__main-color margin-bottom-md">
                     {currentlyFilteredExpenses.map((constantExpense) => {
                         const isCurrentlyBeingEdited = isBeingCurrentlyEdited(
                             constantExpense.id,
