@@ -13,7 +13,7 @@ const TextInput = ({
     style = '',
     value,
     handleChange = () => {},
-    onClick, // optional for some side UI interactions
+    onClick = () => {}, // optional for some side UI interactions
 }) => {
     return (
         <>

@@ -6,8 +6,6 @@ import { UserSetting } from '@types';
 import Dropdown from '@components/common/Dropdown';
 import useUserSettings from '@hooks/useUserSettings';
 
-// const DEFAULT_USER_STATE = { name: '', color: '', id: '' };
-
 const UserSettings = ({ isShown }) => {
     const { usersSettings, addUserSettings } = useUserSettings();
 

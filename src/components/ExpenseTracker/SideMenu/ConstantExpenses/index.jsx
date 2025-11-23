@@ -15,6 +15,7 @@ const DEFAULT_CONSTANT_EXPENSE_STATE = {
     name: '',
     amount: '',
     category: '',
+    isOneTime: false,
     id: '',
 };
 
@@ -55,6 +56,7 @@ const ConstantExpenses = ({
             <div className="menu-subsection">
                 <div className="margin-bottom-lg full-width">
                     <ConstantExpense
+                        isCreationMode
                         constantExpense={newConstantExpense}
                         setConstantExpense={setNewConstantExpense}
                     />

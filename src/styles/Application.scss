@@ -298,6 +298,14 @@ ul {
     gap: 5px;
 }
 
+.flex-1 {
+    flex: 1;
+}
+
+.flex-2 {
+    flex: 2;
+}
+
 .full-parent-height {
     height: 100%;
 }
@@ -926,6 +934,10 @@ input[type='color']:disabled {
 
 .full-width {
     width: 100%;
+}
+
+.width-50 {
+    width: 50%;
 }
 
 .width-30 {

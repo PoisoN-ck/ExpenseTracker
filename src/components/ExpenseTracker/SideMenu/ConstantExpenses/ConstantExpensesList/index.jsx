@@ -1,15 +1,15 @@
 import { useCallback, useState } from 'react';
 import PropTypes from 'prop-types';
 
-import NoDataScreen from '../../../../common/NoDataScreen';
-import { convertAmountToString } from '../../../../../utils';
+import { convertAmountToString } from '@utils';
 import {
     FilteredConstantExpenses,
     ConstantExpense as ConstantExpenseType,
-} from '../../../../../types';
-import ButtonIcon from '../../../../common/ButtonIcon';
+} from '@types';
+import NoDataScreen from '@components/common/NoDataScreen';
+import ButtonIcon from '@components/common/ButtonIcon';
+import { PAID } from '@constants';
 import ConstantExpense from '../ConstantExpense';
-import { PAID } from '../../../../../constants';
 
 const ConstantExpensesList = ({
     currentlyFilteredExpenses,
