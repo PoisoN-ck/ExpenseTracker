@@ -3,6 +3,9 @@ import { onValue, ref, set } from 'firebase/database';
 import { FilterTypes } from '@constants';
 import db, { auth } from '@/services/db';
 
+export const isRealObject = (value) =>
+    value !== null && typeof value === 'object' && !Array.isArray(value);
+
 export function capitalize(word) {
     return word.charAt(0).toUpperCase() + word.slice(1);
 }
@@ -109,16 +112,18 @@ export const translateMessage = (message) => {
 
 export const convertAmountToString = (num = 0) => num?.toLocaleString();
 
-export const handleSimpleSnapshotValue = (snapshot) => snapshot?.val();
+const handleSnapshotValue = (snapshot, defaultValue = null) => {
+    if (Array.isArray(snapshot?.val())) {
+        return snapshot?.val().filter((value) => value) || [];
+    }
 
-// const handleFilterArraySnapshotValue = (snapshot) =>
-//     snapshot?.val()?.filter((value) => value);
+    return snapshot?.val() || defaultValue;
+};
 
 export const fetchValueAsPromise = async ({
     refPath,
-    handleFetchedValue,
+    defaultValue = null,
     onFetched,
-    defaultValue,
     handleError,
 }) =>
     await new Promise((res, rej) => {
@@ -128,13 +133,16 @@ export const fetchValueAsPromise = async ({
             onValue(
                 nodeRef,
                 (snapshot) => {
-                    const value = handleFetchedValue(snapshot) ?? defaultValue;
+                    const fetchedValue = handleSnapshotValue(
+                        snapshot,
+                        defaultValue,
+                    );
 
                     if (typeof onFetched === 'function') {
-                        onFetched(value);
+                        onFetched(fetchedValue);
                     }
 
-                    res(value);
+                    res(fetchedValue);
                 },
                 (error) => {
                     handleError(error);
@@ -151,6 +159,7 @@ export const updateValueWithConnectionCheck = async ({
     path,
     value,
     isVerified,
+    oldValue = null,
     successCode,
     resetMessages,
     setSuccessMessage,
@@ -182,7 +191,12 @@ export const updateValueWithConnectionCheck = async ({
 
                 try {
                     if (isVerified) {
-                        set(ref(db, `${auth.currentUser?.uid}/${path}`), value)
+                        let updatedValue = handleValueTypes(value, oldValue);
+
+                        set(
+                            ref(db, `${auth.currentUser?.uid}/${path}`),
+                            updatedValue,
+                        )
                             .then(() => {
                                 setSuccessMessage({ code: successCode });
                                 res(true);
@@ -208,3 +222,15 @@ export const updateValueWithConnectionCheck = async ({
             rej(false);
         }
     });
+
+const handleValueTypes = (value, oldValue = null) => {
+    if (Array.isArray(value)) {
+        return [...oldValue, ...value];
+    }
+
+    if (isRealObject(value)) {
+        return { ...oldValue, ...value };
+    }
+
+    return value;
+};

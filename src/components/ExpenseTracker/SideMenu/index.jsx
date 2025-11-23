@@ -1,22 +1,14 @@
 import PropTypes from 'prop-types';
 import { useEffect, useState } from 'react';
 
-import {
-    ConstantExpense,
-    FilteredConstantExpenses,
-    UserSetting,
-} from '../../../types';
+import { ConstantExpense, FilteredConstantExpenses } from '@types';
 import ConstantExpenses from './ConstantExpenses';
 import UserSettings from './UserSettings';
 
 const SideMenu = ({
     isShown,
     setIsShown,
-    usersSettings,
     constantExpenses,
-    addUserSettings,
-    chosenUser,
-    setChosenUser,
     handleSignOut,
     addConstantExpense,
     editConstantExpense,
@@ -59,13 +51,7 @@ const SideMenu = ({
                     >
                         User Settings
                     </button>
-                    <UserSettings
-                        chosenUser={chosenUser}
-                        setChosenUser={setChosenUser}
-                        usersSettings={usersSettings}
-                        addUserSettings={addUserSettings}
-                        isShown={isUserSettingsShown}
-                    />
+                    <UserSettings isShown={isUserSettingsShown} />
                 </li>
                 <li className="menu-item">
                     <button
@@ -94,10 +80,6 @@ const SideMenu = ({
 SideMenu.propTypes = {
     isShown: PropTypes.bool.isRequired,
     setIsShown: PropTypes.func.isRequired,
-    usersSettings: PropTypes.array,
-    addUserSettings: PropTypes.func.isRequired,
-    chosenUser: UserSetting,
-    setChosenUser: PropTypes.func.isRequired,
     handleSignOut: PropTypes.func.isRequired,
     constantExpenses: PropTypes.arrayOf(ConstantExpense),
     addConstantExpense: PropTypes.func.isRequired,

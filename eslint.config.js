@@ -29,6 +29,7 @@ export default [
                         ['@', './src'],
                         ['@components/*', './src/components/*'],
                         ['@hooks/*', './src/hooks/*'],
+                        ['@hooks', './src/hooks'],
                         ['@types', './src/types'],
                         ['@constants', './src/constants'],
                         ['@img/*', './src/img/*'],

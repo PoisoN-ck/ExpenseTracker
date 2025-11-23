@@ -1,13 +1,10 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { useLongPress } from '@uidotdev/usehooks';
 import PropTypes from 'prop-types';
 import { v4 as uuidv4 } from 'uuid';
 import { categories } from '../../../constants';
-import {
-    ConstantExpense as ConstantExpenseType,
-    UserSetting,
-} from '../../../types';
+import { ConstantExpense as ConstantExpenseType } from '../../../types';
 import AmountInput from '../../common/AmountInput';
 import Button from '../../common/Button';
 import ConstantExpensePayModal from '../../common/ConstantExpensePayModal';
@@ -17,16 +14,17 @@ const ActionBar = ({
     addTransaction,
     setError,
     isDisabled,
-    chosenUser,
     notPaidConstantExpenses,
     payConstantExpenses,
     handleShowSideMenu,
 }) => {
+    const [chosenUser, setChosenUser] = useState(null);
     const [transactionAmount, setTransactionAmount] = useState('');
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isConstantExpenseModalOpen, setIsConstantExpenseModalOpen] =
         useState(false);
     const [isAddButtonAnimated, setIsAddButtonAnimated] = useState(false);
+    const alreadySelectedUser = localStorage.getItem('userSettings');
 
     const handleOpenModal = () => {
         if (!transactionAmount) {
@@ -93,6 +91,16 @@ const ActionBar = ({
     const handleConstantExpenseClose = () =>
         setIsConstantExpenseModalOpen(false);
 
+    useEffect(() => {
+        if (alreadySelectedUser) {
+            const selectedUser = JSON.parse(alreadySelectedUser);
+
+            setChosenUser(selectedUser);
+
+            return;
+        }
+    }, [alreadySelectedUser]);
+
     return (
         <section className="action-bar padding-vertical-md">
             <div className="flex-center container gap-10">
@@ -138,7 +146,6 @@ ActionBar.propTypes = {
     addTransaction: PropTypes.func.isRequired,
     setError: PropTypes.func.isRequired,
     isDisabled: PropTypes.bool,
-    chosenUser: UserSetting,
     notPaidConstantExpenses: PropTypes.arrayOf(ConstantExpenseType),
     payConstantExpenses: PropTypes.func.isRequired,
     handleShowSideMenu: PropTypes.func.isRequired,

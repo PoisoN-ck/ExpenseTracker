@@ -3,11 +3,10 @@ import {
     DEFAULT_FILTERS_STATE,
     DEFAULT_NUM_OF_TRANSACTIONS,
     NOT_PAID,
-} from '../../constants';
-import { sortTransactionsByDate, translateMessage } from '../../utils';
+} from '@constants';
+import { sortTransactionsByDate, translateMessage } from '@utils';
 
-import PropTypes from 'prop-types';
-import useData from '../../hooks/useData';
+import { useData, useAuth } from '@hooks';
 import ActionBar from './ActionBar';
 import AllTransactionsToggler from './AllTransactionsToggler';
 import SideMenu from './SideMenu';
@@ -15,23 +14,19 @@ import TrackerHeader from './TrackerHeader';
 import TrackerStatus from './TrackerStatus';
 import Transactions from './Transactions';
 
-const DEFAULT_USER_STATE = { name: '', color: '', id: '' };
-
-const ExpenseTracker = ({ isVerified, logOut }) => {
+const ExpenseTracker = () => {
     const [isShownAllTransactions, setIsShownAllTransactions] = useState(false);
     const [filteredTransactions, setFilteredTransactions] = useState([]);
     const [filters, setFilters] = useState(DEFAULT_FILTERS_STATE);
     const [isFilterApplied, setIsFilterApplied] = useState(false);
     const [messageText, setMessageText] = useState(null);
     const [isMenuShown, setIsMenuShown] = useState(false);
-    const [chosenUser, setChosenUser] = useState(DEFAULT_USER_STATE);
 
     const {
         dataError,
         isLoading,
         successMessage,
         transactions,
-        usersSettings,
         constantExpenses,
         filteredConstantExpense,
         totalConstantExpensesToBePaid,
@@ -45,10 +40,11 @@ const ExpenseTracker = ({ isVerified, logOut }) => {
         addConstantExpense,
         editConstantExpense,
         deleteConstantExpense,
-        addUserSettings,
         doRegisterExpenseAsPaid,
         payConstantExpenses,
-    } = useData(isVerified);
+    } = useData();
+
+    const { logOut } = useAuth();
 
     useEffect(() => {
         if (transactions?.length) {
@@ -64,24 +60,6 @@ const ExpenseTracker = ({ isVerified, logOut }) => {
 
         setMessageText(text);
     }, [dataError, successMessage]);
-
-    useEffect(() => {
-        const previouslySelectedUser = localStorage.getItem('userSettings');
-
-        if (previouslySelectedUser) {
-            const selectedUser = JSON.parse(previouslySelectedUser);
-
-            setChosenUser(selectedUser);
-
-            return;
-        }
-    }, []);
-
-    useEffect(() => {
-        if (chosenUser) {
-            localStorage.setItem('userSettings', JSON.stringify(chosenUser));
-        }
-    }, [chosenUser]);
 
     const shownTransactions = useMemo(() => {
         return isFilterApplied
@@ -108,10 +86,6 @@ const ExpenseTracker = ({ isVerified, logOut }) => {
             <SideMenu
                 isShown={isMenuShown}
                 setIsShown={setIsMenuShown}
-                addUserSettings={addUserSettings}
-                usersSettings={usersSettings}
-                chosenUser={chosenUser}
-                setChosenUser={setChosenUser}
                 handleSignOut={handleSignOut}
                 constantExpenses={constantExpenses}
                 addConstantExpense={addConstantExpense}
@@ -143,7 +117,6 @@ const ExpenseTracker = ({ isVerified, logOut }) => {
             />
 
             <Transactions
-                usersSettings={usersSettings}
                 isLoading={isLoading}
                 transactions={
                     isShownAllTransactions
@@ -159,7 +132,6 @@ const ExpenseTracker = ({ isVerified, logOut }) => {
                 dataError={dataError}
                 isFilterApplied={isFilterApplied}
                 isLoading={isLoading}
-                isVerified={isVerified}
                 messageText={messageText}
                 resetMessages={resetMessages}
                 resetFilters={resetFilters}
@@ -170,18 +142,12 @@ const ExpenseTracker = ({ isVerified, logOut }) => {
                 addTransaction={addTransaction}
                 isDisabled={isLoading}
                 setError={setDataError}
-                chosenUser={chosenUser}
                 notPaidConstantExpenses={filteredConstantExpense[NOT_PAID]}
                 payConstantExpenses={payConstantExpenses}
                 handleShowSideMenu={handleShowMenuFromModal}
             />
         </>
     );
-};
-
-ExpenseTracker.propTypes = {
-    isVerified: PropTypes.bool.isRequired,
-    logOut: PropTypes.func.isRequired,
 };
 
 export default ExpenseTracker;

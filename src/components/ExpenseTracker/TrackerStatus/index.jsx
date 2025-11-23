@@ -1,16 +1,18 @@
 import PropTypes from 'prop-types';
 import Notification from './Notification';
+import useAuth from '@hooks/useAuth';
 
 const TrackerStatus = ({
     dataError,
     isLoading,
     isFilterApplied,
-    isVerified,
     messageText,
     resetMessages,
     resetFilters,
     sendVerificationEmail,
 }) => {
+    const { isVerified } = useAuth();
+
     return (
         <div className="bottom-bar">
             {isFilterApplied ? (
@@ -52,7 +54,6 @@ TrackerStatus.propTypes = {
     dataError: PropTypes.object,
     isLoading: PropTypes.bool.isRequired,
     isFilterApplied: PropTypes.bool.isRequired,
-    isVerified: PropTypes.bool.isRequired,
     messageText: PropTypes.string,
     resetMessages: PropTypes.func.isRequired,
     resetFilters: PropTypes.func.isRequired,

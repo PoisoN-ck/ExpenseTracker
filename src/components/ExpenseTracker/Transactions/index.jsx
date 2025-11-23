@@ -1,12 +1,15 @@
 import { useMemo } from 'react';
 
 import PropTypes from 'prop-types';
-import { Transaction, UserSetting } from '../../../types';
-import { convertAmountToString } from '../../../utils';
-import Loader from '../../common/Loader';
-import NoDataScreen from '../../common/NoDataScreen';
+import { Transaction } from '@types';
+import { convertAmountToString } from '@utils';
+import Loader from '@components/common/Loader';
+import NoDataScreen from '@components/common/NoDataScreen';
+import useUserSettings from '@/hooks/useUserSettings';
 
-const Transactions = ({ isLoading, transactions, usersSettings }) => {
+const Transactions = ({ isLoading, transactions }) => {
+    const { usersSettings } = useUserSettings();
+
     const transactionsList = useMemo(
         () =>
             transactions.map((transaction) => {
@@ -18,11 +21,7 @@ const Transactions = ({ isLoading, transactions, usersSettings }) => {
                         key={id}
                         style={{
                             backgroundColor:
-                                (userId &&
-                                    usersSettings.find(
-                                        (userSetting) =>
-                                            userSetting?.id === userId,
-                                    )?.color) ||
+                                (userId && usersSettings[userId]?.color) ||
                                 'none',
                         }}
                     >
@@ -60,7 +59,6 @@ const Transactions = ({ isLoading, transactions, usersSettings }) => {
 Transactions.propTypes = {
     isLoading: PropTypes.bool.isRequired,
     transactions: PropTypes.arrayOf(PropTypes.shape(Transaction)).isRequired,
-    usersSettings: PropTypes.arrayOf(UserSetting),
 };
 
 export default Transactions;

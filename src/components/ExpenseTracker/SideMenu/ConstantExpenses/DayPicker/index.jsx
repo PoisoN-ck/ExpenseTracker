@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import './styles.css';
 import TextInput from '@components/common/TextInput';
 import { DAYS_LIST_IN_A_MONTH, DEFAULT_REFRESH_DAY } from '@/constants';
-import useUserSettings from '@/hooks/useUserSettings';
+import useUserSettings from '@hooks/useUserSettings';
 
 const DAYS = 31;
 const WEEK_LENGTH = 7;

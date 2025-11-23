@@ -1,24 +1,26 @@
 import { child, get, onValue, ref, set } from 'firebase/database';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
-import db, { auth } from '../services/db';
-
 import { sendEmailVerification } from 'firebase/auth';
+
+import db, { auth } from '@/services/db';
 import {
     CONSTANT_EXPENSE_FILTERS,
     NOT_PAID,
     thisMonthFilter,
-} from '../constants';
-import { filterTransactions, sortTransactionsByDate } from '../utils';
+} from '@constants';
+import { filterTransactions, sortTransactionsByDate } from '@utils';
+import { useAuth } from '@hooks';
 
-const useData = (isVerified) => {
-    // TODO: Potentially need separation of transactions, userSettings and constantExpenses to different files
+const useData = () => {
+    const { isVerified } = useAuth();
+
+    // TODO: Potentially need separation of transactions and constantExpenses to different files
     const [transactions, setTransactions] = useState([]);
     // TOOD: Revise appoach with setIsLoading! It seems it is not needed in the methods at all! Only on initial fetch
     const [isLoading, setIsLoading] = useState(true);
     const [dataError, setDataError] = useState(null);
     const [successMessage, setSuccessMessage] = useState(null);
-    const [usersSettings, setUsersSettings] = useState([]);
     const [constantExpenses, setConstantExpenses] = useState([]);
     const [filteredConstantExpense, setFilteredConstantExpenses] = useState({});
     const [thisMonthTransactions, setThisMonthTransactions] = useState([]);
@@ -79,38 +81,6 @@ const useData = (isVerified) => {
                 );
             } catch (error) {
                 setDataError(error);
-                rej(false);
-            }
-        });
-
-    const fetchAndUpdateUsersSettings = async () =>
-        await new Promise((res, rej) => {
-            try {
-                const usersSettingsRef = ref(
-                    db,
-                    `${auth.currentUser?.uid}/usersSettings`,
-                );
-
-                onValue(
-                    usersSettingsRef,
-                    (snapshot) => {
-                        const fetchedUsersSettings =
-                            snapshot
-                                .val()
-                                ?.filter((transaction) => transaction) || [];
-
-                        setUsersSettings(fetchedUsersSettings);
-                        res(fetchedUsersSettings);
-                    },
-                    (error) => {
-                        setDataError(error);
-                        setIsLoading(false);
-                        rej(false);
-                    },
-                );
-            } catch (error) {
-                setDataError(error);
-                setIsLoading(false);
                 rej(false);
             }
         });
@@ -204,92 +174,7 @@ const useData = (isVerified) => {
                 setDataError(error);
             }
         },
-        [successMessage, transactions],
-    );
-
-    const addUserSettings = useCallback(
-        async (userSetting) => {
-            if (!userSetting.name || !userSetting.color) {
-                setDataError({ code: 'add-missing-fields' });
-                return false;
-            }
-
-            const connectionRef = ref(db, '.info/connected');
-
-            const addUserSettingsPromise = async () =>
-                await new Promise((res, rej) => {
-                    let isFailedAttempt = false;
-                    try {
-                        onValue(connectionRef, (snapshot) => {
-                            const isNetworkExist = snapshot.val();
-
-                            if (!isNetworkExist) {
-                                isFailedAttempt = true;
-                                setDataError({
-                                    code: 'no-network-users-settings',
-                                });
-                                rej(false);
-                                return;
-                            }
-
-                            resetMessages();
-
-                            // Making sure that settings
-                            // are not saved in offline mode
-                            if (isFailedAttempt) {
-                                rej(false);
-                                return;
-                            }
-
-                            try {
-                                if (isVerified) {
-                                    setIsLoading(true);
-                                    set(
-                                        ref(
-                                            db,
-                                            `${auth.currentUser?.uid}/usersSettings`,
-                                        ),
-                                        [userSetting, ...usersSettings],
-                                    )
-                                        .then(() => {
-                                            setSuccessMessage({
-                                                code: 'added-user-settings',
-                                            });
-                                            res(true);
-                                        })
-                                        .catch((error) => {
-                                            setDataError(error);
-                                            rej(false);
-                                        })
-                                        .finally(() => {
-                                            setIsLoading(false);
-                                        });
-                                } else {
-                                    setDataError({ code: 'no-data-saved' });
-                                    setUsersSettings([
-                                        userSetting,
-                                        ...usersSettings,
-                                    ]);
-                                    rej(false);
-                                }
-                            } catch (error) {
-                                setDataError(error);
-                                rej(false);
-                            } finally {
-                                setIsLoading(false);
-                            }
-                        });
-                    } catch (error) {
-                        setDataError(error);
-                        rej(false);
-                    }
-                });
-
-            const result = await addUserSettingsPromise();
-
-            return result;
-        },
-        [successMessage, usersSettings],
+        [successMessage, transactions, isVerified],
     );
 
     // TODO: Refactor similar methods and move to utils
@@ -380,7 +265,7 @@ const useData = (isVerified) => {
 
             return result;
         },
-        [successMessage, constantExpenses],
+        [successMessage, constantExpenses, isVerified],
     );
 
     const editConstantExpense = useCallback(
@@ -475,7 +360,7 @@ const useData = (isVerified) => {
 
             return result;
         },
-        [successMessage, constantExpenses],
+        [successMessage, constantExpenses, isVerified],
     );
 
     const deleteConstantExpense = useCallback(
@@ -566,9 +451,10 @@ const useData = (isVerified) => {
 
             return result;
         },
-        [successMessage, constantExpenses],
+        [successMessage, constantExpenses, isVerified],
     );
 
+    // To be moved out
     const sendVerificationEmail = async () => {
         const user = auth.currentUser;
 
@@ -706,7 +592,7 @@ const useData = (isVerified) => {
 
             return result;
         },
-        [successMessage, transactions],
+        [successMessage, transactions, isVerified],
     );
 
     const doRegisterExpenseAsPaid = useCallback(
@@ -870,7 +756,7 @@ const useData = (isVerified) => {
 
             return result;
         },
-        [successMessage, transactions],
+        [successMessage, transactions, isVerified],
     );
 
     const totalBalance = useMemo(
@@ -907,15 +793,10 @@ const useData = (isVerified) => {
 
     const initialLoad = useCallback(async () => {
         setIsLoading(true);
-        await fetchAndUpdateUsersSettings();
         await fetchAndUpdateConstantExpenses();
         await fetchAndUpdateTransactions();
         setIsLoading(false);
-    }, [
-        fetchAndUpdateUsersSettings,
-        fetchAndUpdateConstantExpenses,
-        fetchAndUpdateTransactions,
-    ]);
+    }, [fetchAndUpdateConstantExpenses, fetchAndUpdateTransactions]);
 
     useEffect(() => {
         initialLoad();
@@ -940,7 +821,6 @@ const useData = (isVerified) => {
         isLoading,
         successMessage,
         transactions,
-        usersSettings,
         constantExpenses,
         filteredConstantExpense,
         totalConstantExpensesToBePaid,
@@ -952,7 +832,6 @@ const useData = (isVerified) => {
         resetMessages,
         sendVerificationEmail,
         setDataError,
-        addUserSettings,
         addConstantExpense,
         editConstantExpense,
         deleteConstantExpense,

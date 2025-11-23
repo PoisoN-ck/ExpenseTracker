@@ -1,35 +1,36 @@
 import PropTypes from 'prop-types';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
-import { MAIN_COLOR } from '../../../../constants';
-import { UserSetting } from '../../../../types';
-import Dropdown from '../../../common/Dropdown';
+import { MAIN_COLOR } from '@constants';
+import { UserSetting } from '@types';
+import Dropdown from '@components/common/Dropdown';
+import useUserSettings from '@hooks/useUserSettings';
 
-const UserSettings = ({
-    usersSettings,
-    addUserSettings,
-    chosenUser,
-    setChosenUser,
-    isShown,
-}) => {
+// const DEFAULT_USER_STATE = { name: '', color: '', id: '' };
+
+const UserSettings = ({ isShown }) => {
+    const { usersSettings, addUserSettings } = useUserSettings();
+
+    const [chosenUser, setChosenUser] = useState(null);
     const [newUserName, setNewUserName] = useState('');
     const [newUserColor, setNewUserColor] = useState(MAIN_COLOR);
 
-    const availableUsersOptions = usersSettings.map((userSettings) => (
-        <option key={userSettings?.id} value={userSettings?.id}>
-            {userSettings?.name}
-        </option>
-    ));
+    const availableUsersOptions = Object.entries(usersSettings).map(
+        ([id, userSettings]) => (
+            <option key={id} value={id}>
+                {userSettings?.name}
+            </option>
+        ),
+    );
 
     const handleInputChange = (e) => setNewUserName(e.target.value);
     const handleColorChange = (e) => setNewUserColor(e.target.value);
     const handleUserSelect = (e) => {
-        const [selectedUser] = usersSettings.filter(
-            (userSettings) => userSettings?.id === e.target.value,
-        );
+        const userId = e.target.value;
+        const selectedUserData = usersSettings[userId];
 
-        if (selectedUser) {
-            setChosenUser(selectedUser);
+        if (selectedUserData) {
+            setChosenUser({ id: userId, ...selectedUserData });
         }
     };
     const handleAddNewUser = async () => {
@@ -38,17 +39,36 @@ const UserSettings = ({
         const newUser = {
             name: newUserName,
             color: newUserColor,
-            id: userId,
         };
 
-        const isUserSettingsAdded = await addUserSettings(newUser);
+        const isUserSettingsAdded = await addUserSettings({
+            [userId]: newUser,
+        });
 
         if (isUserSettingsAdded) {
-            setChosenUser(newUser);
+            setChosenUser({ id: userId, ...newUser });
             setNewUserName('');
             setNewUserColor(MAIN_COLOR);
         }
     };
+
+    useEffect(() => {
+        if (chosenUser) {
+            localStorage.setItem('userSettings', JSON.stringify(chosenUser));
+        }
+    }, [chosenUser]);
+
+    useEffect(() => {
+        const alreadySelectedUser = localStorage.getItem('userSettings');
+
+        if (alreadySelectedUser) {
+            const selectedUser = JSON.parse(alreadySelectedUser);
+
+            setChosenUser(selectedUser);
+
+            return;
+        }
+    }, []);
 
     return (
         <div
@@ -68,7 +88,7 @@ const UserSettings = ({
                     <div className="user-settings__user-input-container">
                         <Dropdown
                             style={`${
-                                chosenUser.color ? '' : 'full-width'
+                                chosenUser?.color ? '' : 'full-width'
                             } user-settings-input`}
                             isRounded
                             options={availableUsersOptions}
@@ -77,7 +97,7 @@ const UserSettings = ({
                             handleSelect={handleUserSelect}
                             placedholder="Select user"
                         />
-                        {chosenUser.color && (
+                        {chosenUser?.color && (
                             <input
                                 className="user-settings__userName-color"
                                 type="color"
@@ -132,7 +152,6 @@ const UserSettings = ({
 
 UserSettings.propTypes = {
     usersSettings: PropTypes.array,
-    addUserSettings: PropTypes.func.isRequired,
     chosenUser: UserSetting,
     setChosenUser: PropTypes.func.isRequired,
     isShown: PropTypes.bool.isRequired,

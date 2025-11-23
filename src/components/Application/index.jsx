@@ -26,15 +26,7 @@ const Application = () => {
         setMessageText('');
     };
 
-    const {
-        authError,
-        isLoginPending,
-        isLoggedIn,
-        isVerified,
-        logIn,
-        logOut,
-        signUp,
-    } = useAuth();
+    const { authError, isLoginPending, isLoggedIn, logIn, signUp } = useAuth();
 
     useEffect(() => {
         if (authError) {
@@ -55,15 +47,7 @@ const Application = () => {
                             path="/signup"
                             element={<Navigate to="/" replace />}
                         />
-                        <Route
-                            path="/"
-                            element={
-                                <ExpenseTracker
-                                    isVerified={isVerified}
-                                    logOut={logOut}
-                                />
-                            }
-                        />
+                        <Route path="/" element={<ExpenseTracker />} />
                         <Route path="*" element={<Navigate to="/" replace />} />
                     </Routes>
                 ) : (
