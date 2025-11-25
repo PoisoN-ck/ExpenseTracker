@@ -1,15 +1,16 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import './styles.css';
-import TextInput from '@components/common/TextInput';
-import { DAYS_LIST_IN_A_MONTH, DEFAULT_REFRESH_DAY } from '@/constants';
-import useUserSettings from '@hooks/useUserSettings';
+import Button from '@components/common/Button';
+import { DAYS_LIST_IN_A_MONTH, DEFAULT_REFRESH_DAY } from '@constants';
+import useData from '@hooks/useData';
+import { formatDayWithSuffix } from '@utils';
 
 const DAYS = 31;
 const WEEK_LENGTH = 7;
 
 export const DayPicker = () => {
     const { plannedExpenseDayRefresh, updatePlannedExpenseDayRefresh } =
-        useUserSettings();
+        useData();
     const [plannedExpenseDay, setPlannedExpenseDay] =
         useState(DEFAULT_REFRESH_DAY);
     const [focused, setFocused] = useState(plannedExpenseDay ?? 1);
@@ -35,6 +36,12 @@ export const DayPicker = () => {
     // Close when clicking outside the picker
     useEffect(() => {
         const handleOutside = (e) => {
+            // If the click originated from the toggle button, ignore it so
+            // the button's own click handler can toggle the picker state.
+            if (e.target.closest('[data-daypicker-toggle]')) {
+                return;
+            }
+
             if (
                 containerRef.current &&
                 !containerRef.current.contains(e.target)
@@ -88,20 +95,24 @@ export const DayPicker = () => {
         setFocused(next + 1);
     };
 
-    const handleInputClick = useCallback(() => {
-        setIsShown(true);
-        setFocused(plannedExpenseDay);
+    const handleClick = useCallback(() => {
+        setIsShown((prev) => !prev);
     }, [plannedExpenseDay]);
 
     return (
-        <div className="flex-column">
-            <TextInput
-                style="no-margin margin-bottom-sm"
-                labelStyle="margin-bottom-sm text-muted"
-                size="sm"
-                label="Select a day of planned expense refresh"
-                value={plannedExpenseDay}
-                onClick={handleInputClick}
+        <div className="flex-center-column">
+            <label
+                className="margin-bottom-sm text-muted text-center"
+                htmlFor="daypicker-button"
+            >
+                Planned expense refresh day
+            </label>
+            <Button
+                id="daypicker-button"
+                style="no-margin margin-bottom-sm text-md text-lowercase"
+                text={formatDayWithSuffix(plannedExpenseDay)}
+                handleClick={handleClick}
+                data-daypicker-toggle="true"
             />
             <div
                 ref={containerRef}

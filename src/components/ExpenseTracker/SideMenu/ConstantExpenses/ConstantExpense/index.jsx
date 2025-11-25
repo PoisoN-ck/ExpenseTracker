@@ -115,9 +115,9 @@ const ConstantExpense = ({
                             type="checkbox"
                             checked={expenseIsOneTime}
                             onChange={handleCheckboxChange}
-                            aria-label="One-time expense"
+                            aria-label="One-time"
                         />
-                        <span>One-time expense</span>
+                        <span className="text-muted">One-time</span>
                     </label>
                 )}
             </div>

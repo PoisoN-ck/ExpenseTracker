@@ -1,4 +1,4 @@
-import { isWithinInterval } from 'date-fns';
+import { addMonths, isWithinInterval, lastDayOfMonth } from 'date-fns';
 import { onValue, ref, set } from 'firebase/database';
 import { FilterTypes } from '@constants';
 import db, { auth } from '@/services/db';
@@ -111,6 +111,26 @@ export const translateMessage = (message) => {
 };
 
 export const convertAmountToString = (num = 0) => num?.toLocaleString();
+
+// Format a day number with the correct ordinal suffix and append "of the month".
+export const formatDayWithSuffix = (day) => {
+    const n = Number(day);
+    if (Number.isNaN(n) || n < 1 || n > 31) return '';
+
+    let remainder = n % 100;
+    if (remainder >= 11 && remainder <= 13) {
+        return `${n}th of the month`;
+    }
+
+    remainder = n % 10;
+    let suffix;
+    if (remainder === 1) suffix = 'st';
+    else if (remainder === 2) suffix = 'nd';
+    else if (remainder === 3) suffix = 'rd';
+    else suffix = 'th';
+
+    return `${n}${suffix} of each month`;
+};
 
 const handleSnapshotValue = (snapshot, defaultValue = null) => {
     if (Array.isArray(snapshot?.val())) {
@@ -233,4 +253,50 @@ const handleValueTypes = (value, oldValue = null) => {
     }
 
     return value;
+};
+
+export const getCustomDateFilter = (startDate) => {
+    if (!startDate) return { startDate: null, endDate: null };
+
+    const day = parseInt(startDate, 10);
+    if (Number.isNaN(day) || day < 1 || day > 31) {
+        return { startDate: null, endDate: null };
+    }
+
+    const now = new Date();
+    const todayDay = now.getDate();
+
+    // If today's date is on/after the requested day, start a new period
+    // from the requested day in the current month -> same day next month.
+    // Otherwise, return the previous-month -> current-month range.
+    if (todayDay >= day) {
+        // start: requested day in current month (or last day if month too short)
+        let start = new Date(now.getFullYear(), now.getMonth(), day);
+        if (start.getMonth() !== now.getMonth()) {
+            start = lastDayOfMonth(now);
+        }
+
+        // end: same day in next month (or last day of next month if needed)
+        const nextMonth = addMonths(start, 1);
+        let end = new Date(nextMonth.getFullYear(), nextMonth.getMonth(), day);
+        if (end.getMonth() !== nextMonth.getMonth()) {
+            end = lastDayOfMonth(nextMonth);
+        }
+
+        return { startDate: start, endDate: end };
+    }
+
+    // todayDay < day: previous-month -> current-month
+    let end = new Date(now.getFullYear(), now.getMonth(), day);
+    if (end.getMonth() !== now.getMonth()) {
+        end = lastDayOfMonth(now);
+    }
+
+    const prevMonth = addMonths(end, -1);
+    let start = new Date(prevMonth.getFullYear(), prevMonth.getMonth(), day);
+    if (start.getMonth() !== prevMonth.getMonth()) {
+        start = lastDayOfMonth(prevMonth);
+    }
+
+    return { startDate: start, endDate: end };
 };

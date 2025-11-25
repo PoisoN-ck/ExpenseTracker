@@ -6,10 +6,16 @@ import { sendEmailVerification } from 'firebase/auth';
 import db, { auth } from '@/services/db';
 import {
     CONSTANT_EXPENSE_FILTERS,
+    DEFAULT_REFRESH_DAY,
     NOT_PAID,
-    thisMonthFilter,
 } from '@constants';
-import { filterTransactions, sortTransactionsByDate } from '@utils';
+import {
+    filterTransactions,
+    sortTransactionsByDate,
+    getCustomDateFilter,
+    fetchValueAsPromise,
+    updateValueWithConnectionCheck,
+} from '@utils';
 import { useAuth } from '@hooks';
 
 const useData = () => {
@@ -23,12 +29,44 @@ const useData = () => {
     const [successMessage, setSuccessMessage] = useState(null);
     const [constantExpenses, setConstantExpenses] = useState([]);
     const [filteredConstantExpense, setFilteredConstantExpenses] = useState({});
-    const [thisMonthTransactions, setThisMonthTransactions] = useState([]);
+    const [plannedExpensesMonth, setPlannedExpensesMonth] = useState([]);
+    const [plannedExpenseDayRefresh, setPlannedExpenseDayRefresh] =
+        useState(DEFAULT_REFRESH_DAY);
 
     const resetMessages = () => {
         setDataError(null);
         setSuccessMessage(null);
     };
+
+    const fetchPlannedExpenseDayRefresh = () =>
+        fetchValueAsPromise({
+            refPath: 'plannedExpenseDayRefresh',
+            defaultValue: DEFAULT_REFRESH_DAY,
+            onFetched: setPlannedExpenseDayRefresh,
+            handleError: setDataError,
+        });
+
+    const updatePlannedExpenseDayRefresh = useCallback(
+        async (day) => {
+            if (!day) {
+                setDataError({ code: 'add-missing-refresh-day' });
+                return false;
+            }
+
+            return await updateValueWithConnectionCheck({
+                path: 'plannedExpenseDayRefresh',
+                value: day,
+                isVerified,
+                successCode: 'updated-planned-expense-day-refresh',
+                resetMessages,
+                setSuccessMessage,
+                setError: setDataError,
+                restoreOnFail: () =>
+                    setPlannedExpenseDayRefresh(plannedExpenseDayRefresh),
+            });
+        },
+        [isVerified, plannedExpenseDayRefresh],
+    );
 
     // One-time fetch, usually not needed
     const fetchTransactions = useCallback(() => {
@@ -476,7 +514,7 @@ const useData = () => {
     const updateFilteredConstantExpenses = useCallback(() => {
         const [, notPaid, paid] = CONSTANT_EXPENSE_FILTERS;
 
-        const constantExpensesTransactionsOnly = thisMonthTransactions.filter(
+        const constantExpensesTransactionsOnly = plannedExpensesMonth.filter(
             (transaction) =>
                 transaction.transType === 'Expense' &&
                 transaction.constantExpenseId,
@@ -508,7 +546,7 @@ const useData = () => {
             [paid]: paidConstantExpenses,
             [notPaid]: notPaidConstantExpenses,
         });
-    }, [constantExpenses, transactions, thisMonthTransactions]);
+    }, [constantExpenses, transactions, plannedExpensesMonth]);
 
     const addConstantExpenseIdToExistingTransaction = useCallback(
         async (transactionWithConstantId) => {
@@ -605,7 +643,7 @@ const useData = () => {
             const { amount, id, category } = constantExpense;
 
             const filteredTransactionsByCategoryWithConstantExpense =
-                thisMonthTransactions.filter(
+                plannedExpensesMonth.filter(
                     (transaction) =>
                         transaction.category === category &&
                         !transaction.constantExpenseId,
@@ -665,7 +703,7 @@ const useData = () => {
 
             return false;
         },
-        [thisMonthTransactions, addConstantExpenseIdToExistingTransaction],
+        [plannedExpensesMonth, addConstantExpenseIdToExistingTransaction],
     );
 
     const payConstantExpenses = useCallback(
@@ -795,22 +833,27 @@ const useData = () => {
         setIsLoading(true);
         await fetchAndUpdateConstantExpenses();
         await fetchAndUpdateTransactions();
+        await fetchPlannedExpenseDayRefresh();
         setIsLoading(false);
-    }, [fetchAndUpdateConstantExpenses, fetchAndUpdateTransactions]);
+    }, [
+        fetchAndUpdateConstantExpenses,
+        fetchAndUpdateTransactions,
+        fetchPlannedExpenseDayRefresh,
+    ]);
 
     useEffect(() => {
         initialLoad();
     }, []);
 
     useEffect(() => {
-        setThisMonthTransactions(
+        setPlannedExpensesMonth(
             filterTransactions(
                 transactions,
                 'date',
-                JSON.stringify(thisMonthFilter),
+                JSON.stringify(getCustomDateFilter(plannedExpenseDayRefresh)),
             ),
         );
-    }, [transactions]);
+    }, [transactions, plannedExpenseDayRefresh]);
 
     useEffect(() => {
         updateFilteredConstantExpenses();
@@ -827,6 +870,7 @@ const useData = () => {
         freeCashAvailable,
         totalBalance,
         totalConstantExpensesAmount,
+        plannedExpenseDayRefresh,
         addTransaction,
         fetchTransactions,
         resetMessages,
@@ -837,6 +881,7 @@ const useData = () => {
         deleteConstantExpense,
         doRegisterExpenseAsPaid,
         payConstantExpenses,
+        updatePlannedExpenseDayRefresh,
     };
 };
 

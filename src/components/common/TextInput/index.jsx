@@ -12,8 +12,7 @@ const TextInput = ({
     size = 'default',
     style = '',
     value,
-    handleChange = () => {},
-    onClick = () => {}, // optional for some side UI interactions
+    handleChange,
 }) => {
     return (
         <>
@@ -30,7 +29,6 @@ const TextInput = ({
                 value={value}
                 placeholder={placeholder}
                 onChange={handleChange}
-                onClick={onClick}
             />
         </>
     );

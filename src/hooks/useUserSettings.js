@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
 import useAuth from './useAuth';
-import { DEFAULT_REFRESH_DAY } from '@constants';
 import { fetchValueAsPromise, updateValueWithConnectionCheck } from '@utils';
 
 const useUserSettings = () => {
@@ -9,8 +8,6 @@ const useUserSettings = () => {
     const [dataError, setDataError] = useState(null);
     const [successMessage, setSuccessMessage] = useState(null);
     const [usersSettings, setUsersSettings] = useState({});
-    const [plannedExpenseDayRefresh, setPlannedExpenseDayRefresh] =
-        useState(DEFAULT_REFRESH_DAY);
 
     const resetMessages = () => {
         setDataError(null);
@@ -18,14 +15,6 @@ const useUserSettings = () => {
     };
 
     const { isVerified } = useAuth();
-
-    const fetchPlannedExpenseDayRefresh = () =>
-        fetchValueAsPromise({
-            refPath: 'plannedExpenseDayRefresh',
-            defaultValue: DEFAULT_REFRESH_DAY,
-            onFetched: setPlannedExpenseDayRefresh,
-            handleError: setDataError,
-        });
 
     const fetctUsersSettings = async () => {
         return fetchValueAsPromise({
@@ -35,28 +24,6 @@ const useUserSettings = () => {
             handleError: setDataError,
         });
     };
-
-    const updatePlannedExpenseDayRefresh = useCallback(
-        async (day) => {
-            if (!day) {
-                setDataError({ code: 'add-missing-refresh-day' });
-                return false;
-            }
-
-            return await updateValueWithConnectionCheck({
-                path: 'plannedExpenseDayRefresh',
-                value: day,
-                isVerified,
-                successCode: 'updated-planned-expense-day-refresh',
-                resetMessages,
-                setSuccessMessage,
-                setError: setDataError,
-                restoreOnFail: () =>
-                    setPlannedExpenseDayRefresh(plannedExpenseDayRefresh),
-            });
-        },
-        [isVerified, plannedExpenseDayRefresh],
-    );
 
     const addUserSettings = useCallback(
         async (userSetting) => {
@@ -86,12 +53,10 @@ const useUserSettings = () => {
     const initialLoad = useCallback(async () => {
         setIsLoading(true);
         await fetctUsersSettings();
-        await fetchPlannedExpenseDayRefresh();
         setIsLoading(false);
-    }, [fetchPlannedExpenseDayRefresh, fetctUsersSettings]);
+    }, [fetctUsersSettings]);
 
     useEffect(() => {
-        console.log('Initial load of user settings');
         initialLoad();
     }, []);
 
@@ -99,12 +64,10 @@ const useUserSettings = () => {
         dataError,
         isLoading,
         successMessage,
-        plannedExpenseDayRefresh,
         usersSettings,
         addUserSettings,
         resetMessages,
         setDataError,
-        updatePlannedExpenseDayRefresh,
     };
 };
 
