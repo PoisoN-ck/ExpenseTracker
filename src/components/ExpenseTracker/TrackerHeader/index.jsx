@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 
 import PropTypes from 'prop-types';
-import { Filter, Transaction } from '../../../types';
+import { Filter, Transaction } from '@types';
 import Balance from './Balance';
 import FiltersModal from './FiltersModal';
 

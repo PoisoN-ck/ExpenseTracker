@@ -14,32 +14,29 @@ export const datesFilters = [
     {
         name: 'Last Month',
         value: {
-            startDate: startOfMonth(subMonths(currentDate, 1)),
-            endDate: startOfMonth(currentDate),
+            start: startOfMonth(subMonths(currentDate, 1)),
+            end: startOfMonth(currentDate),
         },
     },
     {
         name: 'This Month',
         value: {
-            startDate: startOfMonth(currentDate),
-            endDate: startOfMonth(subMonths(currentDate, -1)),
+            start: startOfMonth(currentDate),
+            end: startOfMonth(subMonths(currentDate, -1)),
         },
     },
     {
         name: 'This Week',
         value: {
-            startDate: startOfWeek(currentDate, { weekStartsOn: 1 }),
-            endDate: endOfWeek(currentDate, { weekStartsOn: 1 }),
+            start: startOfWeek(currentDate, { weekStartsOn: 1 }),
+            end: endOfWeek(currentDate, { weekStartsOn: 1 }),
         },
     },
     {
         name: 'Last Week',
         value: {
-            startDate: subWeeks(
-                startOfWeek(currentDate, { weekStartsOn: 1 }),
-                1,
-            ),
-            endDate: startOfWeek(currentDate, { weekStartsOn: 1 }),
+            start: subWeeks(startOfWeek(currentDate, { weekStartsOn: 1 }), 1),
+            end: startOfWeek(currentDate, { weekStartsOn: 1 }),
         },
     },
 ];

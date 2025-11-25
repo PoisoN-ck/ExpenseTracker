@@ -3,11 +3,11 @@ import {
     categories,
     datesFilters,
     transactionTypes as typeFilters,
-} from '../../../../constants';
+} from '@constants';
 
 import PropTypes from 'prop-types';
-import { filterTransactions } from '../../../../utils';
-import Modal from '../../../common/Modal';
+import { filterTransactions } from '@utils';
+import Modal from '@components/common/Modal';
 import FilterGroup from './FilterGroup';
 
 const { CATEGORY, TYPE, DATE } = FilterTypes;

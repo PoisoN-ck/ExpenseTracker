@@ -15,12 +15,12 @@ export function sortTransactionsByDate(currentTrans, nextTrans) {
 }
 
 const filterByDate = (transactions, datesInterval) => {
-    const { startDate, endDate } = JSON.parse(datesInterval);
+    const { start, end } = JSON.parse(datesInterval);
 
     return transactions.filter((transaction) =>
         isWithinInterval(new Date(transaction.transDate), {
-            start: new Date(startDate),
-            end: new Date(endDate),
+            start: new Date(start),
+            end: new Date(end),
         }),
     );
 };
@@ -255,12 +255,12 @@ const handleValueTypes = (value, oldValue = null) => {
     return value;
 };
 
-export const getCustomDateFilter = (startDate) => {
-    if (!startDate) return { startDate: null, endDate: null };
+export const getPlannedExpensesDatePeriod = (startDate) => {
+    if (!startDate) return { start: null, end: null };
 
     const day = parseInt(startDate, 10);
     if (Number.isNaN(day) || day < 1 || day > 31) {
-        return { startDate: null, endDate: null };
+        return { start: null, end: null };
     }
 
     const now = new Date();
@@ -283,7 +283,7 @@ export const getCustomDateFilter = (startDate) => {
             end = lastDayOfMonth(nextMonth);
         }
 
-        return { startDate: start, endDate: end };
+        return { start, end };
     }
 
     // todayDay < day: previous-month -> current-month
@@ -298,5 +298,5 @@ export const getCustomDateFilter = (startDate) => {
         start = lastDayOfMonth(prevMonth);
     }
 
-    return { startDate: start, endDate: end };
+    return { start, end };
 };

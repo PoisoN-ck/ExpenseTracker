@@ -1,10 +1,7 @@
 import PropTypes from 'prop-types';
 import { useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
-import {
-    ConstantExpense as ConstantExpenseType,
-    FilteredConstantExpenses,
-} from '@types';
+import { FilteredConstantExpenses } from '@types';
 import Button from '@components/common/Button';
 import ConstantExpense from './ConstantExpense';
 import PlannedExpenseFilters from './PlannedExpenseFilters';
@@ -20,7 +17,6 @@ const DEFAULT_CONSTANT_EXPENSE_STATE = {
 };
 
 const ConstantExpenses = ({
-    constantExpenses,
     isShown,
     addConstantExpense,
     editConstantExpense,
@@ -32,8 +28,9 @@ const ConstantExpenses = ({
     const [newConstantExpense, setNewConstantExpense] = useState(
         DEFAULT_CONSTANT_EXPENSE_STATE,
     );
-    const [currentlyFilteredExpenses, setCurrentlyFilteredExpenses] =
-        useState(constantExpenses);
+    const [currentlyFilteredExpenses, setCurrentlyFilteredExpenses] = useState(
+        [],
+    );
 
     const handleAddConstantExpense = async () => {
         const newExpenseWithId = {
@@ -71,7 +68,6 @@ const ConstantExpenses = ({
                     Existing planned expenses
                 </h4>
                 <PlannedExpenseFilters
-                    constantExpenses={constantExpenses}
                     filteredConstantExpense={filteredConstantExpense}
                     setCurrentlyFilteredExpenses={setCurrentlyFilteredExpenses}
                 />
@@ -89,7 +85,6 @@ const ConstantExpenses = ({
 };
 
 ConstantExpenses.propTypes = {
-    constantExpenses: PropTypes.arrayOf(ConstantExpenseType),
     isShown: PropTypes.bool.isRequired,
     addConstantExpense: PropTypes.func.isRequired,
     editConstantExpense: PropTypes.func.isRequired,

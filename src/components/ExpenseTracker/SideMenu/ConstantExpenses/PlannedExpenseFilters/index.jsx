@@ -1,15 +1,11 @@
 import { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { CONSTANT_EXPENSE_FILTERS } from '../../../../../constants';
-import {
-    ConstantExpense as ConstantExpenseType,
-    FilteredConstantExpenses,
-} from '../../../../../types';
+import { FilteredConstantExpenses } from '../../../../../types';
 
 const [DEFAULT_FILTER] = CONSTANT_EXPENSE_FILTERS;
 
 const PlannedExpenseFilters = ({
-    constantExpenses,
     filteredConstantExpense,
     setCurrentlyFilteredExpenses,
 }) => {
@@ -19,13 +15,17 @@ const PlannedExpenseFilters = ({
 
     useEffect(() => {
         if (currentFilter === DEFAULT_FILTER) {
-            setCurrentlyFilteredExpenses(constantExpenses);
+            const allConstantExpenses = Object.values(
+                filteredConstantExpense,
+            ).flat();
+
+            setCurrentlyFilteredExpenses(allConstantExpenses);
 
             return;
         }
 
         setCurrentlyFilteredExpenses(filteredConstantExpense[currentFilter]);
-    }, [currentFilter, constantExpenses, filteredConstantExpense]);
+    }, [currentFilter, filteredConstantExpense]);
 
     return (
         <div className="full-width">
@@ -53,7 +53,6 @@ const PlannedExpenseFilters = ({
 };
 
 PlannedExpenseFilters.propTypes = {
-    constantExpenses: PropTypes.arrayOf(ConstantExpenseType),
     filteredConstantExpense: FilteredConstantExpenses,
     setCurrentlyFilteredExpenses: PropTypes.func,
 };

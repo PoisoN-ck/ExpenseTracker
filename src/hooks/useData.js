@@ -12,11 +12,12 @@ import {
 import {
     filterTransactions,
     sortTransactionsByDate,
-    getCustomDateFilter,
+    getPlannedExpensesDatePeriod,
     fetchValueAsPromise,
     updateValueWithConnectionCheck,
 } from '@utils';
 import { useAuth } from '@hooks';
+import { isWithinInterval } from 'date-fns';
 
 const useData = () => {
     const { isVerified } = useAuth();
@@ -27,9 +28,13 @@ const useData = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [dataError, setDataError] = useState(null);
     const [successMessage, setSuccessMessage] = useState(null);
+    // NOT USED IN UI, data storage only
     const [constantExpenses, setConstantExpenses] = useState([]);
+    // Filtered constant expenses for UI
     const [filteredConstantExpense, setFilteredConstantExpenses] = useState({});
-    const [plannedExpensesMonth, setPlannedExpensesMonth] = useState([]);
+    // Transactions made in the current month,
+    // based on plannedExpenseDayRefresh
+    const [currentMonthExpenses, setCurrentMonthExpenses] = useState([]);
     const [plannedExpenseDayRefresh, setPlannedExpenseDayRefresh] =
         useState(DEFAULT_REFRESH_DAY);
 
@@ -228,6 +233,11 @@ const useData = () => {
                 return false;
             }
 
+            const constantExpenseWithDate = {
+                ...constantExpense,
+                createdAt: new Date().getTime(),
+            };
+
             const connectionRef = ref(db, '.info/connected');
             const addConstantExpensePromise = async () =>
                 await new Promise((res, rej) => {
@@ -263,7 +273,10 @@ const useData = () => {
                                             db,
                                             `${auth.currentUser?.uid}/constantExpenses`,
                                         ),
-                                        [constantExpense, ...constantExpenses],
+                                        [
+                                            constantExpenseWithDate,
+                                            ...constantExpenses,
+                                        ],
                                     )
                                         .then(() => {
                                             setSuccessMessage({
@@ -281,7 +294,7 @@ const useData = () => {
                                 } else {
                                     setDataError({ code: 'no-data-saved' });
                                     setConstantExpenses([
-                                        constantExpense,
+                                        constantExpenseWithDate,
                                         ...constantExpenses,
                                     ]);
                                     rej(false);
@@ -514,13 +527,25 @@ const useData = () => {
     const updateFilteredConstantExpenses = useCallback(() => {
         const [, notPaid, paid] = CONSTANT_EXPENSE_FILTERS;
 
-        const constantExpensesTransactionsOnly = plannedExpensesMonth.filter(
-            (transaction) =>
-                transaction.transType === 'Expense' &&
-                transaction.constantExpenseId,
+        const plannedExpensesDayRange = getPlannedExpensesDatePeriod(
+            plannedExpenseDayRefresh,
         );
 
-        const paidConstantExpenses = constantExpenses.filter(
+        const constantExpensesTransactionsOnly = currentMonthExpenses.filter(
+            (transaction) => transaction.constantExpenseId,
+        );
+
+        const noOneTimePassedExpenses = constantExpenses.filter(
+            (constantExpense) =>
+                constantExpense.isOneTime
+                    ? isWithinInterval(
+                          constantExpense.createdAt,
+                          plannedExpensesDayRange,
+                      )
+                    : constantExpense,
+        );
+
+        const paidConstantExpenses = noOneTimePassedExpenses.filter(
             (constantExpense) =>
                 constantExpensesTransactionsOnly.find(
                     (transaction) =>
@@ -528,7 +553,7 @@ const useData = () => {
                 ),
         );
 
-        const notPaidConstantExpenses = constantExpenses.filter(
+        const notPaidConstantExpenses = noOneTimePassedExpenses.filter(
             (constantExpense) => {
                 const isNotPaid = paidConstantExpenses.reduce(
                     (acc, transaction) =>
@@ -546,7 +571,7 @@ const useData = () => {
             [paid]: paidConstantExpenses,
             [notPaid]: notPaidConstantExpenses,
         });
-    }, [constantExpenses, transactions, plannedExpensesMonth]);
+    }, [constantExpenses, currentMonthExpenses, plannedExpenseDayRefresh]);
 
     const addConstantExpenseIdToExistingTransaction = useCallback(
         async (transactionWithConstantId) => {
@@ -643,7 +668,7 @@ const useData = () => {
             const { amount, id, category } = constantExpense;
 
             const filteredTransactionsByCategoryWithConstantExpense =
-                plannedExpensesMonth.filter(
+                currentMonthExpenses.filter(
                     (transaction) =>
                         transaction.category === category &&
                         !transaction.constantExpenseId,
@@ -703,7 +728,7 @@ const useData = () => {
 
             return false;
         },
-        [plannedExpensesMonth, addConstantExpenseIdToExistingTransaction],
+        [currentMonthExpenses, addConstantExpenseIdToExistingTransaction],
     );
 
     const payConstantExpenses = useCallback(
@@ -846,13 +871,16 @@ const useData = () => {
     }, []);
 
     useEffect(() => {
-        setPlannedExpensesMonth(
-            filterTransactions(
-                transactions,
-                'date',
-                JSON.stringify(getCustomDateFilter(plannedExpenseDayRefresh)),
-            ),
-        );
+        const customDateRangeBySelectedRefreshDay =
+            getPlannedExpensesDatePeriod(plannedExpenseDayRefresh);
+
+        const currentCustomMonthTransactions = filterTransactions(
+            transactions,
+            'date',
+            JSON.stringify(customDateRangeBySelectedRefreshDay),
+        ).filter((transaction) => transaction.transType === 'Expense');
+
+        setCurrentMonthExpenses(currentCustomMonthTransactions);
     }, [transactions, plannedExpenseDayRefresh]);
 
     useEffect(() => {

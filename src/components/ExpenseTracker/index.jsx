@@ -27,7 +27,6 @@ const ExpenseTracker = () => {
         isLoading,
         successMessage,
         transactions,
-        constantExpenses,
         filteredConstantExpense,
         totalConstantExpensesToBePaid,
         freeCashAvailable,
@@ -43,6 +42,9 @@ const ExpenseTracker = () => {
         doRegisterExpenseAsPaid,
         payConstantExpenses,
     } = useData();
+
+    const isDiffBalancesShown = !!Object.values(filteredConstantExpense).flat()
+        .length;
 
     const { logOut } = useAuth();
 
@@ -87,7 +89,6 @@ const ExpenseTracker = () => {
                 isShown={isMenuShown}
                 setIsShown={setIsMenuShown}
                 handleSignOut={handleSignOut}
-                constantExpenses={constantExpenses}
                 addConstantExpense={addConstantExpense}
                 editConstantExpense={editConstantExpense}
                 deleteConstantExpense={deleteConstantExpense}
@@ -106,7 +107,7 @@ const ExpenseTracker = () => {
                 totalConstantExpensesToBePaid={totalConstantExpensesToBePaid}
                 freeCashAvailable={freeCashAvailable}
                 totalBalance={totalBalance}
-                isDiffBalancesShown={!!constantExpenses.length}
+                isDiffBalancesShown={isDiffBalancesShown}
                 totalConstantExpensesAmount={totalConstantExpensesAmount}
             />
 

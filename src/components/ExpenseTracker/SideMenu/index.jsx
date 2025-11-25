@@ -1,14 +1,13 @@
 import PropTypes from 'prop-types';
 import { useEffect, useState } from 'react';
 
-import { ConstantExpense, FilteredConstantExpenses } from '@types';
+import { FilteredConstantExpenses } from '@types';
 import ConstantExpenses from './ConstantExpenses';
 import UserSettings from './UserSettings';
 
 const SideMenu = ({
     isShown,
     setIsShown,
-    constantExpenses,
     handleSignOut,
     addConstantExpense,
     editConstantExpense,
@@ -63,7 +62,6 @@ const SideMenu = ({
                         Planned expenses
                     </button>
                     <ConstantExpenses
-                        constantExpenses={constantExpenses}
                         isShown={isExpensesShown}
                         addConstantExpense={addConstantExpense}
                         editConstantExpense={editConstantExpense}
@@ -81,7 +79,6 @@ SideMenu.propTypes = {
     isShown: PropTypes.bool.isRequired,
     setIsShown: PropTypes.func.isRequired,
     handleSignOut: PropTypes.func.isRequired,
-    constantExpenses: PropTypes.arrayOf(ConstantExpense),
     addConstantExpense: PropTypes.func.isRequired,
     editConstantExpense: PropTypes.func.isRequired,
     deleteConstantExpense: PropTypes.func,
