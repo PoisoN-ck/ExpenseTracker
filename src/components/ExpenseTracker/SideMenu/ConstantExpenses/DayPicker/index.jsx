@@ -51,9 +51,9 @@ export const DayPicker = () => {
         };
 
         if (isShown) {
-            document.addEventListener('pointerdown', handleOutside);
+            document.addEventListener('click', handleOutside);
         }
-        return () => document.removeEventListener('pointerdown', handleOutside);
+        return () => document.removeEventListener('click', handleOutside);
     }, [isShown]);
 
     const handleDaySelect = async (day) => {
