@@ -952,6 +952,18 @@ input[type='color']:disabled {
     position: relative;
 }
 
+.constant-expense_badge {
+    position: absolute;
+    top: 0;
+    left: 0;
+    background-color: $main-color;
+    color: $white;
+    font-size: 0.625rem;
+    padding: 1px 7px;
+    border-radius: 0 0 5px 0;
+    z-index: 20;
+}
+
 .constant-expense_delete-question {
     position: absolute;
     width: 100%;

@@ -141,7 +141,7 @@ const ConstantExpensePayModal = ({
         <Modal
             contentClassName="pay-constant-expense__modal"
             closeModal={handleClose}
-            title="Pay reccuring expenses"
+            title="Pay planned expenses"
         >
             {isConstantExpensesExist ? (
                 <ul className="flex-column flex-align-center container__vertical-scroll small-height-container padding-md">

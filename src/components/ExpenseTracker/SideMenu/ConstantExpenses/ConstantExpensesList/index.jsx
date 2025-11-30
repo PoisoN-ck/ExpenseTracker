@@ -184,6 +184,11 @@ const ConstantExpensesList = ({
                                 className="flex-center gap-10 margin-bottom-sm full-width constant-expense_container"
                                 key={constantExpense.id}
                             >
+                                {constantExpense.isOneTime && (
+                                    <div className="constant-expense_badge">
+                                        One-time
+                                    </div>
+                                )}
                                 <div className="flex-center-column">
                                     <ButtonIcon
                                         isDisabled={isPaid}
