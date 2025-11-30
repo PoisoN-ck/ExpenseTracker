@@ -578,6 +578,8 @@ ul {
 
 .transaction__date {
     opacity: 0.3;
+    display: flex;
+    justify-content: space-between;
 }
 
 .show-transactions {

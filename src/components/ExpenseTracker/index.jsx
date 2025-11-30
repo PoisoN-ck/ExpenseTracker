@@ -127,6 +127,7 @@ const ExpenseTracker = () => {
                               DEFAULT_NUM_OF_TRANSACTIONS,
                           )
                 }
+                plannedExpenses={Object.values(filteredConstantExpense).flat()}
             />
 
             <TrackerStatus

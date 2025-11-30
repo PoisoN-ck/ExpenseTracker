@@ -1,6 +1,10 @@
 import { addMonths, isWithinInterval, lastDayOfMonth } from 'date-fns';
 import { onValue, ref, set } from 'firebase/database';
-import { FilterTypes } from '@constants';
+import {
+    FilterTypes,
+    ONE_TIME_EXPENSE_TEXT,
+    RECURRING_EXPENSE_TEXT,
+} from '@constants';
 import db, { auth } from '@/services/db';
 
 export const isRealObject = (value) =>
@@ -299,4 +303,14 @@ export const getPlannedExpensesDatePeriod = (startDate) => {
     }
 
     return { start, end };
+};
+
+export const getPlannedExpenseType = (expense) => {
+    if (!expense) return;
+
+    if (expense.isOneTime) {
+        return ONE_TIME_EXPENSE_TEXT;
+    }
+
+    return RECURRING_EXPENSE_TEXT;
 };
