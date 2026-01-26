@@ -142,7 +142,18 @@ const useData = () => {
                         const fetchedConstantExpenses =
                             snapshot.val()?.filter((expense) => expense) || [];
 
-                        setConstantExpenses(fetchedConstantExpenses);
+                        const plannedExpensesDayRange =
+                            getPlannedExpensesDatePeriod(
+                                plannedExpenseDayRefresh,
+                            );
+
+                        const noOneTimePassedExpenses =
+                            filterOutOneTimePassedExpenses(
+                                fetchedConstantExpenses,
+                                plannedExpensesDayRange,
+                            );
+
+                        setConstantExpenses(noOneTimePassedExpenses);
                         res(fetchedConstantExpenses);
                     },
                     (error) => {
@@ -527,25 +538,11 @@ const useData = () => {
     const updateFilteredConstantExpenses = useCallback(() => {
         const [, notPaid, paid] = CONSTANT_EXPENSE_FILTERS;
 
-        const plannedExpensesDayRange = getPlannedExpensesDatePeriod(
-            plannedExpenseDayRefresh,
-        );
-
         const constantExpensesTransactionsOnly = currentMonthExpenses.filter(
             (transaction) => transaction.constantExpenseId,
         );
 
-        const noOneTimePassedExpenses = constantExpenses.filter(
-            (constantExpense) =>
-                constantExpense.isOneTime
-                    ? isWithinInterval(
-                          constantExpense.createdAt,
-                          plannedExpensesDayRange,
-                      )
-                    : constantExpense,
-        );
-
-        const paidConstantExpenses = noOneTimePassedExpenses.filter(
+        const paidConstantExpenses = constantExpenses.filter(
             (constantExpense) =>
                 constantExpensesTransactionsOnly.find(
                     (transaction) =>
@@ -553,7 +550,7 @@ const useData = () => {
                 ),
         );
 
-        const notPaidConstantExpenses = noOneTimePassedExpenses.filter(
+        const notPaidConstantExpenses = constantExpenses.filter(
             (constantExpense) => {
                 const isNotPaid = paidConstantExpenses.reduce(
                     (acc, transaction) =>
@@ -853,6 +850,13 @@ const useData = () => {
         () => totalBalance - totalConstantExpensesToBePaid,
         [totalConstantExpensesToBePaid, totalBalance],
     );
+
+    const filterOutOneTimePassedExpenses = (expenses, dayRange) =>
+        expenses.filter((expense) =>
+            expense.isOneTime
+                ? isWithinInterval(expense.createdAt, dayRange)
+                : expense,
+        );
 
     const initialLoad = useCallback(async () => {
         setIsLoading(true);
