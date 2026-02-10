@@ -43,8 +43,8 @@ const useData = () => {
         setSuccessMessage(null);
     };
 
-    const fetchPlannedExpenseDayRefresh = () =>
-        fetchValueAsPromise({
+    const fetchPlannedExpenseDayRefresh = async () =>
+        await fetchValueAsPromise({
             refPath: 'plannedExpenseDayRefresh',
             defaultValue: DEFAULT_REFRESH_DAY,
             onFetched: setPlannedExpenseDayRefresh,
@@ -128,7 +128,7 @@ const useData = () => {
             }
         });
 
-    const fetchAndUpdateConstantExpenses = async () =>
+    const fetchAndUpdateConstantExpenses = async (expenseDayRefresh) =>
         await new Promise((res, rej) => {
             try {
                 const constantExpensesRef = ref(
@@ -143,9 +143,7 @@ const useData = () => {
                             snapshot.val()?.filter((expense) => expense) || [];
 
                         const plannedExpensesDayRange =
-                            getPlannedExpensesDatePeriod(
-                                plannedExpenseDayRefresh,
-                            );
+                            getPlannedExpensesDatePeriod(expenseDayRefresh);
 
                         const noOneTimePassedExpenses =
                             filterOutOneTimePassedExpenses(
@@ -860,9 +858,9 @@ const useData = () => {
 
     const initialLoad = useCallback(async () => {
         setIsLoading(true);
-        await fetchAndUpdateConstantExpenses();
+        const expenseDayRefresh = await fetchPlannedExpenseDayRefresh();
+        await fetchAndUpdateConstantExpenses(expenseDayRefresh);
         await fetchAndUpdateTransactions();
-        await fetchPlannedExpenseDayRefresh();
         setIsLoading(false);
     }, [
         fetchAndUpdateConstantExpenses,

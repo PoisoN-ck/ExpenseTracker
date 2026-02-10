@@ -5,6 +5,15 @@ import prettierConfig from 'eslint-config-prettier';
 import prettierPlugin from 'eslint-plugin-prettier';
 
 export default [
+    {
+        ignores: [
+            'node_modules/**',
+            'build/**',
+            'dist/**',
+            'public/**',
+            'coverage/**',
+        ],
+    },
     pluginJs.configs.recommended,
     {
         languageOptions: {

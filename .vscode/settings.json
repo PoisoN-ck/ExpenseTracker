@@ -5,5 +5,15 @@
         "source.fixAll.eslint": "explicit",
         "source.organizeImports": "never",
         "source.removeUnusedImports": "explicit"
-    }
+    },
+    "eslint.useFlatConfig": true,
+    "eslint.workingDirectories": [
+        {
+            "directory": ".",
+            "changeProcessCWD": true
+        }
+    ],
+    "eslint.codeActionsOnSave.mode": "problems",
+    "eslint.validate": ["javascript", "javascriptreact"],
+    "eslint.lintTask.enable": true
 }
