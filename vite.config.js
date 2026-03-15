@@ -25,6 +25,7 @@ export default defineConfig({
             '@constants': resolve(__dirname, 'src/constants'),
             '@img': resolve(__dirname, 'src/img'),
             '@utils': resolve(__dirname, 'src/utils'),
+            '@context': resolve(__dirname, 'src/context'),
         },
     },
     build: {

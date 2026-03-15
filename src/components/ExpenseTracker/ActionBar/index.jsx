@@ -3,21 +3,23 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useLongPress } from '@uidotdev/usehooks';
 import PropTypes from 'prop-types';
 import { v4 as uuidv4 } from 'uuid';
-import { categories } from '@constants';
-import { ConstantExpense as ConstantExpenseType } from '@types';
+import { categories, NOT_PAID } from '@constants';
 import AmountInput from '@components/common/AmountInput';
 import Button from '@components/common/Button';
 import ConstantExpensePayModal from '@components/common/ConstantExpensePayModal';
 import Modal from '@components/common/Modal';
+import { useDataContext } from '@context/DataContext';
 
-const ActionBar = ({
-    addTransaction,
-    setError,
-    isDisabled,
-    notPaidConstantExpenses,
-    payConstantExpenses,
-    handleShowSideMenu,
-}) => {
+const ActionBar = ({ handleShowSideMenu }) => {
+    const {
+        addTransaction,
+        setDataError,
+        isLoading,
+        filteredConstantExpense,
+        payConstantExpenses,
+    } = useDataContext();
+    const isDisabled = isLoading;
+    const notPaidConstantExpenses = filteredConstantExpense[NOT_PAID];
     const [chosenUser, setChosenUser] = useState(null);
     const [transactionAmount, setTransactionAmount] = useState('');
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -28,7 +30,7 @@ const ActionBar = ({
 
     const handleOpenModal = () => {
         if (!transactionAmount) {
-            setError({ code: 'empty-value' });
+            setDataError({ code: 'empty-value' });
             return;
         }
 
@@ -143,11 +145,6 @@ const ActionBar = ({
 };
 
 ActionBar.propTypes = {
-    addTransaction: PropTypes.func.isRequired,
-    setError: PropTypes.func.isRequired,
-    isDisabled: PropTypes.bool,
-    notPaidConstantExpenses: PropTypes.arrayOf(ConstantExpenseType),
-    payConstantExpenses: PropTypes.func.isRequired,
     handleShowSideMenu: PropTypes.func.isRequired,
 };
 

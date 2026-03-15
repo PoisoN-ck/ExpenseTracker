@@ -4,6 +4,7 @@ import PropTypes from 'prop-types';
 import { Filter, Transaction } from '@types';
 import Balance from './Balance';
 import FiltersModal from './FiltersModal';
+import { useDataContext } from '@context/DataContext';
 
 const TrackerHeader = ({
     filters,
@@ -11,14 +12,18 @@ const TrackerHeader = ({
     setIsFilterApplied,
     setFilteredTransactions,
     shownTransactions,
-    transactions,
     setIsMenuShown,
-    totalConstantExpensesToBePaid,
-    freeCashAvailable,
-    totalBalance,
-    isDiffBalancesShown,
-    totalConstantExpensesAmount,
 }) => {
+    const {
+        transactions,
+        totalConstantExpensesToBePaid,
+        freeCashAvailable,
+        totalBalance,
+        totalConstantExpensesAmount,
+        filteredConstantExpense,
+    } = useDataContext();
+    const isDiffBalancesShown = !!Object.values(filteredConstantExpense).flat()
+        .length;
     const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
 
     // TODO: Move this to model with data?
@@ -78,18 +83,12 @@ const TrackerHeader = ({
 };
 
 TrackerHeader.propTypes = {
-    filters: PropTypes.shape(Filter).isRequired,
+    filters: Filter,
     setFilters: PropTypes.func.isRequired,
     setIsFilterApplied: PropTypes.func.isRequired,
     setFilteredTransactions: PropTypes.func.isRequired,
     shownTransactions: PropTypes.arrayOf(Transaction).isRequired,
-    transactions: PropTypes.arrayOf(Transaction).isRequired,
     setIsMenuShown: PropTypes.func.isRequired,
-    totalConstantExpensesToBePaid: PropTypes.number.isRequired,
-    freeCashAvailable: PropTypes.number.isRequired,
-    totalBalance: PropTypes.number.isRequired,
-    isDiffBalancesShown: PropTypes.bool.isRequired,
-    totalConstantExpensesAmount: PropTypes.number.isRequired,
 };
 
 export default TrackerHeader;

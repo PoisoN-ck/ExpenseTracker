@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import './styles.css';
 import Button from '@components/common/Button';
 import { DAYS_LIST_IN_A_MONTH, DEFAULT_REFRESH_DAY } from '@constants';
-import useData from '@hooks/useData';
+import { useDataContext } from '@context/DataContext';
 import { formatDayWithSuffix } from '@utils';
 
 const DAYS = 31;
@@ -10,7 +10,7 @@ const WEEK_LENGTH = 7;
 
 export const DayPicker = () => {
     const { plannedExpenseDayRefresh, updatePlannedExpenseDayRefresh } =
-        useData();
+        useDataContext();
     const [plannedExpenseDay, setPlannedExpenseDay] =
         useState(DEFAULT_REFRESH_DAY);
     const [focused, setFocused] = useState(plannedExpenseDay ?? 1);

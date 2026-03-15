@@ -8,14 +8,14 @@ import {
     Routes,
 } from 'react-router-dom';
 
-import useAuth from '@hooks/useAuth';
+import { AuthProvider, useAuthContext } from '@context/AuthContext';
 import { translateMessage } from '@utils';
 import ExpenseTracker from '@components/ExpenseTracker';
 import Login from '@components/Login';
 import SignUp from '@components/SignUp';
 import Loader from '@components/common/Loader';
 
-const Application = () => {
+const ApplicationContent = () => {
     const [messageText, setMessageText] = useState('');
 
     const handleMessage = (message) => {
@@ -26,7 +26,8 @@ const Application = () => {
         setMessageText('');
     };
 
-    const { authError, isLoginPending, isLoggedIn, logIn, signUp } = useAuth();
+    const { authError, isLoginPending, isLoggedIn, logIn, signUp } =
+        useAuthContext();
 
     useEffect(() => {
         if (authError) {
@@ -80,5 +81,11 @@ const Application = () => {
         </div>
     );
 };
+
+const Application = () => (
+    <AuthProvider>
+        <ApplicationContent />
+    </AuthProvider>
+);
 
 export default Application;

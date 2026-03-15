@@ -1,12 +1,12 @@
 import PropTypes from 'prop-types';
 import { useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
-import { FilteredConstantExpenses } from '@types';
 import Button from '@components/common/Button';
 import ConstantExpense from './ConstantExpense';
 import PlannedExpenseFilters from './PlannedExpenseFilters';
 import ConstantExpensesList from './ConstantExpensesList';
 import DayPicker from './DayPicker';
+import { useDataContext } from '@context/DataContext';
 
 const DEFAULT_CONSTANT_EXPENSE_STATE = {
     name: '',
@@ -16,14 +16,14 @@ const DEFAULT_CONSTANT_EXPENSE_STATE = {
     id: '',
 };
 
-const ConstantExpenses = ({
-    isShown,
-    addConstantExpense,
-    editConstantExpense,
-    deleteConstantExpense,
-    filteredConstantExpense,
-    doRegisterExpenseAsPaid,
-}) => {
+const ConstantExpenses = ({ isShown }) => {
+    const {
+        addConstantExpense,
+        editConstantExpense,
+        deleteConstantExpense,
+        filteredConstantExpense,
+        doRegisterExpenseAsPaid,
+    } = useDataContext();
     // TODO: Implement Loader in this section
     const [newConstantExpense, setNewConstantExpense] = useState(
         DEFAULT_CONSTANT_EXPENSE_STATE,
@@ -86,11 +86,6 @@ const ConstantExpenses = ({
 
 ConstantExpenses.propTypes = {
     isShown: PropTypes.bool.isRequired,
-    addConstantExpense: PropTypes.func.isRequired,
-    editConstantExpense: PropTypes.func.isRequired,
-    deleteConstantExpense: PropTypes.func.isRequired,
-    filteredConstantExpense: FilteredConstantExpenses,
-    doRegisterExpenseAsPaid: PropTypes.func,
 };
 
 export default ConstantExpenses;

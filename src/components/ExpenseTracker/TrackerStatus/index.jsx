@@ -1,17 +1,22 @@
 import PropTypes from 'prop-types';
 import Notification from './Notification';
-import useAuth from '@hooks/useAuth';
+import { useAuthContext } from '@context/AuthContext';
+import { useDataContext } from '@context/DataContext';
+import { translateMessage } from '@utils';
 
-const TrackerStatus = ({
-    dataError,
-    isLoading,
-    isFilterApplied,
-    messageText,
-    resetMessages,
-    resetFilters,
-    sendVerificationEmail,
-}) => {
-    const { isVerified } = useAuth();
+const TrackerStatus = ({ isFilterApplied, resetFilters }) => {
+    const { isVerified } = useAuthContext();
+    const {
+        dataError,
+        isLoading,
+        resetMessages,
+        sendVerificationEmail,
+        successMessage,
+    } = useDataContext();
+    const messageText =
+        dataError || successMessage
+            ? translateMessage(dataError || successMessage)
+            : null;
 
     return (
         <div className="bottom-bar">
@@ -51,13 +56,8 @@ const TrackerStatus = ({
 };
 
 TrackerStatus.propTypes = {
-    dataError: PropTypes.object,
-    isLoading: PropTypes.bool.isRequired,
     isFilterApplied: PropTypes.bool.isRequired,
-    messageText: PropTypes.string,
-    resetMessages: PropTypes.func.isRequired,
     resetFilters: PropTypes.func.isRequired,
-    sendVerificationEmail: PropTypes.func.isRequired,
 };
 
 export default TrackerStatus;

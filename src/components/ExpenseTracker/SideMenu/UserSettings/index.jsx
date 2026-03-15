@@ -4,10 +4,10 @@ import { v4 as uuidv4 } from 'uuid';
 import { MAIN_COLOR } from '@constants';
 import { UserSetting } from '@types';
 import Dropdown from '@components/common/Dropdown';
-import useUserSettings from '@hooks/useUserSettings';
+import { useUserSettingsContext } from '@context/UserSettingsContext';
 
 const UserSettings = ({ isShown }) => {
-    const { usersSettings, addUserSettings } = useUserSettings();
+    const { usersSettings, addUserSettings } = useUserSettingsContext();
 
     const [chosenUser, setChosenUser] = useState(null);
     const [newUserName, setNewUserName] = useState('');

@@ -43,6 +43,8 @@ export default [
                         ['@constants', './src/constants'],
                         ['@img/*', './src/img/*'],
                         ['@utils', './src/utils'],
+                        ['@context/*', './src/context/*'],
+                        ['@context', './src/context'],
                     ],
                     extensions: ['.js', '.jsx', '.ts', '.tsx', '.json'],
                 },
@@ -70,6 +72,7 @@ export default [
             ...(pluginReact.configs && pluginReact.configs['jsx-runtime']
                 ? pluginReact.configs['jsx-runtime'].rules
                 : {}),
+            'react/prop-types': ['error', { ignore: ['children'] }],
         },
         settings: {
             react: {

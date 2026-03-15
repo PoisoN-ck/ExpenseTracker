@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import useAuth from './useAuth';
+import { useAuthContext } from '@context/AuthContext';
 import { fetchValueAsPromise, updateValueWithConnectionCheck } from '@utils';
 
 const useUserSettings = () => {
@@ -14,7 +14,7 @@ const useUserSettings = () => {
         setSuccessMessage(null);
     };
 
-    const { isVerified } = useAuth();
+    const { isVerified } = useAuthContext();
 
     const fetctUsersSettings = async () => {
         return fetchValueAsPromise({

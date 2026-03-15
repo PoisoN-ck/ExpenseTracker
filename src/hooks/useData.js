@@ -16,11 +16,11 @@ import {
     fetchValueAsPromise,
     updateValueWithConnectionCheck,
 } from '@utils';
-import { useAuth } from '@hooks';
+import { useAuthContext } from '@context/AuthContext';
 import { isWithinInterval } from 'date-fns';
 
 const useData = () => {
-    const { isVerified } = useAuth();
+    const { isVerified } = useAuthContext();
 
     // TODO: Potentially need separation of transactions and constantExpenses to different files
     const [transactions, setTransactions] = useState([]);
