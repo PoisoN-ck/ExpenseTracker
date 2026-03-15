@@ -6,7 +6,7 @@ import ConstantExpense from './ConstantExpense';
 import PlannedExpenseFilters from './PlannedExpenseFilters';
 import ConstantExpensesList from './ConstantExpensesList';
 import DayPicker from './DayPicker';
-import { useDataContext } from '@context/DataContext';
+import { useConstantExpensesContext } from '@context/ConstantExpensesContext';
 
 const DEFAULT_CONSTANT_EXPENSE_STATE = {
     name: '',
@@ -23,7 +23,7 @@ const ConstantExpenses = ({ isShown }) => {
         deleteConstantExpense,
         filteredConstantExpense,
         doRegisterExpenseAsPaid,
-    } = useDataContext();
+    } = useConstantExpensesContext();
     // TODO: Implement Loader in this section
     const [newConstantExpense, setNewConstantExpense] = useState(
         DEFAULT_CONSTANT_EXPENSE_STATE,

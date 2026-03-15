@@ -1,7 +1,6 @@
 import PropTypes from 'prop-types';
 import Notification from './Notification';
-import { useAuthContext } from '@context/AuthContext';
-import { useDataContext } from '@context/DataContext';
+import { useAuthContext, useDataStatusContext } from '@context';
 import { translateMessage } from '@utils';
 
 const TrackerStatus = ({ isFilterApplied, resetFilters }) => {
@@ -12,7 +11,7 @@ const TrackerStatus = ({ isFilterApplied, resetFilters }) => {
         resetMessages,
         sendVerificationEmail,
         successMessage,
-    } = useDataContext();
+    } = useDataStatusContext();
     const messageText =
         dataError || successMessage
             ? translateMessage(dataError || successMessage)

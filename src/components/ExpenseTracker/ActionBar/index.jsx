@@ -8,16 +8,16 @@ import AmountInput from '@components/common/AmountInput';
 import Button from '@components/common/Button';
 import ConstantExpensePayModal from '@components/common/ConstantExpensePayModal';
 import Modal from '@components/common/Modal';
-import { useDataContext } from '@context/DataContext';
+import {
+    useTransactionsContext,
+    useConstantExpensesContext,
+    useDataStatusContext,
+} from '@context';
 
 const ActionBar = ({ handleShowSideMenu }) => {
-    const {
-        addTransaction,
-        setDataError,
-        isLoading,
-        filteredConstantExpense,
-        payConstantExpenses,
-    } = useDataContext();
+    const { addTransaction, payConstantExpenses } = useTransactionsContext();
+    const { filteredConstantExpense } = useConstantExpensesContext();
+    const { isLoading, setDataError } = useDataStatusContext();
     const isDisabled = isLoading;
     const notPaidConstantExpenses = filteredConstantExpense[NOT_PAID];
     const [chosenUser, setChosenUser] = useState(null);

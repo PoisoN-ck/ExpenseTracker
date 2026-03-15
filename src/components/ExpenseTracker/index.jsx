@@ -2,9 +2,11 @@ import { useEffect, useMemo, useState } from 'react';
 import { DEFAULT_FILTERS_STATE, DEFAULT_NUM_OF_TRANSACTIONS } from '@constants';
 import { sortTransactionsByDate } from '@utils';
 import {
+    DataStatusProvider,
+    TransactionsProvider,
+    ConstantExpensesProvider,
     UserSettingsProvider,
-    DataProvider,
-    useDataContext,
+    useTransactionsContext,
     useAuthContext,
 } from '@context';
 
@@ -22,7 +24,7 @@ const ExpenseTrackerContent = () => {
     const [isFilterApplied, setIsFilterApplied] = useState(false);
     const [isMenuShown, setIsMenuShown] = useState(false);
 
-    const { transactions } = useDataContext();
+    const { transactions } = useTransactionsContext();
     const { logOut } = useAuthContext();
 
     useEffect(() => {
@@ -96,11 +98,15 @@ const ExpenseTrackerContent = () => {
 };
 
 const ExpenseTracker = () => (
-    <DataProvider>
-        <UserSettingsProvider>
-            <ExpenseTrackerContent />
-        </UserSettingsProvider>
-    </DataProvider>
+    <DataStatusProvider>
+        <TransactionsProvider>
+            <ConstantExpensesProvider>
+                <UserSettingsProvider>
+                    <ExpenseTrackerContent />
+                </UserSettingsProvider>
+            </ConstantExpensesProvider>
+        </TransactionsProvider>
+    </DataStatusProvider>
 );
 
 export default ExpenseTracker;

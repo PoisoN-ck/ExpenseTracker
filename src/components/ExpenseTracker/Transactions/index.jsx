@@ -5,13 +5,16 @@ import { Transaction } from '@types';
 import { convertAmountToString, getPlannedExpenseType } from '@utils';
 import Loader from '@components/common/Loader';
 import NoDataScreen from '@components/common/NoDataScreen';
-import { useDataContext } from '@context/DataContext';
-import { useUserSettingsContext } from '@context/UserSettingsContext';
+import {
+    useDataStatusContext,
+    useConstantExpensesContext,
+    useUserSettingsContext,
+} from '@context';
 import {
     MULTIPLE_EXPENSE_TEXT,
     ONE_TIME_EXPENSE_TEXT,
     RECURRING_EXPENSE_TEXT,
-} from '@/constants';
+} from '@constants';
 
 const oneTimeIcon = <i className={`fa-solid fa-money-bill-1 fa-2xl`} />;
 const recurringIcon = <i className="fa-solid fa-money-bill-transfer fa-2xl" />;
@@ -24,7 +27,8 @@ const PLANNED_EXPENSE_TYPE_ICONS = {
 };
 
 const Transactions = ({ transactions }) => {
-    const { isLoading, filteredConstantExpense } = useDataContext();
+    const { isLoading } = useDataStatusContext();
+    const { filteredConstantExpense } = useConstantExpensesContext();
     const { usersSettings } = useUserSettingsContext();
 
     const plannedExpenses = Object.values(filteredConstantExpense).flat();

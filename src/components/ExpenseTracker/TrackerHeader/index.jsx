@@ -4,7 +4,7 @@ import PropTypes from 'prop-types';
 import { Filter, Transaction } from '@types';
 import Balance from './Balance';
 import FiltersModal from './FiltersModal';
-import { useDataContext } from '@context/DataContext';
+import { useTransactionsContext, useConstantExpensesContext } from '@context';
 
 const TrackerHeader = ({
     filters,
@@ -14,14 +14,13 @@ const TrackerHeader = ({
     shownTransactions,
     setIsMenuShown,
 }) => {
+    const { transactions, totalBalance } = useTransactionsContext();
     const {
-        transactions,
         totalConstantExpensesToBePaid,
         freeCashAvailable,
-        totalBalance,
         totalConstantExpensesAmount,
         filteredConstantExpense,
-    } = useDataContext();
+    } = useConstantExpensesContext();
     const isDiffBalancesShown = !!Object.values(filteredConstantExpense).flat()
         .length;
     const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
