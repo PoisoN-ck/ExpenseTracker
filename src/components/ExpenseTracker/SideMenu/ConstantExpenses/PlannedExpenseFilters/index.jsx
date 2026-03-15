@@ -1,11 +1,7 @@
 import { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
-import {
-    CONSTANT_EXPENSE_FILTERS,
-    NOT_PAID,
-    PAID,
-} from '../../../../../constants';
-import { FilteredConstantExpenses } from '../../../../../types';
+import { CONSTANT_EXPENSE_FILTERS, NOT_PAID, PAID } from '@constants';
+import { FilteredConstantExpenses } from '@types';
 
 const [DEFAULT_FILTER] = CONSTANT_EXPENSE_FILTERS;
 

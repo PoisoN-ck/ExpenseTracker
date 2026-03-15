@@ -1,8 +1,8 @@
 import { useMemo, useState } from 'react';
 
 import PropTypes from 'prop-types';
-import { convertAmountToString } from '../../../../utils';
-import ButtonIcon from '../../../common/ButtonIcon';
+import { convertAmountToString } from '@utils';
+import ButtonIcon from '@components/common/ButtonIcon';
 import BalanceCard from './BalanceCard';
 
 const Balance = ({

@@ -1,11 +1,11 @@
 import PropTypes from 'prop-types';
 import { useEffect, useMemo, useState } from 'react';
-import { ConstantExpense, UserSetting } from '../../../types';
-import AmountInput from '../AmountInput';
-import Button from '../Button';
-import ButtonIcon from '../ButtonIcon';
-import Modal from '../Modal';
-import NoDataScreen from '../NoDataScreen';
+import { ConstantExpense, UserSetting } from '@types';
+import AmountInput from '@components/common/AmountInput';
+import Button from '@components/common/Button';
+import ButtonIcon from '@components/common/ButtonIcon';
+import Modal from '@components/common/Modal';
+import NoDataScreen from '@components/common/NoDataScreen';
 
 const ConstantExpensePayModal = ({
     payConstantExpenses,

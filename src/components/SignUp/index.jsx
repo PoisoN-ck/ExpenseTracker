@@ -2,7 +2,7 @@ import { useState } from 'react';
 
 import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
-import { DEFAULT_LOGIN_DETAILS } from '../../constants';
+import { DEFAULT_LOGIN_DETAILS } from '@constants';
 
 const SignUp = ({ handleMessage, messageText, removeMessageText, signUp }) => {
     const [loginDetails, setLoginDetails] = useState(DEFAULT_LOGIN_DETAILS);

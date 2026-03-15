@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types';
-import { INPUT_SIZE_DICT, INPUT_VARIANT_DICT } from '../../../constants';
+import { INPUT_SIZE_DICT, INPUT_VARIANT_DICT } from '@constants';
 
 const Dropdown = ({
     id = '',

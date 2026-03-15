@@ -3,12 +3,12 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useLongPress } from '@uidotdev/usehooks';
 import PropTypes from 'prop-types';
 import { v4 as uuidv4 } from 'uuid';
-import { categories } from '../../../constants';
-import { ConstantExpense as ConstantExpenseType } from '../../../types';
-import AmountInput from '../../common/AmountInput';
-import Button from '../../common/Button';
-import ConstantExpensePayModal from '../../common/ConstantExpensePayModal';
-import Modal from '../../common/Modal';
+import { categories } from '@constants';
+import { ConstantExpense as ConstantExpenseType } from '@types';
+import AmountInput from '@components/common/AmountInput';
+import Button from '@components/common/Button';
+import ConstantExpensePayModal from '@components/common/ConstantExpensePayModal';
+import Modal from '@components/common/Modal';
 
 const ActionBar = ({
     addTransaction,
