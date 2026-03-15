@@ -1,6 +1,6 @@
 import PropTypes from 'prop-types';
 
-import { convertAmountToString } from '../../../../../utils';
+import { convertAmountToString } from '@utils';
 
 const BalanceCard = ({ isShown, balance, showBalance, showHideNumbers }) => (
     <>
@@ -20,7 +20,7 @@ const BalanceCard = ({ isShown, balance, showBalance, showHideNumbers }) => (
 );
 
 BalanceCard.propTypes = {
-    isShown: PropTypes.bool.isRequired,
+    isShown: PropTypes.bool,
     balance: PropTypes.shape({
         title: PropTypes.string.isRequired,
         value: PropTypes.number.isRequired,

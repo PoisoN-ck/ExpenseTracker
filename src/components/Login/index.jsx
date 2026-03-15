@@ -37,7 +37,6 @@ const Login = ({ messageText, logIn, removeMessageText }) => {
                     </h2>
                     <form
                         className="login-container__form"
-                        noValidate=""
                         onSubmit={handleLogIn}
                     >
                         <input
@@ -47,7 +46,6 @@ const Login = ({ messageText, logIn, removeMessageText }) => {
                             value={email}
                             data-formcontrolname="email"
                             type="email"
-                            required=""
                         />
                         <input
                             className="login-container__form-item margin-vertical-sm"
@@ -56,7 +54,6 @@ const Login = ({ messageText, logIn, removeMessageText }) => {
                             value={password}
                             data-formcontrolname="password"
                             type="password"
-                            required=""
                         />
                         <button
                             onClick={removeMessageText}

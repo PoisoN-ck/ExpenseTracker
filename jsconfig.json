@@ -12,7 +12,9 @@
             "@img/*": ["src/img/*"],
             "@types": ["src/types"],
             "@constants": ["src/constants"],
-            "@utils": ["src/utils"]
+            "@utils": ["src/utils"],
+            "@context/*": ["src/context/*"],
+            "@context": ["src/context"]
         },
         "checkJs": true
     },

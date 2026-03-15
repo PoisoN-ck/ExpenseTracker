@@ -15,7 +15,7 @@ const ConstantExpensesList = ({
     currentlyFilteredExpenses,
     editConstantExpense,
     deleteConstantExpense,
-    doRegisterExpenseAsPaid,
+    markExpensesAsPaid,
     filteredConstantExpense,
 }) => {
     const [editedExpenses, setEditedExpenses] = useState([]);
@@ -104,7 +104,7 @@ const ConstantExpensesList = ({
     const handleMarkAsPaid = (expenseId) => setMarkedAsPaidExpenseId(expenseId);
     const handleUndoMarkAsPaid = () => setMarkedAsPaidExpenseId(null);
     const handleRegisterAsPaid = async (expense) => {
-        await doRegisterExpenseAsPaid(expense);
+        await markExpensesAsPaid([expense]);
 
         handleUndoMarkAsPaid();
     };
@@ -271,7 +271,7 @@ ConstantExpensesList.propTypes = {
     filteredConstantExpense: FilteredConstantExpenses,
     editConstantExpense: PropTypes.func.isRequired,
     deleteConstantExpense: PropTypes.func.isRequired,
-    doRegisterExpenseAsPaid: PropTypes.func.isRequired,
+    markExpensesAsPaid: PropTypes.func.isRequired,
 };
 
 export default ConstantExpensesList;

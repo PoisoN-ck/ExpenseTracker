@@ -1,16 +1,20 @@
 import { useMemo } from 'react';
 
 import PropTypes from 'prop-types';
-import { ConstantExpense, Transaction } from '@types';
+import { Transaction } from '@types';
 import { convertAmountToString, getPlannedExpenseType } from '@utils';
 import Loader from '@components/common/Loader';
 import NoDataScreen from '@components/common/NoDataScreen';
-import useUserSettings from '@/hooks/useUserSettings';
+import {
+    useDataStatusContext,
+    useConstantExpensesContext,
+    useUserSettingsContext,
+} from '@context';
 import {
     MULTIPLE_EXPENSE_TEXT,
     ONE_TIME_EXPENSE_TEXT,
     RECURRING_EXPENSE_TEXT,
-} from '@/constants';
+} from '@constants';
 
 const oneTimeIcon = <i className={`fa-solid fa-money-bill-1 fa-2xl`} />;
 const recurringIcon = <i className="fa-solid fa-money-bill-transfer fa-2xl" />;
@@ -22,8 +26,12 @@ const PLANNED_EXPENSE_TYPE_ICONS = {
     [MULTIPLE_EXPENSE_TEXT]: multipleIcon,
 };
 
-const Transactions = ({ isLoading, transactions, plannedExpenses }) => {
-    const { usersSettings } = useUserSettings();
+const Transactions = ({ transactions }) => {
+    const { isLoading } = useDataStatusContext();
+    const { filteredConstantExpense } = useConstantExpensesContext();
+    const { usersSettings } = useUserSettingsContext();
+
+    const plannedExpenses = Object.values(filteredConstantExpense).flat();
 
     const allPlannedExpenses = plannedExpenses.reduce((acc, expense) => {
         return {
@@ -76,7 +84,7 @@ const Transactions = ({ isLoading, transactions, plannedExpenses }) => {
                     </li>
                 );
             }),
-        [transactions],
+        [transactions, allPlannedExpenses, usersSettings],
     );
 
     return (
@@ -98,10 +106,7 @@ const Transactions = ({ isLoading, transactions, plannedExpenses }) => {
 };
 
 Transactions.propTypes = {
-    isLoading: PropTypes.bool.isRequired,
-    transactions: PropTypes.arrayOf(PropTypes.shape(Transaction)).isRequired,
-    plannedExpenses: PropTypes.arrayOf(PropTypes.shape(ConstantExpense))
-        .isRequired,
+    transactions: PropTypes.arrayOf(Transaction).isRequired,
 };
 
 export default Transactions;

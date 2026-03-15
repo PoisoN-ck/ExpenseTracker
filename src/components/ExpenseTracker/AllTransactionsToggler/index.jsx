@@ -1,6 +1,6 @@
 import PropTypes from 'prop-types';
-import { DEFAULT_NUM_OF_TRANSACTIONS } from '../../../constants';
-import { Transaction } from '../../../types';
+import { DEFAULT_NUM_OF_TRANSACTIONS } from '@constants';
+import { Transaction } from '@types';
 
 const AllTransactionsToggler = ({
     isShownAllTransactions,

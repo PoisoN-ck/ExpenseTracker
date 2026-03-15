@@ -3,21 +3,23 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useLongPress } from '@uidotdev/usehooks';
 import PropTypes from 'prop-types';
 import { v4 as uuidv4 } from 'uuid';
-import { categories } from '../../../constants';
-import { ConstantExpense as ConstantExpenseType } from '../../../types';
-import AmountInput from '../../common/AmountInput';
-import Button from '../../common/Button';
-import ConstantExpensePayModal from '../../common/ConstantExpensePayModal';
-import Modal from '../../common/Modal';
+import { categories, NOT_PAID } from '@constants';
+import AmountInput from '@components/common/AmountInput';
+import Button from '@components/common/Button';
+import ConstantExpensePayModal from '@components/common/ConstantExpensePayModal';
+import Modal from '@components/common/Modal';
+import {
+    useTransactionsContext,
+    useConstantExpensesContext,
+    useDataStatusContext,
+} from '@context';
 
-const ActionBar = ({
-    addTransaction,
-    setError,
-    isDisabled,
-    notPaidConstantExpenses,
-    payConstantExpenses,
-    handleShowSideMenu,
-}) => {
+const ActionBar = ({ handleShowSideMenu }) => {
+    const { addTransaction, payConstantExpenses } = useTransactionsContext();
+    const { filteredConstantExpense, markExpensesAsPaid } =
+        useConstantExpensesContext();
+    const { isLoading, setDataError } = useDataStatusContext();
+    const notPaidConstantExpenses = filteredConstantExpense[NOT_PAID];
     const [chosenUser, setChosenUser] = useState(null);
     const [transactionAmount, setTransactionAmount] = useState('');
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -28,7 +30,7 @@ const ActionBar = ({
 
     const handleOpenModal = () => {
         if (!transactionAmount) {
-            setError({ code: 'empty-value' });
+            setDataError({ code: 'empty-value' });
             return;
         }
 
@@ -91,6 +93,11 @@ const ActionBar = ({
     const handleConstantExpenseClose = () =>
         setIsConstantExpenseModalOpen(false);
 
+    const handleConstantExpensePayment = async (expenses) => {
+        const isPaid = await payConstantExpenses(expenses);
+        if (isPaid) await markExpensesAsPaid(expenses);
+    };
+
     useEffect(() => {
         if (alreadySelectedUser) {
             const selectedUser = JSON.parse(alreadySelectedUser);
@@ -111,7 +118,7 @@ const ActionBar = ({
                 />
                 <Button
                     text="Add"
-                    isDisabled={isDisabled}
+                    isDisabled={isLoading}
                     style={`action-bar__button ${
                         isAddButtonAnimated && 'animated-button'
                     }`}
@@ -132,7 +139,7 @@ const ActionBar = ({
                     <ConstantExpensePayModal
                         notPaidConstantExpenses={notPaidConstantExpenses}
                         handleClose={handleConstantExpenseClose}
-                        payConstantExpenses={payConstantExpenses}
+                        payConstantExpenses={handleConstantExpensePayment}
                         chosenUser={chosenUser}
                         handleShowSideMenu={handleShowSideMenu}
                     />
@@ -143,11 +150,6 @@ const ActionBar = ({
 };
 
 ActionBar.propTypes = {
-    addTransaction: PropTypes.func.isRequired,
-    setError: PropTypes.func.isRequired,
-    isDisabled: PropTypes.bool,
-    notPaidConstantExpenses: PropTypes.arrayOf(ConstantExpenseType),
-    payConstantExpenses: PropTypes.func.isRequired,
     handleShowSideMenu: PropTypes.func.isRequired,
 };
 

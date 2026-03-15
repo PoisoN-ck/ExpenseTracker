@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types';
-import { categories, transactionTypes } from '../constants';
+import { categories, transactionTypes } from '@constants';
 
-export const Filter = PropTypes.objectOf({
+export const Filter = PropTypes.shape({
     category: PropTypes.arrayOf(PropTypes.string).isRequired,
     date: PropTypes.arrayOf(PropTypes.string).isRequired,
     type: PropTypes.arrayOf(PropTypes.string).isRequired,

@@ -136,6 +136,17 @@ export const formatDayWithSuffix = (day) => {
     return `${n}${suffix} of each month`;
 };
 
+export const checkFirebaseConnection = () =>
+    new Promise((resolve) => {
+        onValue(
+            ref(db, '.info/connected'),
+            (snapshot) => resolve(snapshot.val()),
+            {
+                onlyOnce: true,
+            },
+        );
+    });
+
 const handleSnapshotValue = (snapshot, defaultValue = null) => {
     if (Array.isArray(snapshot?.val())) {
         return snapshot?.val().filter((value) => value) || [];
@@ -172,6 +183,7 @@ export const fetchValueAsPromise = async ({
                     handleError(error);
                     rej(false);
                 },
+                { onlyOnce: true },
             );
         } catch (error) {
             handleError(error);

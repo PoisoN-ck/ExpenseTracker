@@ -1,10 +1,8 @@
 import { useCallback, useEffect, useState } from 'react';
-import useAuth from './useAuth';
+import { useAuthContext } from '@context/AuthContext';
 import { fetchValueAsPromise, updateValueWithConnectionCheck } from '@utils';
 
 const useUserSettings = () => {
-    // TOOD: Move loading state to a separate hook for future
-    const [isLoading, setIsLoading] = useState(true);
     const [dataError, setDataError] = useState(null);
     const [successMessage, setSuccessMessage] = useState(null);
     const [usersSettings, setUsersSettings] = useState({});
@@ -14,7 +12,7 @@ const useUserSettings = () => {
         setSuccessMessage(null);
     };
 
-    const { isVerified } = useAuth();
+    const { isVerified } = useAuthContext();
 
     const fetctUsersSettings = async () => {
         return fetchValueAsPromise({
@@ -51,9 +49,7 @@ const useUserSettings = () => {
     );
 
     const initialLoad = useCallback(async () => {
-        setIsLoading(true);
         await fetctUsersSettings();
-        setIsLoading(false);
     }, [fetctUsersSettings]);
 
     useEffect(() => {
@@ -62,7 +58,6 @@ const useUserSettings = () => {
 
     return {
         dataError,
-        isLoading,
         successMessage,
         usersSettings,
         addUserSettings,

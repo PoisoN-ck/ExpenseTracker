@@ -1,20 +1,10 @@
 import PropTypes from 'prop-types';
 import { useEffect, useState } from 'react';
 
-import { FilteredConstantExpenses } from '@types';
 import ConstantExpenses from './ConstantExpenses';
 import UserSettings from './UserSettings';
 
-const SideMenu = ({
-    isShown,
-    setIsShown,
-    handleSignOut,
-    addConstantExpense,
-    editConstantExpense,
-    deleteConstantExpense,
-    filteredConstantExpense,
-    doRegisterExpenseAsPaid,
-}) => {
+const SideMenu = ({ isShown, setIsShown, handleSignOut }) => {
     const [isUserSettingsShown, setIsUserSettingsShown] = useState(false);
     const [isExpensesShown, setIsExpensesShown] = useState(false);
 
@@ -61,14 +51,7 @@ const SideMenu = ({
                     >
                         Planned expenses
                     </button>
-                    <ConstantExpenses
-                        isShown={isExpensesShown}
-                        addConstantExpense={addConstantExpense}
-                        editConstantExpense={editConstantExpense}
-                        deleteConstantExpense={deleteConstantExpense}
-                        filteredConstantExpense={filteredConstantExpense}
-                        doRegisterExpenseAsPaid={doRegisterExpenseAsPaid}
-                    />
+                    <ConstantExpenses isShown={isExpensesShown} />
                 </li>
             </ul>
         </div>
@@ -79,11 +62,6 @@ SideMenu.propTypes = {
     isShown: PropTypes.bool.isRequired,
     setIsShown: PropTypes.func.isRequired,
     handleSignOut: PropTypes.func.isRequired,
-    addConstantExpense: PropTypes.func.isRequired,
-    editConstantExpense: PropTypes.func.isRequired,
-    deleteConstantExpense: PropTypes.func,
-    doRegisterExpenseAsPaid: PropTypes.func,
-    filteredConstantExpense: FilteredConstantExpenses,
 };
 
 export default SideMenu;
