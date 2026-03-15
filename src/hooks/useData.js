@@ -1,32 +1,77 @@
 import { child, get, onValue, ref, set } from 'firebase/database';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
-import db, { auth } from '../services/db';
-
 import { sendEmailVerification } from 'firebase/auth';
+
+import db, { auth } from '@/services/db';
 import {
     CONSTANT_EXPENSE_FILTERS,
+    DEFAULT_REFRESH_DAY,
     NOT_PAID,
-    thisMonthFilter,
-} from '../constants';
-import { filterTransactions, sortTransactionsByDate } from '../utils';
+} from '@constants';
+import {
+    filterTransactions,
+    sortTransactionsByDate,
+    getPlannedExpensesDatePeriod,
+    fetchValueAsPromise,
+    updateValueWithConnectionCheck,
+} from '@utils';
+import { useAuth } from '@hooks';
+import { isWithinInterval } from 'date-fns';
 
-const useData = (isVerified) => {
-    // TODO: Potentially need separation of transactions, userSettings and constantExpenses to different files
+const useData = () => {
+    const { isVerified } = useAuth();
+
+    // TODO: Potentially need separation of transactions and constantExpenses to different files
     const [transactions, setTransactions] = useState([]);
     // TOOD: Revise appoach with setIsLoading! It seems it is not needed in the methods at all! Only on initial fetch
     const [isLoading, setIsLoading] = useState(true);
     const [dataError, setDataError] = useState(null);
     const [successMessage, setSuccessMessage] = useState(null);
-    const [usersSettings, setUsersSettings] = useState([]);
+    // NOT USED IN UI, data storage only
     const [constantExpenses, setConstantExpenses] = useState([]);
+    // Filtered constant expenses for UI
     const [filteredConstantExpense, setFilteredConstantExpenses] = useState({});
-    const [thisMonthTransactions, setThisMonthTransactions] = useState([]);
+    // Transactions made in the current month,
+    // based on plannedExpenseDayRefresh
+    const [currentMonthExpenses, setCurrentMonthExpenses] = useState([]);
+    const [plannedExpenseDayRefresh, setPlannedExpenseDayRefresh] =
+        useState(DEFAULT_REFRESH_DAY);
 
     const resetMessages = () => {
         setDataError(null);
         setSuccessMessage(null);
     };
+
+    const fetchPlannedExpenseDayRefresh = async () =>
+        await fetchValueAsPromise({
+            refPath: 'plannedExpenseDayRefresh',
+            defaultValue: DEFAULT_REFRESH_DAY,
+            onFetched: setPlannedExpenseDayRefresh,
+            handleError: setDataError,
+        });
+
+    const updatePlannedExpenseDayRefresh = useCallback(
+        async (day) => {
+            if (!day) {
+                setDataError({ code: 'add-missing-refresh-day' });
+                return false;
+            }
+
+            return await updateValueWithConnectionCheck({
+                path: 'plannedExpenseDayRefresh',
+                value: day,
+                isVerified,
+                successCode: 'updated-planned-expense-day-refresh',
+                resetMessages,
+                setSuccessMessage,
+                setError: setDataError,
+                restoreOnFail: () =>
+                    setPlannedExpenseDayRefresh(plannedExpenseDayRefresh),
+            });
+        },
+        [isVerified, plannedExpenseDayRefresh],
+    );
 
     // One-time fetch, usually not needed
     const fetchTransactions = useCallback(() => {
@@ -83,39 +128,7 @@ const useData = (isVerified) => {
             }
         });
 
-    const fetchAndUpdateUsersSettings = async () =>
-        await new Promise((res, rej) => {
-            try {
-                const usersSettingsRef = ref(
-                    db,
-                    `${auth.currentUser?.uid}/usersSettings`,
-                );
-
-                onValue(
-                    usersSettingsRef,
-                    (snapshot) => {
-                        const fetchedUsersSettings =
-                            snapshot
-                                .val()
-                                ?.filter((transaction) => transaction) || [];
-
-                        setUsersSettings(fetchedUsersSettings);
-                        res(fetchedUsersSettings);
-                    },
-                    (error) => {
-                        setDataError(error);
-                        setIsLoading(false);
-                        rej(false);
-                    },
-                );
-            } catch (error) {
-                setDataError(error);
-                setIsLoading(false);
-                rej(false);
-            }
-        });
-
-    const fetchAndUpdateConstantExpenses = async () =>
+    const fetchAndUpdateConstantExpenses = async (expenseDayRefresh) =>
         await new Promise((res, rej) => {
             try {
                 const constantExpensesRef = ref(
@@ -129,7 +142,16 @@ const useData = (isVerified) => {
                         const fetchedConstantExpenses =
                             snapshot.val()?.filter((expense) => expense) || [];
 
-                        setConstantExpenses(fetchedConstantExpenses);
+                        const plannedExpensesDayRange =
+                            getPlannedExpensesDatePeriod(expenseDayRefresh);
+
+                        const noOneTimePassedExpenses =
+                            filterOutOneTimePassedExpenses(
+                                fetchedConstantExpenses,
+                                plannedExpensesDayRange,
+                            );
+
+                        setConstantExpenses(noOneTimePassedExpenses);
                         res(fetchedConstantExpenses);
                     },
                     (error) => {
@@ -204,92 +226,7 @@ const useData = (isVerified) => {
                 setDataError(error);
             }
         },
-        [successMessage, transactions],
-    );
-
-    const addUserSettings = useCallback(
-        async (userSetting) => {
-            if (!userSetting.name || !userSetting.color) {
-                setDataError({ code: 'add-missing-fields' });
-                return false;
-            }
-
-            const connectionRef = ref(db, '.info/connected');
-
-            const addUserSettingsPromise = async () =>
-                await new Promise((res, rej) => {
-                    let isFailedAttempt = false;
-                    try {
-                        onValue(connectionRef, (snapshot) => {
-                            const isNetworkExist = snapshot.val();
-
-                            if (!isNetworkExist) {
-                                isFailedAttempt = true;
-                                setDataError({
-                                    code: 'no-network-users-settings',
-                                });
-                                rej(false);
-                                return;
-                            }
-
-                            resetMessages();
-
-                            // Making sure that settings
-                            // are not saved in offline mode
-                            if (isFailedAttempt) {
-                                rej(false);
-                                return;
-                            }
-
-                            try {
-                                if (isVerified) {
-                                    setIsLoading(true);
-                                    set(
-                                        ref(
-                                            db,
-                                            `${auth.currentUser?.uid}/usersSettings`,
-                                        ),
-                                        [userSetting, ...usersSettings],
-                                    )
-                                        .then(() => {
-                                            setSuccessMessage({
-                                                code: 'added-user-settings',
-                                            });
-                                            res(true);
-                                        })
-                                        .catch((error) => {
-                                            setDataError(error);
-                                            rej(false);
-                                        })
-                                        .finally(() => {
-                                            setIsLoading(false);
-                                        });
-                                } else {
-                                    setDataError({ code: 'no-data-saved' });
-                                    setUsersSettings([
-                                        userSetting,
-                                        ...usersSettings,
-                                    ]);
-                                    rej(false);
-                                }
-                            } catch (error) {
-                                setDataError(error);
-                                rej(false);
-                            } finally {
-                                setIsLoading(false);
-                            }
-                        });
-                    } catch (error) {
-                        setDataError(error);
-                        rej(false);
-                    }
-                });
-
-            const result = await addUserSettingsPromise();
-
-            return result;
-        },
-        [successMessage, usersSettings],
+        [successMessage, transactions, isVerified],
     );
 
     // TODO: Refactor similar methods and move to utils
@@ -304,6 +241,11 @@ const useData = (isVerified) => {
                 setDataError({ code: 'add-missing-fields' });
                 return false;
             }
+
+            const constantExpenseWithDate = {
+                ...constantExpense,
+                createdAt: new Date().getTime(),
+            };
 
             const connectionRef = ref(db, '.info/connected');
             const addConstantExpensePromise = async () =>
@@ -340,7 +282,10 @@ const useData = (isVerified) => {
                                             db,
                                             `${auth.currentUser?.uid}/constantExpenses`,
                                         ),
-                                        [constantExpense, ...constantExpenses],
+                                        [
+                                            constantExpenseWithDate,
+                                            ...constantExpenses,
+                                        ],
                                     )
                                         .then(() => {
                                             setSuccessMessage({
@@ -358,7 +303,7 @@ const useData = (isVerified) => {
                                 } else {
                                     setDataError({ code: 'no-data-saved' });
                                     setConstantExpenses([
-                                        constantExpense,
+                                        constantExpenseWithDate,
                                         ...constantExpenses,
                                     ]);
                                     rej(false);
@@ -380,7 +325,7 @@ const useData = (isVerified) => {
 
             return result;
         },
-        [successMessage, constantExpenses],
+        [successMessage, constantExpenses, isVerified],
     );
 
     const editConstantExpense = useCallback(
@@ -475,7 +420,7 @@ const useData = (isVerified) => {
 
             return result;
         },
-        [successMessage, constantExpenses],
+        [successMessage, constantExpenses, isVerified],
     );
 
     const deleteConstantExpense = useCallback(
@@ -566,9 +511,10 @@ const useData = (isVerified) => {
 
             return result;
         },
-        [successMessage, constantExpenses],
+        [successMessage, constantExpenses, isVerified],
     );
 
+    // To be moved out
     const sendVerificationEmail = async () => {
         const user = auth.currentUser;
 
@@ -590,10 +536,8 @@ const useData = (isVerified) => {
     const updateFilteredConstantExpenses = useCallback(() => {
         const [, notPaid, paid] = CONSTANT_EXPENSE_FILTERS;
 
-        const constantExpensesTransactionsOnly = thisMonthTransactions.filter(
-            (transaction) =>
-                transaction.transType === 'Expense' &&
-                transaction.constantExpenseId,
+        const constantExpensesTransactionsOnly = currentMonthExpenses.filter(
+            (transaction) => transaction.constantExpenseId,
         );
 
         const paidConstantExpenses = constantExpenses.filter(
@@ -622,7 +566,7 @@ const useData = (isVerified) => {
             [paid]: paidConstantExpenses,
             [notPaid]: notPaidConstantExpenses,
         });
-    }, [constantExpenses, transactions, thisMonthTransactions]);
+    }, [constantExpenses, currentMonthExpenses, plannedExpenseDayRefresh]);
 
     const addConstantExpenseIdToExistingTransaction = useCallback(
         async (transactionWithConstantId) => {
@@ -706,7 +650,7 @@ const useData = (isVerified) => {
 
             return result;
         },
-        [successMessage, transactions],
+        [successMessage, transactions, isVerified],
     );
 
     const doRegisterExpenseAsPaid = useCallback(
@@ -719,7 +663,7 @@ const useData = (isVerified) => {
             const { amount, id, category } = constantExpense;
 
             const filteredTransactionsByCategoryWithConstantExpense =
-                thisMonthTransactions.filter(
+                currentMonthExpenses.filter(
                     (transaction) =>
                         transaction.category === category &&
                         !transaction.constantExpenseId,
@@ -779,7 +723,7 @@ const useData = (isVerified) => {
 
             return false;
         },
-        [thisMonthTransactions, addConstantExpenseIdToExistingTransaction],
+        [currentMonthExpenses, addConstantExpenseIdToExistingTransaction],
     );
 
     const payConstantExpenses = useCallback(
@@ -870,7 +814,7 @@ const useData = (isVerified) => {
 
             return result;
         },
-        [successMessage, transactions],
+        [successMessage, transactions, isVerified],
     );
 
     const totalBalance = useMemo(
@@ -891,21 +835,37 @@ const useData = (isVerified) => {
         [filteredConstantExpense],
     );
 
+    const totalConstantExpensesAmount = useMemo(
+        () =>
+            constantExpenses?.reduce(
+                (acc, constantExpense) => acc + constantExpense.amount,
+                0,
+            ) || 0,
+        [constantExpenses],
+    );
+
     const freeCashAvailable = useMemo(
         () => totalBalance - totalConstantExpensesToBePaid,
         [totalConstantExpensesToBePaid, totalBalance],
     );
 
+    const filterOutOneTimePassedExpenses = (expenses, dayRange) =>
+        expenses.filter((expense) =>
+            expense.isOneTime
+                ? isWithinInterval(expense.createdAt, dayRange)
+                : expense,
+        );
+
     const initialLoad = useCallback(async () => {
         setIsLoading(true);
-        await fetchAndUpdateUsersSettings();
-        await fetchAndUpdateConstantExpenses();
+        const expenseDayRefresh = await fetchPlannedExpenseDayRefresh();
+        await fetchAndUpdateConstantExpenses(expenseDayRefresh);
         await fetchAndUpdateTransactions();
         setIsLoading(false);
     }, [
-        fetchAndUpdateUsersSettings,
         fetchAndUpdateConstantExpenses,
         fetchAndUpdateTransactions,
+        fetchPlannedExpenseDayRefresh,
     ]);
 
     useEffect(() => {
@@ -913,14 +873,17 @@ const useData = (isVerified) => {
     }, []);
 
     useEffect(() => {
-        setThisMonthTransactions(
-            filterTransactions(
-                transactions,
-                'date',
-                JSON.stringify(thisMonthFilter),
-            ),
-        );
-    }, [transactions]);
+        const customDateRangeBySelectedRefreshDay =
+            getPlannedExpensesDatePeriod(plannedExpenseDayRefresh);
+
+        const currentCustomMonthTransactions = filterTransactions(
+            transactions,
+            'date',
+            JSON.stringify(customDateRangeBySelectedRefreshDay),
+        ).filter((transaction) => transaction.transType === 'Expense');
+
+        setCurrentMonthExpenses(currentCustomMonthTransactions);
+    }, [transactions, plannedExpenseDayRefresh]);
 
     useEffect(() => {
         updateFilteredConstantExpenses();
@@ -931,23 +894,24 @@ const useData = (isVerified) => {
         isLoading,
         successMessage,
         transactions,
-        usersSettings,
         constantExpenses,
         filteredConstantExpense,
         totalConstantExpensesToBePaid,
         freeCashAvailable,
         totalBalance,
+        totalConstantExpensesAmount,
+        plannedExpenseDayRefresh,
         addTransaction,
         fetchTransactions,
         resetMessages,
         sendVerificationEmail,
         setDataError,
-        addUserSettings,
         addConstantExpense,
         editConstantExpense,
         deleteConstantExpense,
         doRegisterExpenseAsPaid,
         payConstantExpenses,
+        updatePlannedExpenseDayRefresh,
     };
 };
 

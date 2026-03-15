@@ -14,32 +14,29 @@ export const datesFilters = [
     {
         name: 'Last Month',
         value: {
-            startDate: startOfMonth(subMonths(currentDate, 1)),
-            endDate: startOfMonth(currentDate),
+            start: startOfMonth(subMonths(currentDate, 1)),
+            end: startOfMonth(currentDate),
         },
     },
     {
         name: 'This Month',
         value: {
-            startDate: startOfMonth(currentDate),
-            endDate: startOfMonth(subMonths(currentDate, -1)),
+            start: startOfMonth(currentDate),
+            end: startOfMonth(subMonths(currentDate, -1)),
         },
     },
     {
         name: 'This Week',
         value: {
-            startDate: startOfWeek(currentDate, { weekStartsOn: 1 }),
-            endDate: endOfWeek(currentDate, { weekStartsOn: 1 }),
+            start: startOfWeek(currentDate, { weekStartsOn: 1 }),
+            end: endOfWeek(currentDate, { weekStartsOn: 1 }),
         },
     },
     {
         name: 'Last Week',
         value: {
-            startDate: subWeeks(
-                startOfWeek(currentDate, { weekStartsOn: 1 }),
-                1,
-            ),
-            endDate: startOfWeek(currentDate, { weekStartsOn: 1 }),
+            start: subWeeks(startOfWeek(currentDate, { weekStartsOn: 1 }), 1),
+            end: startOfWeek(currentDate, { weekStartsOn: 1 }),
         },
     },
 ];
@@ -100,10 +97,21 @@ export const INPUT_VARIANT_DICT = {
 export const INPUT_SIZE_DICT = {
     sm: 'input-field--sm',
     default: 'input-field',
-    lg: 'inpit-field--lg', // does not exist yet
+    lg: 'input-field--lg', // does not exist yet
 };
 
 export const ALL = 'All';
 export const NOT_PAID = 'Not paid';
 export const PAID = 'Paid';
 export const CONSTANT_EXPENSE_FILTERS = [ALL, NOT_PAID, PAID];
+
+export const DAYS_LIST_IN_A_MONTH = Array.from(
+    { length: 31 },
+    (_, day) => day + 1,
+);
+
+export const DEFAULT_REFRESH_DAY = '1';
+
+export const ONE_TIME_EXPENSE_TEXT = 'One-time';
+export const RECURRING_EXPENSE_TEXT = 'Recurring';
+export const MULTIPLE_EXPENSE_TEXT = 'Multiple';

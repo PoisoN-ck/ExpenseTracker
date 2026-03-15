@@ -32,6 +32,7 @@ export const ConstantExpense = PropTypes.shape({
         .isRequired,
     category: PropTypes.string.isRequired,
     id: PropTypes.string,
+    isOneTime: PropTypes.bool,
 });
 
 export const FilteredConstantExpenses = PropTypes.shape({

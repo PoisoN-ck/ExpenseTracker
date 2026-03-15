@@ -1,5 +1,14 @@
-import { isWithinInterval } from 'date-fns';
-import { FilterTypes } from '../constants';
+import { addMonths, isWithinInterval, lastDayOfMonth } from 'date-fns';
+import { onValue, ref, set } from 'firebase/database';
+import {
+    FilterTypes,
+    ONE_TIME_EXPENSE_TEXT,
+    RECURRING_EXPENSE_TEXT,
+} from '@constants';
+import db, { auth } from '@/services/db';
+
+export const isRealObject = (value) =>
+    value !== null && typeof value === 'object' && !Array.isArray(value);
 
 export function capitalize(word) {
     return word.charAt(0).toUpperCase() + word.slice(1);
@@ -10,12 +19,12 @@ export function sortTransactionsByDate(currentTrans, nextTrans) {
 }
 
 const filterByDate = (transactions, datesInterval) => {
-    const { startDate, endDate } = JSON.parse(datesInterval);
+    const { start, end } = JSON.parse(datesInterval);
 
     return transactions.filter((transaction) =>
         isWithinInterval(new Date(transaction.transDate), {
-            start: new Date(startDate),
-            end: new Date(endDate),
+            start: new Date(start),
+            end: new Date(end),
         }),
     );
 };
@@ -83,23 +92,225 @@ export const translateMessage = (message) => {
         case 'edit-missing-field':
             return 'Please fill in all fields.';
         case 'added-constant-expense':
-            return 'Constant expense has been added successfully.';
+            return 'Planned expense has been added successfully.';
         case 'edited-constant-expense':
-            return 'Constant expense has been edited successfully.';
+            return 'Planned expense has been edited successfully.';
         case 'deleted-constant-expense':
-            return 'Constant expense has been deleted successfully.';
+            return 'Planned expense has been deleted successfully.';
         case 'delete-expense-missing-id':
             return 'Cannot delete expense without id.';
         case 'constant-expense-marked-as-paid':
-            return 'Successfully registered Constant Expense as paid.';
+            return 'Successfully registered Planned Expense as paid.';
         case 'constant-expense-cannot-be-paid':
             return "Cannot find any transaction of this category. Maybe, you didn't pay it?";
         case 'constant-expenses-paid':
-            return 'Successfully paid selected Constant Expenses.';
-
+            return 'Successfully paid selected Planned Expenses.';
+        case 'add-missing-refresh-day':
+            return 'Please select a day for planned expense refresh.';
+        case 'updated-planned-expense-day-refresh':
+            return 'Planned expense refresh day has been updated successfully.';
         default:
             return 'Something went wrong. Please try again.';
     }
 };
 
 export const convertAmountToString = (num = 0) => num?.toLocaleString();
+
+// Format a day number with the correct ordinal suffix and append "of the month".
+export const formatDayWithSuffix = (day) => {
+    const n = Number(day);
+    if (Number.isNaN(n) || n < 1 || n > 31) return '';
+
+    let remainder = n % 100;
+    if (remainder >= 11 && remainder <= 13) {
+        return `${n}th of the month`;
+    }
+
+    remainder = n % 10;
+    let suffix;
+    if (remainder === 1) suffix = 'st';
+    else if (remainder === 2) suffix = 'nd';
+    else if (remainder === 3) suffix = 'rd';
+    else suffix = 'th';
+
+    return `${n}${suffix} of each month`;
+};
+
+const handleSnapshotValue = (snapshot, defaultValue = null) => {
+    if (Array.isArray(snapshot?.val())) {
+        return snapshot?.val().filter((value) => value) || [];
+    }
+
+    return snapshot?.val() || defaultValue;
+};
+
+export const fetchValueAsPromise = async ({
+    refPath,
+    defaultValue = null,
+    onFetched,
+    handleError,
+}) =>
+    await new Promise((res, rej) => {
+        try {
+            const nodeRef = ref(db, `${auth.currentUser?.uid}/${refPath}`);
+
+            onValue(
+                nodeRef,
+                (snapshot) => {
+                    const fetchedValue = handleSnapshotValue(
+                        snapshot,
+                        defaultValue,
+                    );
+
+                    if (typeof onFetched === 'function') {
+                        onFetched(fetchedValue);
+                    }
+
+                    res(fetchedValue);
+                },
+                (error) => {
+                    handleError(error);
+                    rej(false);
+                },
+            );
+        } catch (error) {
+            handleError(error);
+            rej(false);
+        }
+    });
+
+export const updateValueWithConnectionCheck = async ({
+    path,
+    value,
+    isVerified,
+    oldValue = null,
+    successCode,
+    resetMessages,
+    setSuccessMessage,
+    setError,
+    restoreOnFail,
+}) =>
+    await new Promise((res, rej) => {
+        let isFailedAttempt = false;
+
+        const connectionRef = ref(db, '.info/connected');
+
+        try {
+            onValue(connectionRef, (snapshot) => {
+                const isNetworkExist = snapshot.val();
+
+                if (!isNetworkExist) {
+                    isFailedAttempt = true;
+                    setError({ code: 'no-network-users-settings' });
+                    rej(false);
+                    return;
+                }
+
+                resetMessages();
+
+                if (isFailedAttempt) {
+                    rej(false);
+                    return;
+                }
+
+                try {
+                    if (isVerified) {
+                        let updatedValue = handleValueTypes(value, oldValue);
+
+                        set(
+                            ref(db, `${auth.currentUser?.uid}/${path}`),
+                            updatedValue,
+                        )
+                            .then(() => {
+                                setSuccessMessage({ code: successCode });
+                                res(true);
+                            })
+                            .catch((error) => {
+                                setError(error);
+                                rej(false);
+                            });
+                    } else {
+                        setError({ code: 'no-data-saved' });
+                        if (typeof restoreOnFail === 'function') {
+                            restoreOnFail();
+                        }
+                        rej(false);
+                    }
+                } catch (error) {
+                    setError(error);
+                    rej(false);
+                }
+            });
+        } catch (error) {
+            setError(error);
+            rej(false);
+        }
+    });
+
+const handleValueTypes = (value, oldValue = null) => {
+    if (Array.isArray(value)) {
+        return [...oldValue, ...value];
+    }
+
+    if (isRealObject(value)) {
+        return { ...oldValue, ...value };
+    }
+
+    return value;
+};
+
+export const getPlannedExpensesDatePeriod = (startDate) => {
+    if (!startDate) return { start: null, end: null };
+
+    const day = parseInt(startDate, 10);
+    if (Number.isNaN(day) || day < 1 || day > 31) {
+        return { start: null, end: null };
+    }
+
+    const now = new Date();
+    const todayDay = now.getDate();
+
+    // If today's date is on/after the requested day, start a new period
+    // from the requested day in the current month -> same day next month.
+    // Otherwise, return the previous-month -> current-month range.
+    if (todayDay >= day) {
+        // start: requested day in current month (or last day if month too short)
+        let start = new Date(now.getFullYear(), now.getMonth(), day);
+        if (start.getMonth() !== now.getMonth()) {
+            start = lastDayOfMonth(now);
+        }
+
+        // end: same day in next month (or last day of next month if needed)
+        const nextMonth = addMonths(start, 1);
+        let end = new Date(nextMonth.getFullYear(), nextMonth.getMonth(), day);
+        if (end.getMonth() !== nextMonth.getMonth()) {
+            end = lastDayOfMonth(nextMonth);
+        }
+
+        return { start, end };
+    }
+
+    // todayDay < day: previous-month -> current-month
+    let end = new Date(now.getFullYear(), now.getMonth(), day);
+    if (end.getMonth() !== now.getMonth()) {
+        end = lastDayOfMonth(now);
+    }
+
+    const prevMonth = addMonths(end, -1);
+    let start = new Date(prevMonth.getFullYear(), prevMonth.getMonth(), day);
+    if (start.getMonth() !== prevMonth.getMonth()) {
+        start = lastDayOfMonth(prevMonth);
+    }
+
+    return { start, end };
+};
+
+export const getPlannedExpenseType = (expense) => {
+    if (!expense) return;
+
+    if (expense.isOneTime) {
+        return ONE_TIME_EXPENSE_TEXT;
+    }
+
+    return RECURRING_EXPENSE_TEXT;
+};

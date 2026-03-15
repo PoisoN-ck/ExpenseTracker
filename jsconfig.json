@@ -1,0 +1,20 @@
+{
+    "compilerOptions": {
+        "target": "esnext",
+        "moduleResolution": "bundler",
+        "jsx": "react-jsx",
+        "baseUrl": ".",
+        "paths": {
+            "@/*": ["src/*"],
+            "@components/*": ["src/components/*"],
+            "@hooks/*": ["src/hooks/*"],
+            "@hooks": ["src/hooks"],
+            "@img/*": ["src/img/*"],
+            "@types": ["src/types"],
+            "@constants": ["src/constants"],
+            "@utils": ["src/utils"]
+        },
+        "checkJs": true
+    },
+    "include": ["src/**/*", "index.html"]
+}
