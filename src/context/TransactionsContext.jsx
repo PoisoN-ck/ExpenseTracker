@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useMemo } from 'react';
+import { createContext, useContext, useMemo } from 'react';
 
 import { useAuthContext } from '@context/AuthContext';
 import { useDataStatusContext } from '@context/DataStatusContext';
@@ -13,27 +13,17 @@ export const TransactionsProvider = ({ children }) => {
 
     const {
         transactions,
-        fetchAndUpdateTransactions,
         addTransaction,
         addConstantExpenseIdToExistingTransaction,
         payConstantExpenses,
         totalBalance,
     } = useTransactions({
         isVerified,
+        setIsLoading,
         setDataError,
         setSuccessMessage,
         resetMessages,
     });
-
-    const initialLoad = async () => {
-        setIsLoading(true);
-        await fetchAndUpdateTransactions();
-        setIsLoading(false);
-    };
-
-    useEffect(() => {
-        initialLoad();
-    }, []);
 
     const value = useMemo(
         () => ({

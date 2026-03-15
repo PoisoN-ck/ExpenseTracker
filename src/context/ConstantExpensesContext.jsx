@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useMemo } from 'react';
+import { createContext, useContext, useMemo } from 'react';
 
 import { useAuthContext } from '@context/AuthContext';
 import { useDataStatusContext } from '@context/DataStatusContext';
@@ -22,8 +22,6 @@ export const ConstantExpensesProvider = ({ children }) => {
         plannedExpenseDayRefresh,
         totalConstantExpensesToBePaid,
         totalConstantExpensesAmount,
-        fetchPlannedExpenseDayRefresh,
-        fetchAndUpdateConstantExpenses,
         addConstantExpense,
         editConstantExpense,
         deleteConstantExpense,
@@ -37,15 +35,6 @@ export const ConstantExpensesProvider = ({ children }) => {
         setSuccessMessage,
         resetMessages,
     });
-
-    const initialLoad = async () => {
-        const dayRefresh = await fetchPlannedExpenseDayRefresh();
-        await fetchAndUpdateConstantExpenses(dayRefresh);
-    };
-
-    useEffect(() => {
-        initialLoad();
-    }, []);
 
     const freeCashAvailable = useMemo(
         () => totalBalance - totalConstantExpensesToBePaid,

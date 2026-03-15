@@ -1,64 +1,51 @@
 import { onValue, ref, runTransaction } from 'firebase/database';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 
 import db, { auth } from '@/services/db';
-import { sortTransactionsByDate } from '@utils';
-
-const checkConnection = () =>
-    new Promise((resolve) => {
-        onValue(
-            ref(db, '.info/connected'),
-            (snapshot) => resolve(snapshot.val()),
-            { onlyOnce: true },
-        );
-    });
+import { checkFirebaseConnection, sortTransactionsByDate } from '@utils';
 
 const useTransactions = ({
     isVerified,
+    setIsLoading,
     setDataError,
     setSuccessMessage,
     resetMessages,
 }) => {
     const [transactions, setTransactions] = useState([]);
 
-    const fetchAndUpdateTransactions = async () =>
-        await new Promise((res, rej) => {
-            try {
-                const transactionsRef = ref(
-                    db,
-                    `${auth.currentUser?.uid}/transactionsList`,
-                );
+    useEffect(() => {
+        const transactionsRef = ref(
+            db,
+            `${auth.currentUser?.uid}/transactionsList`,
+        );
 
-                onValue(
-                    transactionsRef,
-                    (snapshot) => {
-                        const fetchedTransactions =
-                            snapshot
-                                .val()
-                                ?.filter((transaction) => transaction)
-                                .sort(sortTransactionsByDate) || [];
-
-                        setTransactions(fetchedTransactions);
-                        res(fetchedTransactions);
-                    },
-                    (error) => {
-                        setDataError(error);
-                        rej(false);
-                    },
-                );
-            } catch (error) {
+        const unsubscribe = onValue(
+            transactionsRef,
+            (snapshot) => {
+                const fetchedTransactions =
+                    snapshot
+                        .val()
+                        ?.filter((transaction) => transaction)
+                        .sort(sortTransactionsByDate) || [];
+                setTransactions(fetchedTransactions);
+                setIsLoading(false);
+            },
+            (error) => {
                 setDataError(error);
-                rej(false);
-            }
-        });
+                setIsLoading(false);
+            },
+        );
+
+        return unsubscribe;
+    }, []);
 
     const addTransaction = useCallback(
         async (transaction) => {
             if (!transaction.value) return;
 
             try {
-                const isConnected = await checkConnection();
+                const isConnected = await checkFirebaseConnection();
                 if (!isConnected) {
                     setDataError({ code: 'no-network' });
                     return;
@@ -98,7 +85,7 @@ const useTransactions = ({
                 return;
 
             try {
-                const isConnected = await checkConnection();
+                const isConnected = await checkFirebaseConnection();
                 if (!isConnected) {
                     setDataError({ code: 'no-network' });
                     return false;
@@ -156,7 +143,7 @@ const useTransactions = ({
             }));
 
             try {
-                const isConnected = await checkConnection();
+                const isConnected = await checkFirebaseConnection();
                 if (!isConnected) {
                     setDataError({ code: 'no-network' });
                     return false;
@@ -196,7 +183,6 @@ const useTransactions = ({
 
     return {
         transactions,
-        fetchAndUpdateTransactions,
         addTransaction,
         addConstantExpenseIdToExistingTransaction,
         payConstantExpenses,

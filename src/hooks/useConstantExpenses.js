@@ -9,20 +9,19 @@ import {
     NOT_PAID,
 } from '@constants';
 import {
+    checkFirebaseConnection,
     filterTransactions,
     getPlannedExpensesDatePeriod,
     fetchValueAsPromise,
     updateValueWithConnectionCheck,
 } from '@utils';
 
-const checkConnection = () =>
-    new Promise((resolve) => {
-        onValue(
-            ref(db, '.info/connected'),
-            (snapshot) => resolve(snapshot.val()),
-            { onlyOnce: true },
-        );
-    });
+const filterOutOneTimePassedExpenses = (expenses, dayRange) =>
+    expenses.filter((expense) =>
+        expense.isOneTime
+            ? isWithinInterval(expense.createdAt, dayRange)
+            : expense,
+    );
 
 const useConstantExpenses = ({
     isVerified,
@@ -37,59 +36,46 @@ const useConstantExpenses = ({
     const [filteredConstantExpense, setFilteredConstantExpenses] = useState({});
     const [currentMonthExpenses, setCurrentMonthExpenses] = useState([]);
     const [plannedExpenseDayRefresh, setPlannedExpenseDayRefresh] =
-        useState(DEFAULT_REFRESH_DAY);
+        useState(null);
 
-    const filterOutOneTimePassedExpenses = (expenses, dayRange) =>
-        expenses.filter((expense) =>
-            expense.isOneTime
-                ? isWithinInterval(expense.createdAt, dayRange)
-                : expense,
+    const plannedExpenseDayFetch = useCallback(
+        async () =>
+            await fetchValueAsPromise({
+                refPath: 'plannedExpenseDayRefresh',
+                defaultValue: DEFAULT_REFRESH_DAY,
+                onFetched: setPlannedExpenseDayRefresh,
+                handleError: setDataError,
+            }),
+        [setDataError],
+    );
+
+    useEffect(() => {
+        plannedExpenseDayFetch();
+    }, [plannedExpenseDayFetch]);
+
+    useEffect(() => {
+        if (!plannedExpenseDayRefresh) return;
+
+        const dayRange = getPlannedExpensesDatePeriod(plannedExpenseDayRefresh);
+        const constantExpensesRef = ref(
+            db,
+            `${auth.currentUser?.uid}/constantExpenses`,
         );
 
-    const fetchPlannedExpenseDayRefresh = async () =>
-        await fetchValueAsPromise({
-            refPath: 'plannedExpenseDayRefresh',
-            defaultValue: DEFAULT_REFRESH_DAY,
-            onFetched: setPlannedExpenseDayRefresh,
-            handleError: setDataError,
-        });
-
-    const fetchAndUpdateConstantExpenses = async (expenseDayRefresh) =>
-        await new Promise((res, rej) => {
-            try {
-                const constantExpensesRef = ref(
-                    db,
-                    `${auth.currentUser?.uid}/constantExpenses`,
+        const unsubscribe = onValue(
+            constantExpensesRef,
+            (snapshot) => {
+                const fetched =
+                    snapshot.val()?.filter((expense) => expense) || [];
+                setConstantExpenses(
+                    filterOutOneTimePassedExpenses(fetched, dayRange),
                 );
+            },
+            (error) => setDataError(error),
+        );
 
-                onValue(
-                    constantExpensesRef,
-                    (snapshot) => {
-                        const fetchedConstantExpenses =
-                            snapshot.val()?.filter((expense) => expense) || [];
-
-                        const plannedExpensesDayRange =
-                            getPlannedExpensesDatePeriod(expenseDayRefresh);
-
-                        const noOneTimePassedExpenses =
-                            filterOutOneTimePassedExpenses(
-                                fetchedConstantExpenses,
-                                plannedExpensesDayRange,
-                            );
-
-                        setConstantExpenses(noOneTimePassedExpenses);
-                        res(fetchedConstantExpenses);
-                    },
-                    (error) => {
-                        setDataError(error);
-                        rej(false);
-                    },
-                );
-            } catch (error) {
-                setDataError(error);
-                rej(false);
-            }
-        });
+        return unsubscribe;
+    }, [plannedExpenseDayRefresh]);
 
     const updatePlannedExpenseDayRefresh = useCallback(
         async (day) => {
@@ -98,7 +84,7 @@ const useConstantExpenses = ({
                 return false;
             }
 
-            return await updateValueWithConnectionCheck({
+            const isDateUpdated = await updateValueWithConnectionCheck({
                 path: 'plannedExpenseDayRefresh',
                 value: day,
                 isVerified,
@@ -109,6 +95,8 @@ const useConstantExpenses = ({
                 restoreOnFail: () =>
                     setPlannedExpenseDayRefresh(plannedExpenseDayRefresh),
             });
+
+            if (isDateUpdated) setPlannedExpenseDayRefresh(day);
         },
         [
             isVerified,
@@ -116,6 +104,7 @@ const useConstantExpenses = ({
             setDataError,
             setSuccessMessage,
             resetMessages,
+            setPlannedExpenseDayRefresh,
         ],
     );
 
@@ -138,7 +127,7 @@ const useConstantExpenses = ({
             };
 
             try {
-                const isConnected = await checkConnection();
+                const isConnected = await checkFirebaseConnection();
                 if (!isConnected) {
                     setDataError({ code: 'no-network-users-settings' });
                     return false;
@@ -187,7 +176,7 @@ const useConstantExpenses = ({
             }
 
             try {
-                const isConnected = await checkConnection();
+                const isConnected = await checkFirebaseConnection();
                 if (!isConnected) {
                     setDataError({ code: 'no-network-users-settings' });
                     return false;
@@ -238,7 +227,7 @@ const useConstantExpenses = ({
             }
 
             try {
-                const isConnected = await checkConnection();
+                const isConnected = await checkFirebaseConnection();
                 if (!isConnected) {
                     setDataError({ code: 'no-network-users-settings' });
                     return false;
@@ -410,8 +399,6 @@ const useConstantExpenses = ({
         plannedExpenseDayRefresh,
         totalConstantExpensesToBePaid,
         totalConstantExpensesAmount,
-        fetchPlannedExpenseDayRefresh,
-        fetchAndUpdateConstantExpenses,
         addConstantExpense,
         editConstantExpense,
         deleteConstantExpense,
