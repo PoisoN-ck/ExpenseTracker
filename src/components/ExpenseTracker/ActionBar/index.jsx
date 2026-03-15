@@ -16,7 +16,8 @@ import {
 
 const ActionBar = ({ handleShowSideMenu }) => {
     const { addTransaction, payConstantExpenses } = useTransactionsContext();
-    const { filteredConstantExpense } = useConstantExpensesContext();
+    const { filteredConstantExpense, markExpensesAsPaid } =
+        useConstantExpensesContext();
     const { isLoading, setDataError } = useDataStatusContext();
     const notPaidConstantExpenses = filteredConstantExpense[NOT_PAID];
     const [chosenUser, setChosenUser] = useState(null);
@@ -92,6 +93,11 @@ const ActionBar = ({ handleShowSideMenu }) => {
     const handleConstantExpenseClose = () =>
         setIsConstantExpenseModalOpen(false);
 
+    const handleConstantExpensePayment = async (expenses) => {
+        const isPaid = await payConstantExpenses(expenses);
+        if (isPaid) await markExpensesAsPaid(expenses);
+    };
+
     useEffect(() => {
         if (alreadySelectedUser) {
             const selectedUser = JSON.parse(alreadySelectedUser);
@@ -133,7 +139,7 @@ const ActionBar = ({ handleShowSideMenu }) => {
                     <ConstantExpensePayModal
                         notPaidConstantExpenses={notPaidConstantExpenses}
                         handleClose={handleConstantExpenseClose}
-                        payConstantExpenses={payConstantExpenses}
+                        payConstantExpenses={handleConstantExpensePayment}
                         chosenUser={chosenUser}
                         handleShowSideMenu={handleShowSideMenu}
                     />

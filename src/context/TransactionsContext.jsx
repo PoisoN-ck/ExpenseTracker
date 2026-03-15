@@ -11,35 +11,23 @@ export const TransactionsProvider = ({ children }) => {
     const { setIsLoading, setDataError, setSuccessMessage, resetMessages } =
         useDataStatusContext();
 
-    const {
-        transactions,
-        addTransaction,
-        addConstantExpenseIdToExistingTransaction,
-        payConstantExpenses,
-        totalBalance,
-    } = useTransactions({
-        isVerified,
-        setIsLoading,
-        setDataError,
-        setSuccessMessage,
-        resetMessages,
-    });
+    const { transactions, addTransaction, payConstantExpenses, totalBalance } =
+        useTransactions({
+            isVerified,
+            setIsLoading,
+            setDataError,
+            setSuccessMessage,
+            resetMessages,
+        });
 
     const value = useMemo(
         () => ({
             transactions,
             addTransaction,
-            addConstantExpenseIdToExistingTransaction,
             payConstantExpenses,
             totalBalance,
         }),
-        [
-            transactions,
-            addTransaction,
-            addConstantExpenseIdToExistingTransaction,
-            payConstantExpenses,
-            totalBalance,
-        ],
+        [transactions, addTransaction, payConstantExpenses, totalBalance],
     );
 
     return (

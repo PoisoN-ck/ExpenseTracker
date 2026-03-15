@@ -58,11 +58,11 @@ const ConstantExpensePayModal = ({
         );
     };
 
-    const handlePayConstantExpenses = () => {
+    const handlePayConstantExpenses = async () => {
         const constantExpensesWithUser = selectedConstantExpenses.map(
             (expense) => ({ ...expense, userId: chosenUser.id }),
         );
-        const isPaid = payConstantExpenses(constantExpensesWithUser);
+        const isPaid = await payConstantExpenses(constantExpensesWithUser);
 
         if (isPaid) {
             handleClose();
@@ -126,7 +126,7 @@ const ConstantExpensePayModal = ({
         [notPaidExpenses],
     );
 
-    const isConstantExpensesExist = constantExpensesToBePaid.length;
+    const isConstantExpensesExist = constantExpensesToBePaid.length > 0;
 
     useEffect(() => {
         const notPaidExpenses = notPaidConstantExpenses.map((expense) => ({

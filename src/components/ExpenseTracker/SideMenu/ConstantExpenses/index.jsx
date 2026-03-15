@@ -22,7 +22,7 @@ const ConstantExpenses = ({ isShown }) => {
         editConstantExpense,
         deleteConstantExpense,
         filteredConstantExpense,
-        doRegisterExpenseAsPaid,
+        markExpensesAsPaid,
     } = useConstantExpensesContext();
     // TODO: Implement Loader in this section
     const [newConstantExpense, setNewConstantExpense] = useState(
@@ -75,7 +75,7 @@ const ConstantExpenses = ({ isShown }) => {
                     currentlyFilteredExpenses={currentlyFilteredExpenses}
                     editConstantExpense={editConstantExpense}
                     deleteConstantExpense={deleteConstantExpense}
-                    doRegisterExpenseAsPaid={doRegisterExpenseAsPaid}
+                    markExpensesAsPaid={markExpensesAsPaid}
                     filteredConstantExpense={filteredConstantExpense}
                 />
                 <DayPicker />

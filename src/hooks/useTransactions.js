@@ -76,58 +76,6 @@ const useTransactions = ({
         [isVerified, setDataError, setSuccessMessage, resetMessages],
     );
 
-    const addConstantExpenseIdToExistingTransaction = useCallback(
-        async (transactionWithConstantId) => {
-            if (
-                !transactionWithConstantId.value ||
-                !transactionWithConstantId.constantExpenseId
-            )
-                return;
-
-            try {
-                const isConnected = await checkFirebaseConnection();
-                if (!isConnected) {
-                    setDataError({ code: 'no-network' });
-                    return false;
-                }
-
-                resetMessages();
-
-                if (!isVerified) {
-                    setDataError({ code: 'no-data-saved' });
-                    setTransactions((prev) =>
-                        prev.map((t) =>
-                            t.id === transactionWithConstantId.id
-                                ? transactionWithConstantId
-                                : t,
-                        ),
-                    );
-                    return false;
-                }
-
-                await runTransaction(
-                    ref(db, `${auth.currentUser?.uid}/transactionsList`),
-                    (currentList) => {
-                        const existing = Array.isArray(currentList)
-                            ? currentList.filter((t) => t)
-                            : [];
-                        return existing.map((t) =>
-                            t.id === transactionWithConstantId.id
-                                ? transactionWithConstantId
-                                : t,
-                        );
-                    },
-                );
-                setSuccessMessage({ code: 'constant-expense-marked-as-paid' });
-                return true;
-            } catch (error) {
-                setDataError(error);
-                return false;
-            }
-        },
-        [isVerified, setDataError, setSuccessMessage, resetMessages],
-    );
-
     const payConstantExpenses = useCallback(
         async (constantExpensesToPay) => {
             if (!constantExpensesToPay.length) return;
@@ -184,7 +132,6 @@ const useTransactions = ({
     return {
         transactions,
         addTransaction,
-        addConstantExpenseIdToExistingTransaction,
         payConstantExpenses,
         totalBalance,
     };

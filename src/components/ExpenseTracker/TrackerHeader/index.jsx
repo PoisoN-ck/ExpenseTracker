@@ -17,10 +17,10 @@ const TrackerHeader = ({
     const { transactions, totalBalance } = useTransactionsContext();
     const {
         totalConstantExpensesToBePaid,
-        freeCashAvailable,
         totalConstantExpensesAmount,
         filteredConstantExpense,
     } = useConstantExpensesContext();
+    const freeCashAvailable = totalBalance - totalConstantExpensesToBePaid;
     const isDiffBalancesShown = !!Object.values(filteredConstantExpense).flat()
         .length;
     const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);

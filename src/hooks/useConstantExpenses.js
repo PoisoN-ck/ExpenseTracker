@@ -10,7 +10,6 @@ import {
 } from '@constants';
 import {
     checkFirebaseConnection,
-    filterTransactions,
     getPlannedExpensesDatePeriod,
     fetchValueAsPromise,
     updateValueWithConnectionCheck,
@@ -25,16 +24,12 @@ const filterOutOneTimePassedExpenses = (expenses, dayRange) =>
 
 const useConstantExpenses = ({
     isVerified,
-    transactions,
-    addConstantExpenseIdToExistingTransaction,
     setDataError,
     setSuccessMessage,
     resetMessages,
 }) => {
-    // NOT USED IN UI, data storage only
     const [constantExpenses, setConstantExpenses] = useState([]);
     const [filteredConstantExpense, setFilteredConstantExpenses] = useState({});
-    const [currentMonthExpenses, setCurrentMonthExpenses] = useState([]);
     const [plannedExpenseDayRefresh, setPlannedExpenseDayRefresh] =
         useState(null);
 
@@ -268,109 +263,80 @@ const useConstantExpenses = ({
 
     const updateFilteredConstantExpenses = useCallback(() => {
         const [, notPaid, paid] = CONSTANT_EXPENSE_FILTERS;
-
-        const constantExpensesTransactionsOnly = currentMonthExpenses.filter(
-            (transaction) => transaction.constantExpenseId,
-        );
+        const dayRange = getPlannedExpensesDatePeriod(plannedExpenseDayRefresh);
 
         const paidConstantExpenses = constantExpenses.filter(
-            (constantExpense) =>
-                constantExpensesTransactionsOnly.find(
-                    (transaction) =>
-                        transaction.constantExpenseId === constantExpense.id,
-                ),
+            (expense) =>
+                expense.paidAt && isWithinInterval(expense.paidAt, dayRange),
         );
 
-        const paidIds = new Set(paidConstantExpenses.map((e) => e.id));
+        const paidIds = new Set(
+            paidConstantExpenses.map((expense) => expense.id),
+        );
         const notPaidConstantExpenses = constantExpenses.filter(
-            (constantExpense) => !paidIds.has(constantExpense.id),
+            (expense) => !paidIds.has(expense.id),
         );
 
         setFilteredConstantExpenses({
             [paid]: paidConstantExpenses,
             [notPaid]: notPaidConstantExpenses,
         });
-    }, [constantExpenses, currentMonthExpenses]);
+    }, [constantExpenses, plannedExpenseDayRefresh]);
 
-    const doRegisterExpenseAsPaid = useCallback(
-        async (constantExpense) => {
-            const rangeAmount = 3000;
-            const getMinAmount = (amount) =>
-                amount - rangeAmount <= 0 ? 0 : amount - rangeAmount;
-            const getMaxAmount = (amount) => amount + rangeAmount;
+    const markExpensesAsPaid = useCallback(
+        async (expenses) => {
+            const expensesArray = Array.isArray(expenses)
+                ? expenses
+                : [expenses];
 
-            const { amount, id, category } = constantExpense;
+            const paidAt = Date.now();
+            const paidIds = new Set(expensesArray.map((expense) => expense.id));
 
-            const filteredTransactionsByCategoryWithConstantExpense =
-                currentMonthExpenses.filter(
-                    (transaction) =>
-                        transaction.category === category &&
-                        !transaction.constantExpenseId,
+            try {
+                const isConnected = await checkFirebaseConnection();
+                if (!isConnected) {
+                    setDataError({ code: 'no-network-users-settings' });
+                    return false;
+                }
+
+                resetMessages();
+
+                if (!isVerified) {
+                    setDataError({ code: 'no-data-saved' });
+                    setConstantExpenses((prev) =>
+                        prev.map((expense) =>
+                            paidIds.has(expense.id)
+                                ? { ...expense, paidAt }
+                                : expense,
+                        ),
+                    );
+                    return false;
+                }
+
+                await runTransaction(
+                    ref(db, `${auth.currentUser?.uid}/constantExpenses`),
+                    (currentList) => {
+                        const existing = Array.isArray(currentList)
+                            ? currentList.filter((expense) => expense)
+                            : [];
+                        return existing.map((expense) =>
+                            paidIds.has(expense.id)
+                                ? { ...expense, paidAt }
+                                : expense,
+                        );
+                    },
                 );
-
-            if (filteredTransactionsByCategoryWithConstantExpense.length) {
-                const exactMatchExpense =
-                    filteredTransactionsByCategoryWithConstantExpense.find(
-                        (transaction) => transaction.value * -1 === amount,
-                    );
-
-                if (exactMatchExpense) {
-                    return await addConstantExpenseIdToExistingTransaction({
-                        ...exactMatchExpense,
-                        constantExpenseId: id,
-                    });
-                }
-
-                // If exact match was not found, try to find a match within a range amount
-                const potentialMatchExpense =
-                    filteredTransactionsByCategoryWithConstantExpense.find(
-                        (transaction) => {
-                            const transValue = transaction.value * -1;
-                            return (
-                                getMinAmount(amount) <= transValue &&
-                                transValue <= getMaxAmount(amount)
-                            );
-                        },
-                    );
-
-                if (potentialMatchExpense) {
-                    return await addConstantExpenseIdToExistingTransaction({
-                        ...potentialMatchExpense,
-                        constantExpenseId: id,
-                    });
-                }
-
-                // If potential match was not found - fallback option - take first transaction from this category
-                const [transactionFromCategoryWithoutConstantExpenseId] =
-                    filteredTransactionsByCategoryWithConstantExpense;
-                return await addConstantExpenseIdToExistingTransaction({
-                    ...transactionFromCategoryWithoutConstantExpenseId,
-                    constantExpenseId: id,
+                setSuccessMessage({
+                    code: 'constant-expense-marked-as-paid',
                 });
+                return true;
+            } catch (error) {
+                setDataError(error);
+                return false;
             }
-
-            setDataError({ code: 'constant-expense-cannot-be-paid' });
-            return false;
         },
-        [
-            currentMonthExpenses,
-            addConstantExpenseIdToExistingTransaction,
-            setDataError,
-        ],
+        [isVerified, setDataError, setSuccessMessage, resetMessages],
     );
-
-    useEffect(() => {
-        const customDateRangeBySelectedRefreshDay =
-            getPlannedExpensesDatePeriod(plannedExpenseDayRefresh);
-
-        const currentCustomMonthTransactions = filterTransactions(
-            transactions,
-            'date',
-            JSON.stringify(customDateRangeBySelectedRefreshDay),
-        ).filter((transaction) => transaction.transType === 'Expense');
-
-        setCurrentMonthExpenses(currentCustomMonthTransactions);
-    }, [transactions, plannedExpenseDayRefresh]);
 
     useEffect(() => {
         updateFilteredConstantExpenses();
@@ -402,7 +368,7 @@ const useConstantExpenses = ({
         addConstantExpense,
         editConstantExpense,
         deleteConstantExpense,
-        doRegisterExpenseAsPaid,
+        markExpensesAsPaid,
         updatePlannedExpenseDayRefresh,
     };
 };

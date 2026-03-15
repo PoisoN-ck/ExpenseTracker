@@ -2,7 +2,6 @@ import { createContext, useContext, useMemo } from 'react';
 
 import { useAuthContext } from '@context/AuthContext';
 import { useDataStatusContext } from '@context/DataStatusContext';
-import { useTransactionsContext } from '@context/TransactionsContext';
 import useConstantExpenses from '@hooks/useConstantExpenses';
 
 const ConstantExpensesContext = createContext(null);
@@ -11,11 +10,6 @@ export const ConstantExpensesProvider = ({ children }) => {
     const { isVerified } = useAuthContext();
     const { setDataError, setSuccessMessage, resetMessages } =
         useDataStatusContext();
-    const {
-        transactions,
-        addConstantExpenseIdToExistingTransaction,
-        totalBalance,
-    } = useTransactionsContext();
 
     const {
         filteredConstantExpense,
@@ -25,21 +19,14 @@ export const ConstantExpensesProvider = ({ children }) => {
         addConstantExpense,
         editConstantExpense,
         deleteConstantExpense,
-        doRegisterExpenseAsPaid,
+        markExpensesAsPaid,
         updatePlannedExpenseDayRefresh,
     } = useConstantExpenses({
         isVerified,
-        transactions,
-        addConstantExpenseIdToExistingTransaction,
         setDataError,
         setSuccessMessage,
         resetMessages,
     });
-
-    const freeCashAvailable = useMemo(
-        () => totalBalance - totalConstantExpensesToBePaid,
-        [totalBalance, totalConstantExpensesToBePaid],
-    );
 
     const value = useMemo(
         () => ({
@@ -47,11 +34,10 @@ export const ConstantExpensesProvider = ({ children }) => {
             plannedExpenseDayRefresh,
             totalConstantExpensesToBePaid,
             totalConstantExpensesAmount,
-            freeCashAvailable,
             addConstantExpense,
             editConstantExpense,
             deleteConstantExpense,
-            doRegisterExpenseAsPaid,
+            markExpensesAsPaid,
             updatePlannedExpenseDayRefresh,
         }),
         [
@@ -59,11 +45,10 @@ export const ConstantExpensesProvider = ({ children }) => {
             plannedExpenseDayRefresh,
             totalConstantExpensesToBePaid,
             totalConstantExpensesAmount,
-            freeCashAvailable,
             addConstantExpense,
             editConstantExpense,
             deleteConstantExpense,
-            doRegisterExpenseAsPaid,
+            markExpensesAsPaid,
             updatePlannedExpenseDayRefresh,
         ],
     );
