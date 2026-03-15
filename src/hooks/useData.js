@@ -1,4 +1,4 @@
-import { child, get, onValue, ref, set } from 'firebase/database';
+import { onValue, ref, runTransaction } from 'firebase/database';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { sendEmailVerification } from 'firebase/auth';
@@ -72,28 +72,6 @@ const useData = () => {
         },
         [isVerified, plannedExpenseDayRefresh],
     );
-
-    // One-time fetch, usually not needed
-    const fetchTransactions = useCallback(() => {
-        get(child(ref(db), `${auth.currentUser?.uid}/transactionsList`))
-            .then((snapshot) => {
-                const fetchedTransactions = snapshot
-                    .val()
-                    // Fallback if transactions are manually deleted
-                    ?.filter((transaction) => transaction)
-                    .sort(sortTransactionsByDate);
-
-                if (fetchedTransactions?.length) {
-                    setTransactions(fetchedTransactions);
-                }
-            })
-            .catch((error) => {
-                setDataError(error);
-            })
-            .finally(() => {
-                setIsLoading(false);
-            });
-    }, []);
 
     // Fetches and updates the states if transactions are updated
     const fetchAndUpdateTransactions = async () =>
@@ -194,12 +172,19 @@ const useData = () => {
                     try {
                         if (isVerified) {
                             setIsLoading(true);
-                            set(
+                            runTransaction(
                                 ref(
                                     db,
                                     `${auth.currentUser?.uid}/transactionsList`,
                                 ),
-                                [transaction, ...transactions],
+                                (currentList) => {
+                                    const existing = Array.isArray(currentList)
+                                        ? currentList.filter(
+                                              (existingTrans) => existingTrans,
+                                          )
+                                        : [];
+                                    return [transaction, ...existing];
+                                },
                             )
                                 .then(() => {
                                     setSuccessMessage({
@@ -277,15 +262,22 @@ const useData = () => {
                             try {
                                 if (isVerified) {
                                     setIsLoading(true);
-                                    set(
+                                    runTransaction(
                                         ref(
                                             db,
                                             `${auth.currentUser?.uid}/constantExpenses`,
                                         ),
-                                        [
-                                            constantExpenseWithDate,
-                                            ...constantExpenses,
-                                        ],
+                                        (currentList) => {
+                                            const existing = Array.isArray(
+                                                currentList,
+                                            )
+                                                ? currentList.filter((e) => e)
+                                                : [];
+                                            return [
+                                                constantExpenseWithDate,
+                                                ...existing,
+                                            ];
+                                        },
                                     )
                                         .then(() => {
                                             setSuccessMessage({
@@ -378,12 +370,24 @@ const useData = () => {
                             try {
                                 if (isVerified) {
                                     setIsLoading(true);
-                                    set(
+                                    runTransaction(
                                         ref(
                                             db,
                                             `${auth.currentUser?.uid}/constantExpenses`,
                                         ),
-                                        modifiedExpenses,
+                                        (currentList) => {
+                                            const existing = Array.isArray(
+                                                currentList,
+                                            )
+                                                ? currentList.filter((e) => e)
+                                                : [];
+                                            return existing.map((expense) =>
+                                                expense.id ===
+                                                modifiedExpense.id
+                                                    ? modifiedExpense
+                                                    : expense,
+                                            );
+                                        },
                                     )
                                         .then(() => {
                                             setSuccessMessage({
@@ -467,12 +471,23 @@ const useData = () => {
                             try {
                                 if (isVerified) {
                                     setIsLoading(true);
-                                    set(
+                                    runTransaction(
                                         ref(
                                             db,
                                             `${auth.currentUser?.uid}/constantExpenses`,
                                         ),
-                                        expensesWithoutDeletedExpense,
+                                        (currentList) => {
+                                            const existing = Array.isArray(
+                                                currentList,
+                                            )
+                                                ? currentList.filter((e) => e)
+                                                : [];
+                                            return existing.filter(
+                                                (expense) =>
+                                                    expense.id !==
+                                                    deletedExpense.id,
+                                            );
+                                        },
                                     )
                                         .then(() => {
                                             setSuccessMessage({
@@ -609,12 +624,28 @@ const useData = () => {
                             try {
                                 if (isVerified) {
                                     setIsLoading(true);
-                                    set(
+                                    runTransaction(
                                         ref(
                                             db,
                                             `${auth.currentUser?.uid}/transactionsList`,
                                         ),
-                                        updatedTransactions,
+                                        (currentList) => {
+                                            const existing = Array.isArray(
+                                                currentList,
+                                            )
+                                                ? currentList.filter(
+                                                      (existingTrans) =>
+                                                          existingTrans,
+                                                  )
+                                                : [];
+                                            return existing.map(
+                                                (existingTrans) =>
+                                                    existingTrans.id ===
+                                                    transactionWithConstantId.id
+                                                        ? transactionWithConstantId
+                                                        : existingTrans,
+                                            );
+                                        },
                                     )
                                         .then(() => {
                                             setSuccessMessage({
@@ -769,12 +800,25 @@ const useData = () => {
                             try {
                                 if (isVerified) {
                                     setIsLoading(true);
-                                    set(
+                                    runTransaction(
                                         ref(
                                             db,
                                             `${auth.currentUser?.uid}/transactionsList`,
                                         ),
-                                        [...transactions, ...newTransactions],
+                                        (currentList) => {
+                                            const existing = Array.isArray(
+                                                currentList,
+                                            )
+                                                ? currentList.filter(
+                                                      (existingTrans) =>
+                                                          existingTrans,
+                                                  )
+                                                : [];
+                                            return [
+                                                ...existing,
+                                                ...newTransactions,
+                                            ];
+                                        },
                                     )
                                         .then(() => {
                                             setSuccessMessage({
@@ -902,7 +946,6 @@ const useData = () => {
         totalConstantExpensesAmount,
         plannedExpenseDayRefresh,
         addTransaction,
-        fetchTransactions,
         resetMessages,
         sendVerificationEmail,
         setDataError,
