@@ -38,7 +38,7 @@ ul {
 .application-layout {
     display: flex;
     flex-direction: column;
-    height: calc(var(--vh, 100vh));
+    height: 100dvh;
 }
 
 .container {
