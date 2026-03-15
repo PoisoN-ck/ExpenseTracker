@@ -18,7 +18,6 @@ const ActionBar = ({ handleShowSideMenu }) => {
     const { addTransaction, payConstantExpenses } = useTransactionsContext();
     const { filteredConstantExpense } = useConstantExpensesContext();
     const { isLoading, setDataError } = useDataStatusContext();
-    const isDisabled = isLoading;
     const notPaidConstantExpenses = filteredConstantExpense[NOT_PAID];
     const [chosenUser, setChosenUser] = useState(null);
     const [transactionAmount, setTransactionAmount] = useState('');
@@ -113,7 +112,7 @@ const ActionBar = ({ handleShowSideMenu }) => {
                 />
                 <Button
                     text="Add"
-                    isDisabled={isDisabled}
+                    isDisabled={isLoading}
                     style={`action-bar__button ${
                         isAddButtonAnimated && 'animated-button'
                     }`}
