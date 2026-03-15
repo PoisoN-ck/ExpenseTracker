@@ -43,6 +43,16 @@ const useData = () => {
         setSuccessMessage(null);
     };
 
+    // .info/connected only works with onValue, not get()
+    const checkConnection = () =>
+        new Promise((resolve) => {
+            onValue(
+                ref(db, '.info/connected'),
+                (snapshot) => resolve(snapshot.val()),
+                { onlyOnce: true },
+            );
+        });
+
     const fetchPlannedExpenseDayRefresh = async () =>
         await fetchValueAsPromise({
             refPath: 'plannedExpenseDayRefresh',
@@ -72,6 +82,13 @@ const useData = () => {
         },
         [isVerified, plannedExpenseDayRefresh],
     );
+
+    const filterOutOneTimePassedExpenses = (expenses, dayRange) =>
+        expenses.filter((expense) =>
+            expense.isOneTime
+                ? isWithinInterval(expense.createdAt, dayRange)
+                : expense,
+        );
 
     // Fetches and updates the states if transactions are updated
     const fetchAndUpdateTransactions = async () =>
@@ -149,69 +166,38 @@ const useData = () => {
         async (transaction) => {
             if (!transaction.value) return;
 
-            const connectionRef = ref(db, '.info/connected');
-
-            let isFailedAttempt = false;
-
             try {
-                onValue(connectionRef, (snapshot) => {
-                    const isNetworkExist = snapshot.val();
+                const isConnected = await checkConnection();
+                if (!isConnected) {
+                    setDataError({ code: 'no-network' });
+                    return;
+                }
 
-                    if (!isNetworkExist) {
-                        isFailedAttempt = true;
-                        setDataError({ code: 'no-network' });
-                        return;
-                    }
+                resetMessages();
 
-                    resetMessages();
+                if (!isVerified) {
+                    setDataError({ code: 'no-data-saved' });
+                    setTransactions([transaction, ...transactions]);
+                    return;
+                }
 
-                    // Making sure that transactions
-                    // are not registred in offline mode
-                    if (isFailedAttempt) return;
-
-                    try {
-                        if (isVerified) {
-                            setIsLoading(true);
-                            runTransaction(
-                                ref(
-                                    db,
-                                    `${auth.currentUser?.uid}/transactionsList`,
-                                ),
-                                (currentList) => {
-                                    const existing = Array.isArray(currentList)
-                                        ? currentList.filter(
-                                              (existingTrans) => existingTrans,
-                                          )
-                                        : [];
-                                    return [transaction, ...existing];
-                                },
-                            )
-                                .then(() => {
-                                    setSuccessMessage({
-                                        code: 'added-transaction',
-                                    });
-                                })
-                                .catch((error) => {
-                                    setDataError(error);
-                                })
-                                .finally(() => {
-                                    setIsLoading(false);
-                                });
-                        } else {
-                            setDataError({ code: 'no-data-saved' });
-                            setTransactions([transaction, ...transactions]);
-                        }
-                    } catch (error) {
-                        setDataError(error);
-                    } finally {
-                        setIsLoading(false);
-                    }
-                });
+                await runTransaction(
+                    ref(db, `${auth.currentUser?.uid}/transactionsList`),
+                    (currentList) => {
+                        const existing = Array.isArray(currentList)
+                            ? currentList.filter((t) => t)
+                            : [];
+                        return [transaction, ...existing];
+                    },
+                );
+                setSuccessMessage({ code: 'added-transaction' });
             } catch (error) {
                 setDataError(error);
+            } finally {
+                setIsLoading(false);
             }
         },
-        [successMessage, transactions, isVerified],
+        [transactions, isVerified],
     );
 
     // TODO: Refactor similar methods and move to utils
@@ -229,95 +215,46 @@ const useData = () => {
 
             const constantExpenseWithDate = {
                 ...constantExpense,
-                createdAt: new Date().getTime(),
+                createdAt: Date.now(),
             };
 
-            const connectionRef = ref(db, '.info/connected');
-            const addConstantExpensePromise = async () =>
-                await new Promise((res, rej) => {
-                    let isFailedAttempt = false;
+            try {
+                const isConnected = await checkConnection();
+                if (!isConnected) {
+                    setDataError({ code: 'no-network-users-settings' });
+                    return false;
+                }
 
-                    try {
-                        onValue(connectionRef, (snapshot) => {
-                            const isNetworkExist = snapshot.val();
+                resetMessages();
 
-                            if (!isNetworkExist) {
-                                isFailedAttempt = true;
-                                setDataError({
-                                    code: 'no-network-users-settings',
-                                });
-                                rej(false);
-                                return;
-                            }
+                if (!isVerified) {
+                    setDataError({ code: 'no-data-saved' });
+                    setConstantExpenses([
+                        constantExpenseWithDate,
+                        ...constantExpenses,
+                    ]);
+                    return false;
+                }
 
-                            resetMessages();
-
-                            // Making sure that settings
-                            // are not saved in offline mode
-                            if (isFailedAttempt) {
-                                rej(false);
-                                return;
-                            }
-
-                            try {
-                                if (isVerified) {
-                                    setIsLoading(true);
-                                    runTransaction(
-                                        ref(
-                                            db,
-                                            `${auth.currentUser?.uid}/constantExpenses`,
-                                        ),
-                                        (currentList) => {
-                                            const existing = Array.isArray(
-                                                currentList,
-                                            )
-                                                ? currentList.filter((e) => e)
-                                                : [];
-                                            return [
-                                                constantExpenseWithDate,
-                                                ...existing,
-                                            ];
-                                        },
-                                    )
-                                        .then(() => {
-                                            setSuccessMessage({
-                                                code: 'added-constant-expense',
-                                            });
-                                            res(true);
-                                        })
-                                        .catch((error) => {
-                                            setDataError(error);
-                                            rej(false);
-                                        })
-                                        .finally(() => {
-                                            setIsLoading(false);
-                                        });
-                                } else {
-                                    setDataError({ code: 'no-data-saved' });
-                                    setConstantExpenses([
-                                        constantExpenseWithDate,
-                                        ...constantExpenses,
-                                    ]);
-                                    rej(false);
-                                }
-                            } catch (error) {
-                                setDataError(error);
-                                rej(false);
-                            } finally {
-                                setIsLoading(false);
-                            }
-                        });
-                    } catch (error) {
-                        setDataError(error);
-                        rej(false);
-                    }
-                });
-
-            const result = await addConstantExpensePromise();
-
-            return result;
+                await runTransaction(
+                    ref(db, `${auth.currentUser?.uid}/constantExpenses`),
+                    (currentList) => {
+                        const existing = Array.isArray(currentList)
+                            ? currentList.filter((e) => e)
+                            : [];
+                        return [constantExpenseWithDate, ...existing];
+                    },
+                );
+                setSuccessMessage({ code: 'added-constant-expense' });
+                return true;
+            } catch (error) {
+                setDataError(error);
+                return false;
+            } finally {
+                setIsLoading(false);
+            }
         },
-        [successMessage, constantExpenses, isVerified],
+        [constantExpenses, isVerified],
     );
 
     const editConstantExpense = useCallback(
@@ -332,99 +269,50 @@ const useData = () => {
                 return false;
             }
 
-            const connectionRef = ref(db, '.info/connected');
-            const editConstantExpensePromise = async () =>
-                await new Promise((res, rej) => {
-                    let isFailedAttempt = false;
+            try {
+                const isConnected = await checkConnection();
+                if (!isConnected) {
+                    setDataError({ code: 'no-network-users-settings' });
+                    return false;
+                }
 
-                    try {
-                        onValue(connectionRef, (snapshot) => {
-                            const isNetworkExist = snapshot.val();
+                resetMessages();
 
-                            if (!isNetworkExist) {
-                                isFailedAttempt = true;
-                                setDataError({
-                                    code: 'no-network-users-settings',
-                                });
-                                rej(false);
-                                return;
-                            }
+                if (!isVerified) {
+                    setDataError({ code: 'no-data-saved' });
+                    setConstantExpenses(
+                        constantExpenses.map((expense) =>
+                            expense.id === modifiedExpense.id
+                                ? modifiedExpense
+                                : expense,
+                        ),
+                    );
+                    return false;
+                }
 
-                            resetMessages();
-
-                            // Making sure that settings
-                            // are not saved in offline mode
-                            if (isFailedAttempt) {
-                                rej(false);
-                                return;
-                            }
-
-                            // Paste into the array of data the expense replaced with new data
-                            const modifiedExpenses = constantExpenses.map(
-                                (expense) =>
-                                    expense.id === modifiedExpense.id
-                                        ? modifiedExpense
-                                        : expense,
-                            );
-
-                            try {
-                                if (isVerified) {
-                                    setIsLoading(true);
-                                    runTransaction(
-                                        ref(
-                                            db,
-                                            `${auth.currentUser?.uid}/constantExpenses`,
-                                        ),
-                                        (currentList) => {
-                                            const existing = Array.isArray(
-                                                currentList,
-                                            )
-                                                ? currentList.filter((e) => e)
-                                                : [];
-                                            return existing.map((expense) =>
-                                                expense.id ===
-                                                modifiedExpense.id
-                                                    ? modifiedExpense
-                                                    : expense,
-                                            );
-                                        },
-                                    )
-                                        .then(() => {
-                                            setSuccessMessage({
-                                                code: 'edited-constant-expense',
-                                            });
-                                            res(true);
-                                        })
-                                        .catch((error) => {
-                                            setDataError(error);
-                                            rej(false);
-                                        })
-                                        .finally(() => {
-                                            setIsLoading(false);
-                                        });
-                                } else {
-                                    setDataError({ code: 'no-data-saved' });
-                                    setConstantExpenses(modifiedExpenses);
-                                    rej(false);
-                                }
-                            } catch (error) {
-                                setDataError(error);
-                                rej(false);
-                            } finally {
-                                setIsLoading(false);
-                            }
-                        });
-                    } catch (error) {
-                        setDataError(error);
-                        rej(false);
-                    }
-                });
-
-            const result = await editConstantExpensePromise();
-
-            return result;
+                await runTransaction(
+                    ref(db, `${auth.currentUser?.uid}/constantExpenses`),
+                    (currentList) => {
+                        const existing = Array.isArray(currentList)
+                            ? currentList.filter((e) => e)
+                            : [];
+                        return existing.map((expense) =>
+                            expense.id === modifiedExpense.id
+                                ? modifiedExpense
+                                : expense,
+                        );
+                    },
+                );
+                setSuccessMessage({ code: 'edited-constant-expense' });
+                return true;
+            } catch (error) {
+                setDataError(error);
+                return false;
+            } finally {
+                setIsLoading(false);
+            }
         },
-        [successMessage, constantExpenses, isVerified],
+        [constantExpenses, isVerified],
     );
 
     const deleteConstantExpense = useCallback(
@@ -434,99 +322,46 @@ const useData = () => {
                 return false;
             }
 
-            const connectionRef = ref(db, '.info/connected');
-            const deleteConstantExpensePromise = async () =>
-                await new Promise((res, rej) => {
-                    let isFailedAttempt = false;
+            try {
+                const isConnected = await checkConnection();
+                if (!isConnected) {
+                    setDataError({ code: 'no-network-users-settings' });
+                    return false;
+                }
 
-                    try {
-                        onValue(connectionRef, (snapshot) => {
-                            const isNetworkExist = snapshot.val();
+                resetMessages();
 
-                            if (!isNetworkExist) {
-                                isFailedAttempt = true;
-                                setDataError({
-                                    code: 'no-network-users-settings',
-                                });
-                                rej(false);
-                                return;
-                            }
+                if (!isVerified) {
+                    setDataError({ code: 'no-data-saved' });
+                    setConstantExpenses(
+                        constantExpenses.filter(
+                            (expense) => expense.id !== deletedExpense.id,
+                        ),
+                    );
+                    return false;
+                }
 
-                            resetMessages();
-
-                            // Making sure that settings
-                            // are not saved in offline mode
-                            if (isFailedAttempt) {
-                                rej(false);
-                                return;
-                            }
-
-                            // Paste into the array of data the expense replaced with new data
-                            const expensesWithoutDeletedExpense =
-                                constantExpenses.filter(
-                                    (expense) =>
-                                        expense.id !== deletedExpense.id,
-                                );
-
-                            try {
-                                if (isVerified) {
-                                    setIsLoading(true);
-                                    runTransaction(
-                                        ref(
-                                            db,
-                                            `${auth.currentUser?.uid}/constantExpenses`,
-                                        ),
-                                        (currentList) => {
-                                            const existing = Array.isArray(
-                                                currentList,
-                                            )
-                                                ? currentList.filter((e) => e)
-                                                : [];
-                                            return existing.filter(
-                                                (expense) =>
-                                                    expense.id !==
-                                                    deletedExpense.id,
-                                            );
-                                        },
-                                    )
-                                        .then(() => {
-                                            setSuccessMessage({
-                                                code: 'deleted-constant-expense',
-                                            });
-                                            res(true);
-                                        })
-                                        .catch((error) => {
-                                            setDataError(error);
-                                            rej(false);
-                                        })
-                                        .finally(() => {
-                                            setIsLoading(false);
-                                        });
-                                } else {
-                                    setDataError({ code: 'no-data-saved' });
-                                    setConstantExpenses(
-                                        expensesWithoutDeletedExpense,
-                                    );
-                                    rej(false);
-                                }
-                            } catch (error) {
-                                setDataError(error);
-                                rej(false);
-                            } finally {
-                                setIsLoading(false);
-                            }
-                        });
-                    } catch (error) {
-                        setDataError(error);
-                        rej(false);
-                    }
-                });
-
-            const result = await deleteConstantExpensePromise();
-
-            return result;
+                await runTransaction(
+                    ref(db, `${auth.currentUser?.uid}/constantExpenses`),
+                    (currentList) => {
+                        const existing = Array.isArray(currentList)
+                            ? currentList.filter((e) => e)
+                            : [];
+                        return existing.filter(
+                            (expense) => expense.id !== deletedExpense.id,
+                        );
+                    },
+                );
+                setSuccessMessage({ code: 'deleted-constant-expense' });
+                return true;
+            } catch (error) {
+                setDataError(error);
+                return false;
+            } finally {
+                setIsLoading(false);
+            }
         },
-        [successMessage, constantExpenses, isVerified],
+        [constantExpenses, isVerified],
     );
 
     // To be moved out
@@ -563,25 +398,16 @@ const useData = () => {
                 ),
         );
 
+        const paidIds = new Set(paidConstantExpenses.map((e) => e.id));
         const notPaidConstantExpenses = constantExpenses.filter(
-            (constantExpense) => {
-                const isNotPaid = paidConstantExpenses.reduce(
-                    (acc, transaction) =>
-                        !acc || transaction.id === constantExpense.id
-                            ? false
-                            : true,
-                    true,
-                );
-
-                return isNotPaid;
-            },
+            (constantExpense) => !paidIds.has(constantExpense.id),
         );
 
         setFilteredConstantExpenses({
             [paid]: paidConstantExpenses,
             [notPaid]: notPaidConstantExpenses,
         });
-    }, [constantExpenses, currentMonthExpenses, plannedExpenseDayRefresh]);
+    }, [constantExpenses, currentMonthExpenses]);
 
     const addConstantExpenseIdToExistingTransaction = useCallback(
         async (transactionWithConstantId) => {
@@ -591,104 +417,57 @@ const useData = () => {
             )
                 return;
 
-            const connectionRef = ref(db, '.info/connected');
-            const addConstantExpenseIdPromise = async () =>
-                await new Promise((res, rej) => {
-                    let isFailedAttempt = false;
+            try {
+                const isConnected = await checkConnection();
+                if (!isConnected) {
+                    setDataError({ code: 'no-network' });
+                    return false;
+                }
 
-                    try {
-                        onValue(connectionRef, (snapshot) => {
-                            const isNetworkExist = snapshot.val();
+                resetMessages();
 
-                            if (!isNetworkExist) {
-                                isFailedAttempt = true;
-                                setDataError({ code: 'no-network' });
-                                rej(false);
-                                return;
-                            }
+                if (!isVerified) {
+                    setDataError({ code: 'no-data-saved' });
+                    setTransactions(
+                        transactions.map((t) =>
+                            t.id === transactionWithConstantId.id
+                                ? transactionWithConstantId
+                                : t,
+                        ),
+                    );
+                    return false;
+                }
 
-                            resetMessages();
-
-                            // Making sure that transactions
-                            // are not registred in offline mode
-                            if (isFailedAttempt) return;
-
-                            const updatedTransactions = transactions.map(
-                                (transaction) =>
-                                    transaction.id ===
-                                    transactionWithConstantId.id
-                                        ? transactionWithConstantId
-                                        : transaction,
-                            );
-
-                            try {
-                                if (isVerified) {
-                                    setIsLoading(true);
-                                    runTransaction(
-                                        ref(
-                                            db,
-                                            `${auth.currentUser?.uid}/transactionsList`,
-                                        ),
-                                        (currentList) => {
-                                            const existing = Array.isArray(
-                                                currentList,
-                                            )
-                                                ? currentList.filter(
-                                                      (existingTrans) =>
-                                                          existingTrans,
-                                                  )
-                                                : [];
-                                            return existing.map(
-                                                (existingTrans) =>
-                                                    existingTrans.id ===
-                                                    transactionWithConstantId.id
-                                                        ? transactionWithConstantId
-                                                        : existingTrans,
-                                            );
-                                        },
-                                    )
-                                        .then(() => {
-                                            setSuccessMessage({
-                                                code: 'constant-expense-marked-as-paid',
-                                            });
-                                            res(true);
-                                        })
-                                        .catch((error) => {
-                                            setDataError(error);
-                                            rej(false);
-                                        })
-                                        .finally(() => {
-                                            setIsLoading(false);
-                                        });
-                                } else {
-                                    setDataError({ code: 'no-data-saved' });
-                                    setTransactions(updatedTransactions);
-                                }
-                            } catch (error) {
-                                setDataError(error);
-                                rej(false);
-                            } finally {
-                                setIsLoading(false);
-                            }
-                        });
-                    } catch (error) {
-                        setDataError(error);
-                        rej(false);
-                    }
-                });
-
-            const result = await addConstantExpenseIdPromise();
-
-            return result;
+                await runTransaction(
+                    ref(db, `${auth.currentUser?.uid}/transactionsList`),
+                    (currentList) => {
+                        const existing = Array.isArray(currentList)
+                            ? currentList.filter((t) => t)
+                            : [];
+                        return existing.map((t) =>
+                            t.id === transactionWithConstantId.id
+                                ? transactionWithConstantId
+                                : t,
+                        );
+                    },
+                );
+                setSuccessMessage({ code: 'constant-expense-marked-as-paid' });
+                return true;
+            } catch (error) {
+                setDataError(error);
+                return false;
+            } finally {
+                setIsLoading(false);
+            }
         },
-        [successMessage, transactions, isVerified],
+        [transactions, isVerified],
     );
 
     const doRegisterExpenseAsPaid = useCallback(
         async (constantExpense) => {
             const rangeAmount = 3000;
             const getMinAmount = (amount) =>
-                amount - 3000 <= 0 ? 0 : amount - rangeAmount;
+                amount - rangeAmount <= 0 ? 0 : amount - rangeAmount;
             const getMaxAmount = (amount) => amount + rangeAmount;
 
             const { amount, id, category } = constantExpense;
@@ -772,93 +551,40 @@ const useData = () => {
                 userId: expense.userId,
             }));
 
-            const connectionRef = ref(db, '.info/connected');
-            const payConstantExpensesPromise = async () =>
-                await new Promise((res, rej) => {
-                    let isFailedAttempt = false;
+            try {
+                const isConnected = await checkConnection();
+                if (!isConnected) {
+                    setDataError({ code: 'no-network' });
+                    return false;
+                }
 
-                    try {
-                        onValue(connectionRef, (snapshot) => {
-                            const isNetworkExist = snapshot.val();
+                resetMessages();
 
-                            if (!isNetworkExist) {
-                                isFailedAttempt = true;
-                                setDataError({ code: 'no-network' });
-                                rej(false);
-                                return;
-                            }
+                if (!isVerified) {
+                    setDataError({ code: 'no-data-saved' });
+                    setTransactions([...transactions, ...newTransactions]);
+                    return false;
+                }
 
-                            resetMessages();
-
-                            // Making sure that transactions
-                            // are not registred in offline mode
-                            if (isFailedAttempt) {
-                                rej(false);
-                                return;
-                            }
-
-                            try {
-                                if (isVerified) {
-                                    setIsLoading(true);
-                                    runTransaction(
-                                        ref(
-                                            db,
-                                            `${auth.currentUser?.uid}/transactionsList`,
-                                        ),
-                                        (currentList) => {
-                                            const existing = Array.isArray(
-                                                currentList,
-                                            )
-                                                ? currentList.filter(
-                                                      (existingTrans) =>
-                                                          existingTrans,
-                                                  )
-                                                : [];
-                                            return [
-                                                ...existing,
-                                                ...newTransactions,
-                                            ];
-                                        },
-                                    )
-                                        .then(() => {
-                                            setSuccessMessage({
-                                                code: 'constant-expenses-paid',
-                                            });
-                                            res(true);
-                                        })
-                                        .catch((error) => {
-                                            setDataError(error);
-                                            rej(false);
-                                        })
-                                        .finally(() => {
-                                            setIsLoading(false);
-                                        });
-                                } else {
-                                    setDataError({ code: 'no-data-saved' });
-                                    setTransactions([
-                                        ...transactions,
-                                        ...newTransactions,
-                                    ]);
-                                    rej(false);
-                                }
-                            } catch (error) {
-                                setDataError(error);
-                                rej(false);
-                            } finally {
-                                setIsLoading(false);
-                            }
-                        });
-                    } catch (error) {
-                        setDataError(error);
-                        rej(false);
-                    }
-                });
-
-            const result = await payConstantExpensesPromise();
-
-            return result;
+                await runTransaction(
+                    ref(db, `${auth.currentUser?.uid}/transactionsList`),
+                    (currentList) => {
+                        const existing = Array.isArray(currentList)
+                            ? currentList.filter((t) => t)
+                            : [];
+                        return [...existing, ...newTransactions];
+                    },
+                );
+                setSuccessMessage({ code: 'constant-expenses-paid' });
+                return true;
+            } catch (error) {
+                setDataError(error);
+                return false;
+            } finally {
+                setIsLoading(false);
+            }
         },
-        [successMessage, transactions, isVerified],
+        [transactions, isVerified],
     );
 
     const totalBalance = useMemo(
@@ -892,13 +618,6 @@ const useData = () => {
         () => totalBalance - totalConstantExpensesToBePaid,
         [totalConstantExpensesToBePaid, totalBalance],
     );
-
-    const filterOutOneTimePassedExpenses = (expenses, dayRange) =>
-        expenses.filter((expense) =>
-            expense.isOneTime
-                ? isWithinInterval(expense.createdAt, dayRange)
-                : expense,
-        );
 
     const initialLoad = useCallback(async () => {
         setIsLoading(true);

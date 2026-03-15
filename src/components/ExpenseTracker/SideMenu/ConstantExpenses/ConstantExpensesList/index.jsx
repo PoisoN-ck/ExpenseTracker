@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 
 import { convertAmountToString } from '@utils';
@@ -28,6 +28,10 @@ const ConstantExpensesList = ({
         (total, expense) => total + expense.amount,
         0,
     );
+
+    useEffect(() => {
+        console.log(editedExpenses);
+    }, [editedExpenses]);
 
     const modifyChosenExpenseData = useCallback(
         (editedExpense) => {
@@ -91,8 +95,11 @@ const ConstantExpensesList = ({
             (expense) => expense.id === modifiedExpense.id,
         );
 
+        console.log(editedExpense);
+
         if (editedExpense) {
-            await editConstantExpense(editedExpense);
+            const result = await editConstantExpense(editedExpense);
+            console.log(result);
             setEditedExpenses((prevState) =>
                 prevState.filter(
                     (expense) => expense.id !== modifiedExpense.id,
