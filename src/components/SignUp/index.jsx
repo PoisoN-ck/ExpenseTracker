@@ -54,7 +54,7 @@ const SignUp = ({ handleMessage, messageText, removeMessageText, signUp }) => {
                     </h2>
                     <form
                         className="login-container__form"
-                        noValidate=""
+                        noValidate={false}
                         onSubmit={handleSignUp}
                     >
                         <input
@@ -65,7 +65,7 @@ const SignUp = ({ handleMessage, messageText, removeMessageText, signUp }) => {
                             value={loginDetails.email}
                             onChange={handleChange}
                             data-formcontrolname="email"
-                            required=""
+                            required={true}
                         />
                         <input
                             className="login-container__form-item margin-vertical-sm"
@@ -75,7 +75,7 @@ const SignUp = ({ handleMessage, messageText, removeMessageText, signUp }) => {
                             value={loginDetails.password}
                             onChange={handleChange}
                             data-formcontrolname="password"
-                            required=""
+                            required={true}
                         />
                         <input
                             className="login-container__form-item margin-vertical-sm"
@@ -85,7 +85,7 @@ const SignUp = ({ handleMessage, messageText, removeMessageText, signUp }) => {
                             value={loginDetails.confirmPassword}
                             onChange={handleChange}
                             data-formcontrolname="confirmPassword"
-                            required=""
+                            required={true}
                         />
                         <button
                             onClick={removeMessageText}
