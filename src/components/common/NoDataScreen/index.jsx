@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types';
 import noTransactions from '../../../img/no-transactions.svg';
 
-const NoDataScreen = ({ text, style }) => (
+const NoDataScreen = ({ text, style = '' }) => (
     <div className={`container ${style}`}>
         <img
             className="no-data-to-show-image"

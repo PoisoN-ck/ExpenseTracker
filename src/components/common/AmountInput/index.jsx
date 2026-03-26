@@ -7,7 +7,7 @@ const AmountInput = ({
     label = '',
     labelStyle = '',
     name = '',
-    placeholder,
+    placeholder = '',
     size = 'default',
     style = '',
     value,

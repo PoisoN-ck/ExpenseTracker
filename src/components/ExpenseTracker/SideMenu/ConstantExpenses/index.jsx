@@ -55,7 +55,7 @@ const ConstantExpenses = ({ isShown }) => {
                     <ConstantExpense
                         isCreationMode
                         constantExpense={newConstantExpense}
-                        setConstantExpense={setNewConstantExpense}
+                        changeConstantExpense={setNewConstantExpense}
                     />
                     <Button
                         text="Add expense"

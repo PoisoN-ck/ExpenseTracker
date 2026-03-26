@@ -95,7 +95,12 @@ const ActionBar = ({ handleShowSideMenu }) => {
 
     const handleConstantExpensePayment = async (expenses) => {
         const isPaid = await payConstantExpenses(expenses);
-        if (isPaid) await markExpensesAsPaid(expenses);
+
+        if (isPaid) {
+            markExpensesAsPaid(expenses);
+
+            return true;
+        }
     };
 
     useEffect(() => {
