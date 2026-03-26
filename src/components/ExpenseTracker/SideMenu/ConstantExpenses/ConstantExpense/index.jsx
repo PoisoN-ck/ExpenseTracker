@@ -9,11 +9,12 @@ import TextInput from '@components/common/TextInput';
 
 const ConstantExpense = ({
     constantExpense,
-    setConstantExpense,
+    // WARNING! Multipurpose function - used for both creating and editing constant expense (state setter for New and callback for Edit)
+    changeConstantExpense,
     isDisabled = false,
     isCreationMode = false,
 }) => {
-    const { name, amount, category, isOneTime, id } = constantExpense;
+    const { name, amount, category, isOneTime } = constantExpense;
     const [expenseName, setExpenseName] = useState(name);
     const [expenseAmount, setExpenseAmount] = useState(amount);
     const [expenseCategory, setExpenseCategory] = useState(category);
@@ -35,38 +36,51 @@ const ConstantExpense = ({
         }
     }, [isDisabled]);
 
+    // Creation mode
     useEffect(() => {
-        if (isCreationMode) {
-            setConstantExpense({
-                name: expenseName,
-                amount: expenseAmount,
-                category: expenseCategory,
-                isOneTime: expenseIsOneTime,
-            });
+        if (!isCreationMode) return;
 
-            return;
-        }
+        changeConstantExpense((prev) => ({
+            ...prev,
+            name: expenseName,
+            amount: expenseAmount,
+            category: expenseCategory,
+            isOneTime: expenseIsOneTime,
+        }));
+    }, [
+        isCreationMode,
+        expenseName,
+        expenseAmount,
+        expenseCategory,
+        expenseIsOneTime,
+    ]);
 
-        // For edit mode
+    // Edit mode
+    useEffect(() => {
+        if (isCreationMode) return;
+
         const isSameData =
             name === expenseName &&
             amount === expenseAmount &&
             category === expenseCategory;
 
         if (!isSameData) {
-            setConstantExpense({
+            changeConstantExpense({
+                ...constantExpense,
                 name: expenseName,
                 amount: expenseAmount,
                 category: expenseCategory,
-                ...(id ? { id } : {}),
             });
         }
     }, [
+        isCreationMode,
+        constantExpense,
+        name,
+        amount,
+        category,
         expenseName,
         expenseAmount,
         expenseCategory,
-        expenseIsOneTime,
-        isCreationMode,
     ]);
 
     const handleNameChange = (e) => setExpenseName(e.target.value);
@@ -127,7 +141,7 @@ const ConstantExpense = ({
 
 ConstantExpense.propTypes = {
     constantExpense: ConstantExpenseType,
-    setConstantExpense: PropTypes.func,
+    changeConstantExpense: PropTypes.func,
     isDisabled: PropTypes.bool,
     isCreationMode: PropTypes.bool,
     editMode: PropTypes.bool,

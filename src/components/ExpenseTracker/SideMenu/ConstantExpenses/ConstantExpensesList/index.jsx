@@ -202,7 +202,9 @@ const ConstantExpensesList = ({
                                 <ConstantExpense
                                     isDisabled={isDisabled}
                                     constantExpense={constantExpense}
-                                    setConstantExpense={modifyChosenExpenseData}
+                                    changeConstantExpense={
+                                        modifyChosenExpenseData
+                                    }
                                 />
                                 <div className="flex-center-column gap-5">
                                     {isCurrentlyBeingEdited ? (
