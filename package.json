@@ -23,7 +23,13 @@
         "test:watch": "vitest --watch",
         "preview": "vite preview",
         "lint": "eslint --fix . && echo 'Lint complete.'",
-        "eslint": "eslint ."
+        "eslint": "eslint .",
+        "lint-staged": "lint-staged",
+        "test:changed": "vitest run --changed HEAD",
+        "prepare": "husky"
+    },
+    "lint-staged": {
+        "*.{js,jsx}": "eslint --max-warnings=0"
     },
     "browserslist": {
         "production": [
@@ -44,6 +50,7 @@
         "@testing-library/user-event": "^14.6.1",
         "@types/uuid": "^9.0.1",
         "@vitejs/plugin-react": "^5.1.0",
+        "@vitest/coverage-v8": "^4.1.2",
         "babel-plugin-react-compiler": "^1.0.0",
         "eslint": "^9.39.1",
         "eslint-config-prettier": "^10.1.8",
@@ -52,10 +59,14 @@
         "eslint-plugin-prettier": "^5.5.4",
         "eslint-plugin-react": "^7.37.5",
         "firebase-tools": "^14.24.1",
+        "husky": "^9.1.7",
+        "jsdom": "^29.0.1",
+        "lint-staged": "^16.4.0",
         "prettier": "3.6.2",
         "sass": "^1.66.1",
         "vite": "^7.2.2",
         "vite-plugin-eslint": "^1.8.1",
-        "vite-plugin-svgr": "^4.5.0"
+        "vite-plugin-svgr": "^4.5.0",
+        "vitest": "^4.1.2"
     }
 }
