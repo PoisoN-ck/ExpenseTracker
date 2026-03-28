@@ -12,7 +12,7 @@ import {
 } from '@context';
 import {
     MULTIPLE_EXPENSE_TEXT,
-    ONE_TIME_EXPENSE_TEXT,
+    TEMPORARY_EXPENSE_TEXT,
     RECURRING_EXPENSE_TEXT,
 } from '@constants';
 
@@ -21,7 +21,7 @@ const recurringIcon = <i className="fa-solid fa-money-bill-transfer fa-2xl" />;
 const multipleIcon = <i className={`fa-solid fa-money-bills fa-2xl`} />;
 
 const PLANNED_EXPENSE_TYPE_ICONS = {
-    [ONE_TIME_EXPENSE_TEXT]: oneTimeIcon,
+    [TEMPORARY_EXPENSE_TEXT]: oneTimeIcon,
     [RECURRING_EXPENSE_TEXT]: recurringIcon,
     [MULTIPLE_EXPENSE_TEXT]: multipleIcon,
 };

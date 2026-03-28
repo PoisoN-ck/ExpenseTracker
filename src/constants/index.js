@@ -112,6 +112,6 @@ export const DAYS_LIST_IN_A_MONTH = Array.from(
 
 export const DEFAULT_REFRESH_DAY = '1';
 
-export const ONE_TIME_EXPENSE_TEXT = 'One-time';
+export const TEMPORARY_EXPENSE_TEXT = 'Temporary';
 export const RECURRING_EXPENSE_TEXT = 'Recurring';
-export const MULTIPLE_EXPENSE_TEXT = 'Multiple';
+export const MULTIPLE_EXPENSE_TEXT = 'Multi';

@@ -12,7 +12,8 @@ const DEFAULT_CONSTANT_EXPENSE_STATE = {
     name: '',
     amount: '',
     category: '',
-    isOneTime: false,
+    isTemporary: false,
+    isMultiple: false,
     id: '',
 };
 

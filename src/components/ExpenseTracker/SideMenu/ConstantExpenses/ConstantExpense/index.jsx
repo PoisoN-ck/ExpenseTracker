@@ -1,7 +1,11 @@
 import { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 
-import { categoriesWithoutProfit } from '@constants';
+import {
+    categoriesWithoutProfit,
+    TEMPORARY_EXPENSE_TEXT,
+    MULTIPLE_EXPENSE_TEXT,
+} from '@constants';
 import { ConstantExpense as ConstantExpenseType } from '@types';
 import AmountInput from '@components/common/AmountInput';
 import Dropdown from '@components/common/Dropdown';
@@ -14,18 +18,20 @@ const ConstantExpense = ({
     isDisabled = false,
     isCreationMode = false,
 }) => {
-    const { name, amount, category, isOneTime } = constantExpense;
+    const { name, amount, category, isTemporary, isMultiple } = constantExpense;
     const [expenseName, setExpenseName] = useState(name);
     const [expenseAmount, setExpenseAmount] = useState(amount);
     const [expenseCategory, setExpenseCategory] = useState(category);
-    const [expenseIsOneTime, setExpenseIsOneTime] = useState(isOneTime);
+    const [expenseIsTemporary, setExpenseIsTemporary] = useState(isTemporary);
+    const [expenseIsMultiple, setExpenseIsMultiple] = useState(isMultiple);
 
     useEffect(() => {
         setExpenseName(name);
         setExpenseAmount(amount);
         setExpenseCategory(category);
-        setExpenseIsOneTime(isOneTime);
-    }, [name, amount, category, isOneTime]);
+        setExpenseIsTemporary(isTemporary);
+        setExpenseIsMultiple(isMultiple);
+    }, [name, amount, category, isTemporary, isMultiple]);
 
     // Reset expense details when Edit mode is canceled
     useEffect(() => {
@@ -45,14 +51,16 @@ const ConstantExpense = ({
             name: expenseName,
             amount: expenseAmount,
             category: expenseCategory,
-            isOneTime: expenseIsOneTime,
+            isTemporary: expenseIsTemporary,
+            isMultiple: expenseIsMultiple,
         }));
     }, [
         isCreationMode,
         expenseName,
         expenseAmount,
         expenseCategory,
-        expenseIsOneTime,
+        expenseIsTemporary,
+        expenseIsMultiple,
     ]);
 
     // Edit mode
@@ -86,7 +94,6 @@ const ConstantExpense = ({
     const handleNameChange = (e) => setExpenseName(e.target.value);
     const handleAmountChange = (value) => setExpenseAmount(value);
     const handleCategorySelect = (e) => setExpenseCategory(e.target.value);
-    const handleCheckboxChange = (e) => setExpenseIsOneTime(e.target.checked);
 
     const categoryOptions = categoriesWithoutProfit.map((option) => (
         <option key={option} value={option}>
@@ -124,15 +131,34 @@ const ConstantExpense = ({
                     style="flex-2"
                 />
                 {isCreationMode && (
-                    <label className="flex-center gap-5 text-sm flex-align-center flex-1">
-                        <input
-                            type="checkbox"
-                            checked={expenseIsOneTime}
-                            onChange={handleCheckboxChange}
-                            aria-label="One-time"
-                        />
-                        <span className="text-muted">One-time</span>
-                    </label>
+                    <div className="flex-center gap-10 flex-1">
+                        <label className="flex-center gap-5 text-sm flex-align-center">
+                            <input
+                                type="checkbox"
+                                checked={expenseIsTemporary}
+                                onChange={(e) =>
+                                    setExpenseIsTemporary(e.target.checked)
+                                }
+                                aria-label={TEMPORARY_EXPENSE_TEXT}
+                            />
+                            <span className="text-muted">
+                                {TEMPORARY_EXPENSE_TEXT}
+                            </span>
+                        </label>
+                        <label className="flex-center gap-5 text-sm flex-align-center">
+                            <input
+                                type="checkbox"
+                                checked={expenseIsMultiple}
+                                onChange={(e) =>
+                                    setExpenseIsMultiple(e.target.checked)
+                                }
+                                aria-label={MULTIPLE_EXPENSE_TEXT}
+                            />
+                            <span className="text-muted">
+                                {MULTIPLE_EXPENSE_TEXT}
+                            </span>
+                        </label>
+                    </div>
                 )}
             </div>
         </div>

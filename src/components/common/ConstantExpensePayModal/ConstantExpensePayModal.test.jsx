@@ -13,16 +13,25 @@ const notPaidExpenses = [
         name: 'Rent',
         category: 'Utilities',
         amount: 500,
-        isOneTime: false,
+        isTemporary: false,
     },
     {
         id: 'e-2',
         name: 'Internet',
         category: 'Utilities',
         amount: 80,
-        isOneTime: false,
+        isTemporary: false,
     },
 ];
+
+const multipleExpense = {
+    id: 'e-3',
+    name: 'Gym',
+    category: 'Health',
+    amount: 200,
+    isMultiple: true,
+    paidAmount: 75,
+};
 
 const defaultProps = {
     payConstantExpenses: vi.fn().mockResolvedValue(true),
@@ -123,5 +132,52 @@ describe('ConstantExpensePayModal', () => {
         );
         await userEvent.click(document.querySelector('.close-button'));
         expect(handleClose).toHaveBeenCalled();
+    });
+
+    it('shows progress hint for isMultiple expense', () => {
+        render(
+            <ConstantExpensePayModal
+                {...defaultProps}
+                notPaidConstantExpenses={[multipleExpense]}
+            />,
+        );
+        // progress hint: "75 / 200 HUF"
+        expect(screen.getByText(/HUF/i)).toBeInTheDocument();
+    });
+
+    it('defaults amount input to remaining (amount - paidAmount) for isMultiple expense', () => {
+        render(
+            <ConstantExpensePayModal
+                {...defaultProps}
+                notPaidConstantExpenses={[multipleExpense]}
+            />,
+        );
+        // remaining = 200 - 75 = 125
+        const input = screen.getByPlaceholderText('Amount to be paid');
+        expect(input).toHaveValue('125');
+    });
+
+    it('resets amount to remaining after deselecting an isMultiple expense', async () => {
+        render(
+            <ConstantExpensePayModal
+                {...defaultProps}
+                notPaidConstantExpenses={[multipleExpense]}
+            />,
+        );
+        const checkbox = screen
+            .getAllByRole('button', { name: '' })
+            .find((b) => b.className.includes('button-icon'));
+
+        // select
+        await userEvent.click(checkbox);
+        // change amount
+        const input = screen.getByPlaceholderText('Amount to be paid');
+        await userEvent.clear(input);
+        await userEvent.type(input, '50');
+        expect(input).toHaveValue('50');
+
+        // deselect — should restore to remaining (125)
+        await userEvent.click(checkbox);
+        expect(input).toHaveValue('125');
     });
 });

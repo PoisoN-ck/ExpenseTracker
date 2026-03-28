@@ -8,7 +8,7 @@ const makeExpense = (overrides = {}) => ({
     name: 'Rent',
     amount: 500,
     category: 'Utilities',
-    isOneTime: false,
+    isTemporary: false,
     ...overrides,
 });
 

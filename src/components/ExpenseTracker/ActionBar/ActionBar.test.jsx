@@ -5,6 +5,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 const mockAddTransaction = vi.fn();
 const mockPayConstantExpenses = vi.fn();
 const mockMarkExpensesAsPaid = vi.fn();
+const mockAddPartialPayment = vi.fn();
 const mockSetDataError = vi.fn();
 
 vi.mock('@context', () => ({
@@ -15,6 +16,7 @@ vi.mock('@context', () => ({
     useConstantExpensesContext: () => ({
         filteredConstantExpense: { 'Not paid': [], All: [], Paid: [] },
         markExpensesAsPaid: mockMarkExpensesAsPaid,
+        addPartialPayment: mockAddPartialPayment,
     }),
     useDataStatusContext: () => ({
         isLoading: false,
@@ -67,6 +69,8 @@ describe('ActionBar', () => {
         mockAddTransaction.mockReset();
         mockSetDataError.mockReset();
         mockPayConstantExpenses.mockReset();
+        mockMarkExpensesAsPaid.mockReset();
+        mockAddPartialPayment.mockReset();
         localStorage.clear();
     });
 

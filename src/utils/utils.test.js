@@ -7,8 +7,14 @@ import {
     translateMessage,
     convertAmountToString,
     formatDayWithSuffix,
+    getPlannedExpenseType,
 } from '@utils';
-import { FilterTypes } from '@constants';
+import {
+    FilterTypes,
+    MULTIPLE_EXPENSE_TEXT,
+    TEMPORARY_EXPENSE_TEXT,
+    RECURRING_EXPENSE_TEXT,
+} from '@constants';
 
 // ─── Firebase / db module mocks (utils imports them for checkFirebase/fetch) ──
 vi.mock('@/services/db', () => ({
@@ -261,5 +267,38 @@ describe('formatDayWithSuffix', () => {
         expect(formatDayWithSuffix(0)).toBe('');
         expect(formatDayWithSuffix(32)).toBe('');
         expect(formatDayWithSuffix('abc')).toBe('');
+    });
+});
+
+// ─── getPlannedExpenseType ────────────────────────────────────────────────────
+
+describe('getPlannedExpenseType', () => {
+    it('returns MULTIPLE_EXPENSE_TEXT when isMultiple is true', () => {
+        expect(getPlannedExpenseType({ isMultiple: true })).toBe(
+            MULTIPLE_EXPENSE_TEXT,
+        );
+    });
+
+    it('returns MULTIPLE_EXPENSE_TEXT even when isTemporary is also true', () => {
+        expect(
+            getPlannedExpenseType({ isMultiple: true, isTemporary: true }),
+        ).toBe(MULTIPLE_EXPENSE_TEXT);
+    });
+
+    it('returns TEMPORARY_EXPENSE_TEXT when isTemporary is true and isMultiple is false', () => {
+        expect(
+            getPlannedExpenseType({ isTemporary: true, isMultiple: false }),
+        ).toBe(TEMPORARY_EXPENSE_TEXT);
+    });
+
+    it('returns RECURRING_EXPENSE_TEXT for a plain recurring expense', () => {
+        expect(
+            getPlannedExpenseType({ isTemporary: false, isMultiple: false }),
+        ).toBe(RECURRING_EXPENSE_TEXT);
+    });
+
+    it('returns undefined for a falsy value', () => {
+        expect(getPlannedExpenseType(null)).toBeUndefined();
+        expect(getPlannedExpenseType(undefined)).toBeUndefined();
     });
 });

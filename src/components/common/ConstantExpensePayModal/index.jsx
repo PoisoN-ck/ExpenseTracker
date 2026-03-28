@@ -1,11 +1,10 @@
 import PropTypes from 'prop-types';
 import { useEffect, useMemo, useState } from 'react';
 import { ConstantExpense, UserSetting } from '@types';
-import AmountInput from '@components/common/AmountInput';
 import Button from '@components/common/Button';
-import ButtonIcon from '@components/common/ButtonIcon';
 import Modal from '@components/common/Modal';
 import NoDataScreen from '@components/common/NoDataScreen';
+import ConstantExpenseItem from './ConstantExpenseItem';
 
 const ConstantExpensePayModal = ({
     payConstantExpenses,
@@ -19,32 +18,35 @@ const ConstantExpensePayModal = ({
     const handleSelect = (isSelected, expense) => {
         setNotPaidExpenses((selectedExpenses) => {
             if (isSelected) {
-                const updatedExpenses = selectedExpenses.map(
+                const expensesWithSelection = selectedExpenses.map(
                     (selectedExpense) =>
                         selectedExpense.id === expense.id
                             ? { ...selectedExpense, isSelected }
                             : selectedExpense,
                 );
 
-                return updatedExpenses;
+                return expensesWithSelection;
             }
 
-            const oldAmountValue = notPaidConstantExpenses.find(
+            const sourceExpense = notPaidConstantExpenses.find(
                 (notPaidExpense) => notPaidExpense.id === expense.id,
-            ).amount;
+            );
+            const unpaidAmount = sourceExpense.isMultiple
+                ? sourceExpense.amount - (sourceExpense.paidAmount || 0)
+                : sourceExpense.amount;
 
-            const updatedExpensesWithOldAmount = selectedExpenses.map(
+            const deselectedExpenses = selectedExpenses.map(
                 (selectedExpense) =>
                     selectedExpense.id === expense.id
                         ? {
                               ...selectedExpense,
                               isSelected,
-                              amount: oldAmountValue,
+                              amount: unpaidAmount,
                           }
                         : selectedExpense,
             );
 
-            return updatedExpensesWithOldAmount;
+            return deselectedExpenses;
         });
     };
 
@@ -76,54 +78,16 @@ const ConstantExpensePayModal = ({
 
     const constantExpensesToBePaid = useMemo(
         () =>
-            notPaidExpenses?.map((expense) => {
-                const isSelected = expense.isSelected;
-
-                return (
-                    <li
-                        className={`pay-constant-expense__item margin-bottom-md  ${
-                            isSelected && 'shadow__highlighted'
-                        }`}
-                        key={expense.id}
-                    >
-                        <div className="flex-center flex-align-center gap-10 pay-constant-expense__container">
-                            <ButtonIcon
-                                icon={`fa-solid fa-square-check ${
-                                    !isSelected && 'button-icon__not-selected'
-                                }`}
-                                style="no-border"
-                                handleClick={() =>
-                                    handleSelect(!isSelected, expense)
-                                }
-                            />
-                            <div
-                                className={`text-center full-width padding-vertical-sm ${
-                                    !isSelected && 'text-muted'
-                                }`}
-                            >
-                                <p className="text-sm text-bold margin-bottom-sm">
-                                    {expense.name}
-                                </p>
-                                <p className="text-sm text-bold">
-                                    Category: {expense.category}
-                                </p>
-                            </div>
-                            <div className="flex-center-column text-center full-width pay-constant-expense__amount-container">
-                                <AmountInput
-                                    isDisabled={!isSelected}
-                                    style="pay-constant-expense__amount"
-                                    placeholder="Actual amount"
-                                    value={expense.amount}
-                                    handleChange={(value) =>
-                                        handleAmountChange(value, expense.id)
-                                    }
-                                />
-                            </div>
-                        </div>
-                    </li>
-                );
-            }),
-        [notPaidExpenses],
+            notPaidExpenses?.map((expense) => (
+                <ConstantExpenseItem
+                    key={expense.id}
+                    expense={expense}
+                    notPaidConstantExpenses={notPaidConstantExpenses}
+                    handleSelect={handleSelect}
+                    handleAmountChange={handleAmountChange}
+                />
+            )),
+        [notPaidExpenses, notPaidConstantExpenses],
     );
 
     const isConstantExpensesExist = constantExpensesToBePaid.length > 0;
@@ -132,6 +96,9 @@ const ConstantExpensePayModal = ({
         const notPaidExpenses = notPaidConstantExpenses.map((expense) => ({
             ...expense,
             isSelected: false,
+            amount: expense.isMultiple
+                ? expense.amount - (expense.paidAmount || 0)
+                : expense.amount,
         }));
 
         setNotPaidExpenses(notPaidExpenses);
@@ -144,7 +111,7 @@ const ConstantExpensePayModal = ({
             title="Pay planned expenses"
         >
             {isConstantExpensesExist ? (
-                <ul className="flex-column flex-align-center container__vertical-scroll small-height-container padding-md">
+                <ul className="pay-constant-expense__list-container flex-column container__vertical-scroll">
                     {constantExpensesToBePaid}
                 </ul>
             ) : (
