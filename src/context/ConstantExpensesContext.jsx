@@ -19,6 +19,7 @@ export const ConstantExpensesProvider = ({ children }) => {
         addConstantExpense,
         editConstantExpense,
         deleteConstantExpense,
+        addPartialPayment,
         markExpensesAsPaid,
         updatePlannedExpenseDayRefresh,
     } = useConstantExpenses({
@@ -37,6 +38,7 @@ export const ConstantExpensesProvider = ({ children }) => {
             addConstantExpense,
             editConstantExpense,
             deleteConstantExpense,
+            addPartialPayment,
             markExpensesAsPaid,
             updatePlannedExpenseDayRefresh,
         }),
@@ -48,6 +50,7 @@ export const ConstantExpensesProvider = ({ children }) => {
             addConstantExpense,
             editConstantExpense,
             deleteConstantExpense,
+            addPartialPayment,
             markExpensesAsPaid,
             updatePlannedExpenseDayRefresh,
         ],

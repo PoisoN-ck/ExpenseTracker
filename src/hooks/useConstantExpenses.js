@@ -15,9 +15,9 @@ import {
     updateValueWithConnectionCheck,
 } from '@utils';
 
-const filterOutOneTimePassedExpenses = (expenses, dayRange) =>
+const filterOutTemporaryPassedExpenses = (expenses, dayRange) =>
     expenses.filter((expense) =>
-        expense.isOneTime
+        expense.isTemporary
             ? isWithinInterval(expense.createdAt, dayRange)
             : expense,
     );
@@ -63,7 +63,7 @@ const useConstantExpenses = ({
                 const fetched =
                     snapshot.val()?.filter((expense) => expense) || [];
                 setConstantExpenses(
-                    filterOutOneTimePassedExpenses(fetched, dayRange),
+                    filterOutTemporaryPassedExpenses(fetched, dayRange),
                 );
             },
             (error) => setDataError(error),
@@ -265,23 +265,109 @@ const useConstantExpenses = ({
         const [, notPaid, paid] = CONSTANT_EXPENSE_FILTERS;
         const dayRange = getPlannedExpensesDatePeriod(plannedExpenseDayRefresh);
 
-        const paidConstantExpenses = constantExpenses.filter(
-            (expense) =>
-                expense.paidAt && isWithinInterval(expense.paidAt, dayRange),
-        );
+        const getPeriodPaidAmount = (expense) => {
+            if (
+                !expense.paidAmountUpdatedAt ||
+                !isWithinInterval(expense.paidAmountUpdatedAt, dayRange)
+            ) {
+                return 0;
+            }
+            return expense.paidAmount || 0;
+        };
+
+        const isPaidExpense = (expense) =>
+            expense.paidAt && isWithinInterval(expense.paidAt, dayRange);
+
+        const paidConstantExpenses = constantExpenses.filter(isPaidExpense);
 
         const paidIds = new Set(
             paidConstantExpenses.map((expense) => expense.id),
         );
-        const notPaidConstantExpenses = constantExpenses.filter(
-            (expense) => !paidIds.has(expense.id),
-        );
+
+        const notPaidConstantExpenses = constantExpenses
+            .filter((expense) => !paidIds.has(expense.id))
+            .map((expense) => {
+                if (!expense.isMultiple) return expense;
+
+                return {
+                    ...expense,
+                    paidAmount: getPeriodPaidAmount(expense),
+                };
+            });
 
         setFilteredConstantExpenses({
             [paid]: paidConstantExpenses,
             [notPaid]: notPaidConstantExpenses,
         });
     }, [constantExpenses, plannedExpenseDayRefresh]);
+
+    const addPartialPayment = useCallback(
+        async (expenses) => {
+            const expensesArray = Array.isArray(expenses)
+                ? expenses
+                : [expenses];
+
+            const dayRange = getPlannedExpensesDatePeriod(
+                plannedExpenseDayRefresh,
+            );
+            const paidAmountUpdatedAt = Date.now();
+            const paymentById = new Map(
+                expensesArray.map((e) => [e.id, Number(e.amount)]),
+            );
+
+            const applyPayment = (expense) => {
+                const paymentAmount = paymentById.get(expense.id);
+                if (!paymentAmount) return expense;
+
+                const isCurrentPeriod =
+                    expense.paidAmountUpdatedAt &&
+                    isWithinInterval(expense.paidAmountUpdatedAt, dayRange);
+
+                const newPaidAmount = isCurrentPeriod
+                    ? (expense.paidAmount || 0) + paymentAmount
+                    : paymentAmount;
+
+                return {
+                    ...expense,
+                    paidAmount: newPaidAmount,
+                    paidAmountUpdatedAt,
+                    ...(newPaidAmount >= expense.amount
+                        ? { paidAt: paidAmountUpdatedAt }
+                        : {}),
+                };
+            };
+
+            try {
+                const isConnected = await checkFirebaseConnection();
+
+                if (!isConnected) {
+                    setDataError({ code: 'no-network-users-settings' });
+                    return false;
+                }
+
+                if (!isVerified) {
+                    setConstantExpenses((prev) => prev.map(applyPayment));
+                    return false;
+                }
+
+                await runTransaction(
+                    ref(db, `${auth.currentUser?.uid}/constantExpenses`),
+                    (currentList) => {
+                        const existing = Array.isArray(currentList)
+                            ? currentList.filter((e) => e)
+                            : [];
+                        return existing.map(applyPayment);
+                    },
+                );
+
+                return true;
+            } catch (error) {
+                setDataError(error);
+                return false;
+            }
+        },
+        [isVerified, plannedExpenseDayRefresh, setDataError],
+    );
 
     const markExpensesAsPaid = useCallback(
         async (expenses) => {
@@ -345,7 +431,13 @@ const useConstantExpenses = ({
     const totalConstantExpensesToBePaid = useMemo(
         () =>
             filteredConstantExpense[NOT_PAID]?.reduce(
-                (acc, constantExpense) => acc + constantExpense.amount,
+                (acc, constantExpense) => {
+                    const remaining = constantExpense.isMultiple
+                        ? constantExpense.amount -
+                          (constantExpense.paidAmount || 0)
+                        : constantExpense.amount;
+                    return acc + remaining;
+                },
                 0,
             ) || 0,
         [filteredConstantExpense],
@@ -368,6 +460,7 @@ const useConstantExpenses = ({
         addConstantExpense,
         editConstantExpense,
         deleteConstantExpense,
+        addPartialPayment,
         markExpensesAsPaid,
         updatePlannedExpenseDayRefresh,
     };

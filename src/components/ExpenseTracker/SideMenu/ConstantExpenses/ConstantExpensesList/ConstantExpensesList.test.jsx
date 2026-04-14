@@ -33,7 +33,7 @@ const makeExpense = (id, name = 'Rent', amount = 100) => ({
     name,
     amount,
     category: 'Utilities',
-    isOneTime: false,
+    isTemporary: false,
 });
 
 const emptyFiltered = { All: [], 'Not paid': [], Paid: [] };
@@ -56,7 +56,7 @@ describe('ConstantExpensesList', () => {
         expect(screen.getByTestId('no-data-screen')).toBeInTheDocument();
     });
 
-    it('shows total amount', () => {
+    it('shows total amount for regular expenses', () => {
         const expenses = [
             makeExpense('1', 'Rent', 200),
             makeExpense('2', 'Water', 50),
@@ -67,7 +67,40 @@ describe('ConstantExpensesList', () => {
                 currentlyFilteredExpenses={expenses}
             />,
         );
-        expect(screen.getByText(/total/i)).toBeInTheDocument();
+        expect(screen.getByText(/Total: 250 HUF/i)).toBeInTheDocument();
+    });
+
+    it('shows remaining amount for isMultiple expenses in the total', () => {
+        const expense = {
+            ...makeExpense('1', 'Gym', 200),
+            isMultiple: true,
+            paidAmount: 75,
+        };
+        render(
+            <ConstantExpensesList
+                {...defaultProps}
+                currentlyFilteredExpenses={[expense]}
+            />,
+        );
+        // remaining = 200 - 75 = 125
+        expect(screen.getByText(/Total: 125 HUF/i)).toBeInTheDocument();
+    });
+
+    it('mixes regular and isMultiple expenses correctly in the total', () => {
+        const regular = makeExpense('1', 'Rent', 300);
+        const multiple = {
+            ...makeExpense('2', 'Gym', 200),
+            isMultiple: true,
+            paidAmount: 50,
+        };
+        render(
+            <ConstantExpensesList
+                {...defaultProps}
+                currentlyFilteredExpenses={[regular, multiple]}
+            />,
+        );
+        // 300 + (200 - 50) = 450
+        expect(screen.getByText(/Total: 450 HUF/i)).toBeInTheDocument();
     });
 
     it('renders a list item for each expense', () => {
@@ -242,5 +275,85 @@ describe('ConstantExpensesList', () => {
                     btn.dataset.icon === 'fa-solid fa-circle-dollar-to-slot',
             );
         expect(dollarButton).toBeDisabled();
+    });
+
+    it('renders Temporary badge when isTemporary is true', () => {
+        const expense = { ...makeExpense('1', 'Phone'), isTemporary: true };
+        render(
+            <ConstantExpensesList
+                {...defaultProps}
+                currentlyFilteredExpenses={[expense]}
+            />,
+        );
+        expect(screen.getByText('Temporary')).toBeInTheDocument();
+    });
+
+    it('renders Multiple badge when isMultiple is true', () => {
+        const expense = { ...makeExpense('1', 'Gym'), isMultiple: true };
+        render(
+            <ConstantExpensesList
+                {...defaultProps}
+                currentlyFilteredExpenses={[expense]}
+            />,
+        );
+        expect(screen.getByText('Multi')).toBeInTheDocument();
+    });
+
+    it('renders both Temporary and Multiple badges when both flags are true', () => {
+        const expense = {
+            ...makeExpense('1', 'Gym'),
+            isTemporary: true,
+            isMultiple: true,
+        };
+        render(
+            <ConstantExpensesList
+                {...defaultProps}
+                currentlyFilteredExpenses={[expense]}
+            />,
+        );
+        expect(screen.getByText('Temporary')).toBeInTheDocument();
+        expect(screen.getByText('Multi')).toBeInTheDocument();
+    });
+
+    it('shows progress text for an unpaid isMultiple expense', () => {
+        const expense = {
+            ...makeExpense('1', 'Gym', 200),
+            isMultiple: true,
+            paidAmount: 75,
+        };
+        render(
+            <ConstantExpensesList
+                {...defaultProps}
+                currentlyFilteredExpenses={[expense]}
+            />,
+        );
+        // progress line contains the paid/total pattern "75 / 200 HUF"
+        expect(screen.getByText(/75/)).toBeInTheDocument();
+        expect(
+            screen.getByText(
+                (_, el) =>
+                    el?.className?.includes(
+                        'constant-expense__multiple-expense-badge',
+                    ) && el.textContent.includes('75'),
+            ),
+        ).toBeInTheDocument();
+    });
+
+    it('does not show progress text for a paid isMultiple expense', () => {
+        const expense = {
+            ...makeExpense('1', 'Gym', 200),
+            isMultiple: true,
+            paidAmount: 200,
+        };
+        const filteredWithPaid = { ...emptyFiltered, Paid: [expense] };
+        render(
+            <ConstantExpensesList
+                {...defaultProps}
+                currentlyFilteredExpenses={[expense]}
+                filteredConstantExpense={filteredWithPaid}
+            />,
+        );
+        // progress line has a "/" separator — total "Total: 200 HUF" does not
+        expect(screen.queryByText(/\d+\s*\/\s*\d+/)).not.toBeInTheDocument();
     });
 });

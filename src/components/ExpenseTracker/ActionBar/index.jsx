@@ -16,7 +16,7 @@ import {
 
 const ActionBar = ({ handleShowSideMenu }) => {
     const { addTransaction, payConstantExpenses } = useTransactionsContext();
-    const { filteredConstantExpense, markExpensesAsPaid } =
+    const { filteredConstantExpense, markExpensesAsPaid, addPartialPayment } =
         useConstantExpensesContext();
     const { isLoading, setDataError } = useDataStatusContext();
     const notPaidConstantExpenses = filteredConstantExpense[NOT_PAID];
@@ -96,11 +96,15 @@ const ActionBar = ({ handleShowSideMenu }) => {
     const handleConstantExpensePayment = async (expenses) => {
         const isPaid = await payConstantExpenses(expenses);
 
-        if (isPaid) {
-            markExpensesAsPaid(expenses);
+        if (!isPaid) return;
 
-            return true;
-        }
+        const regularExpenses = expenses.filter((e) => !e.isMultiple);
+        const multipleExpenses = expenses.filter((e) => e.isMultiple);
+
+        if (regularExpenses.length) markExpensesAsPaid(regularExpenses);
+        if (multipleExpenses.length) addPartialPayment(multipleExpenses);
+
+        return true;
     };
 
     useEffect(() => {

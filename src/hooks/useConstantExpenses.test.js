@@ -47,7 +47,7 @@ const makeExpense = (overrides = {}) => ({
     name: 'Rent',
     category: 'Utilities',
     amount: 500,
-    isOneTime: false,
+    isTemporary: false,
     ...overrides,
 });
 
@@ -211,5 +211,267 @@ describe('useConstantExpenses', () => {
         });
 
         expect(updateValueWithConnectionCheck).toHaveBeenCalled();
+    });
+});
+
+// ─── markExpensesAsPaid ───────────────────────────────────────────────────────
+
+describe('markExpensesAsPaid', () => {
+    beforeEach(() => vi.clearAllMocks());
+
+    it('calls runTransaction and setSuccessMessage when verified', async () => {
+        const params = makeParams({ isVerified: true });
+        const { result } = renderHook(() => useConstantExpenses(params));
+
+        let retVal;
+        await act(async () => {
+            retVal = await result.current.markExpensesAsPaid([makeExpense()]);
+        });
+
+        expect(retVal).toBe(true);
+        expect(runTransaction).toHaveBeenCalled();
+        expect(params.setSuccessMessage).toHaveBeenCalledWith({
+            code: 'constant-expense-marked-as-paid',
+        });
+    });
+
+    it('returns false and sets no-network error when disconnected', async () => {
+        vi.mocked(checkFirebaseConnection).mockResolvedValueOnce(false);
+        const params = makeParams();
+        const { result } = renderHook(() => useConstantExpenses(params));
+
+        let retVal;
+        await act(async () => {
+            retVal = await result.current.markExpensesAsPaid([makeExpense()]);
+        });
+
+        expect(retVal).toBe(false);
+        expect(params.setDataError).toHaveBeenCalledWith({
+            code: 'no-network-users-settings',
+        });
+    });
+
+    it('returns false and sets no-data-saved error when not verified', async () => {
+        const params = makeParams({ isVerified: false });
+        const { result } = renderHook(() => useConstantExpenses(params));
+
+        let retVal;
+        await act(async () => {
+            retVal = await result.current.markExpensesAsPaid([makeExpense()]);
+        });
+
+        expect(retVal).toBe(false);
+        expect(params.setDataError).toHaveBeenCalledWith({
+            code: 'no-data-saved',
+        });
+    });
+
+    it('accepts a single expense object (not wrapped in array)', async () => {
+        const params = makeParams({ isVerified: true });
+        const { result } = renderHook(() => useConstantExpenses(params));
+
+        let retVal;
+        await act(async () => {
+            retVal = await result.current.markExpensesAsPaid(makeExpense());
+        });
+
+        expect(retVal).toBe(true);
+        expect(runTransaction).toHaveBeenCalled();
+    });
+});
+
+// ─── addPartialPayment ────────────────────────────────────────────────────────
+
+describe('addPartialPayment', () => {
+    beforeEach(() => vi.clearAllMocks());
+
+    it('calls runTransaction and returns true when verified', async () => {
+        const params = makeParams({ isVerified: true });
+        const { result } = renderHook(() => useConstantExpenses(params));
+
+        let retVal;
+        await act(async () => {
+            retVal = await result.current.addPartialPayment([
+                makeExpense({ isMultiple: true }),
+            ]);
+        });
+
+        expect(retVal).toBe(true);
+        expect(runTransaction).toHaveBeenCalled();
+    });
+
+    it('returns false and sets no-network error when disconnected', async () => {
+        vi.mocked(checkFirebaseConnection).mockResolvedValueOnce(false);
+        const params = makeParams();
+        const { result } = renderHook(() => useConstantExpenses(params));
+
+        let retVal;
+        await act(async () => {
+            retVal = await result.current.addPartialPayment([
+                makeExpense({ isMultiple: true }),
+            ]);
+        });
+
+        expect(retVal).toBe(false);
+        expect(params.setDataError).toHaveBeenCalledWith({
+            code: 'no-network-users-settings',
+        });
+    });
+
+    it('returns false when not verified (no network error set)', async () => {
+        const params = makeParams({ isVerified: false });
+        const { result } = renderHook(() => useConstantExpenses(params));
+
+        let retVal;
+        await act(async () => {
+            retVal = await result.current.addPartialPayment([
+                makeExpense({ isMultiple: true }),
+            ]);
+        });
+
+        expect(retVal).toBe(false);
+        expect(params.setDataError).not.toHaveBeenCalled();
+    });
+
+    it('accepts a single expense object (not wrapped in array)', async () => {
+        const params = makeParams({ isVerified: true });
+        const { result } = renderHook(() => useConstantExpenses(params));
+
+        let retVal;
+        await act(async () => {
+            retVal = await result.current.addPartialPayment(
+                makeExpense({ isMultiple: true }),
+            );
+        });
+
+        expect(retVal).toBe(true);
+        expect(runTransaction).toHaveBeenCalled();
+    });
+
+    it('stamps paidAt when payment amount reaches the planned amount', async () => {
+        let capturedCallback;
+        vi.mocked(runTransaction).mockImplementationOnce(
+            // @ts-ignore – test mock, no need to satisfy full TransactionResult type
+            async (_ref, callback) => {
+                capturedCallback = callback;
+            },
+        );
+
+        const params = makeParams({ isVerified: true });
+        const { result } = renderHook(() => useConstantExpenses(params));
+
+        const expense = makeExpense({
+            id: 'exp-1',
+            amount: 100,
+            isMultiple: true,
+        });
+        await act(async () => {
+            await result.current.addPartialPayment([
+                { ...expense, amount: 100 },
+            ]);
+        });
+
+        // @ts-ignore – capturedCallback is always set by the mock above
+        const updated = capturedCallback([{ ...expense }]);
+        expect(updated[0].paidAmount).toBe(100);
+        expect(updated[0].paidAt).toBeDefined();
+    });
+
+    it('does not stamp paidAt when payment is below the planned amount', async () => {
+        let capturedCallback;
+        vi.mocked(runTransaction).mockImplementationOnce(
+            // @ts-ignore – test mock, no need to satisfy full TransactionResult type
+            async (_ref, callback) => {
+                capturedCallback = callback;
+            },
+        );
+
+        const params = makeParams({ isVerified: true });
+        const { result } = renderHook(() => useConstantExpenses(params));
+
+        const expense = makeExpense({
+            id: 'exp-1',
+            amount: 500,
+            isMultiple: true,
+        });
+        await act(async () => {
+            await result.current.addPartialPayment([
+                { ...expense, amount: 200 },
+            ]);
+        });
+
+        // @ts-ignore – capturedCallback is always set by the mock above
+        const updated = capturedCallback([{ ...expense }]);
+        expect(updated[0].paidAmount).toBe(200);
+        expect(updated[0].paidAt).toBeUndefined();
+    });
+
+    it('accumulates paidAmount when previous payment is within the current period', async () => {
+        let capturedCallback;
+        vi.mocked(runTransaction).mockImplementationOnce(
+            // @ts-ignore – test mock, no need to satisfy full TransactionResult type
+            async (_ref, callback) => {
+                capturedCallback = callback;
+            },
+        );
+
+        const params = makeParams({ isVerified: true });
+        const { result } = renderHook(() => useConstantExpenses(params));
+
+        const expense = makeExpense({
+            id: 'exp-1',
+            amount: 500,
+            isMultiple: true,
+        });
+        // paidAmountUpdatedAt inside the mocked dayRange (2024-01-01 – 2024-01-31)
+        const insidePeriod = new Date('2024-01-15').getTime();
+
+        await act(async () => {
+            await result.current.addPartialPayment([
+                { ...expense, amount: 200 },
+            ]);
+        });
+
+        const existingList = [
+            { ...expense, paidAmount: 100, paidAmountUpdatedAt: insidePeriod },
+        ];
+        // @ts-ignore – capturedCallback is always set by the mock above
+        const updated = capturedCallback(existingList);
+        expect(updated[0].paidAmount).toBe(300); // 100 existing + 200 new
+        expect(updated[0].paidAt).toBeUndefined();
+    });
+
+    it('resets paidAmount when the previous payment was in a different period', async () => {
+        let capturedCallback;
+        vi.mocked(runTransaction).mockImplementationOnce(
+            // @ts-ignore – test mock, no need to satisfy full TransactionResult type
+            async (_ref, callback) => {
+                capturedCallback = callback;
+            },
+        );
+
+        const params = makeParams({ isVerified: true });
+        const { result } = renderHook(() => useConstantExpenses(params));
+
+        const expense = makeExpense({
+            id: 'exp-1',
+            amount: 500,
+            isMultiple: true,
+        });
+        // paidAmountUpdatedAt outside the mocked dayRange
+        const outsidePeriod = new Date('2023-12-01').getTime();
+
+        await act(async () => {
+            await result.current.addPartialPayment([
+                { ...expense, amount: 200 },
+            ]);
+        });
+
+        const existingList = [
+            { ...expense, paidAmount: 100, paidAmountUpdatedAt: outsidePeriod },
+        ];
+        // @ts-ignore – capturedCallback is always set by the mock above
+        const updated = capturedCallback(existingList);
+        expect(updated[0].paidAmount).toBe(200); // reset — only the new payment
     });
 });

@@ -11,7 +11,7 @@ const makeFilteredExpenses = () => ({
             name: 'Rent',
             amount: 500,
             category: 'Utilities',
-            isOneTime: false,
+            isTemporary: false,
         },
     ],
     [PAID]: [
@@ -20,7 +20,7 @@ const makeFilteredExpenses = () => ({
             name: 'Internet',
             amount: 100,
             category: 'Utilities',
-            isOneTime: false,
+            isTemporary: false,
         },
     ],
 });

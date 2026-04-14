@@ -8,6 +8,8 @@ import {
 } from '@types';
 import NoDataScreen from '@components/common/NoDataScreen';
 import ButtonIcon from '@components/common/ButtonIcon';
+import ConstantExpenseBadges from '@components/common/ConstantExpenseBadges';
+import MultipleExpenseProgress from '@components/common/MultipleExpenseProgress';
 import { PAID } from '@constants';
 import ConstantExpense from '../ConstantExpense';
 
@@ -25,7 +27,12 @@ const ConstantExpensesList = ({
     const isConstantExpensesExist = currentlyFilteredExpenses.length > 0;
 
     const totalFilteredExpenses = currentlyFilteredExpenses.reduce(
-        (total, expense) => total + expense.amount,
+        (total, expense) => {
+            const remaining = expense.isMultiple
+                ? expense.amount - (expense.paidAmount || 0)
+                : expense.amount;
+            return total + remaining;
+        },
         0,
     );
 
@@ -181,78 +188,91 @@ const ConstantExpensesList = ({
 
                         return (
                             <li
-                                className="flex-center gap-10 margin-bottom-sm full-width constant-expense_container"
+                                className="constant-expense_container margin-bottom-md"
                                 key={constantExpense.id}
                             >
-                                {constantExpense.isOneTime && (
-                                    <div className="constant-expense_badge">
-                                        One-time
+                                <div className="flex-center gap-10 full-width">
+                                    <ConstantExpenseBadges
+                                        isTemporary={
+                                            constantExpense.isTemporary
+                                        }
+                                        isMultiple={constantExpense.isMultiple}
+                                    />
+                                    <div className="flex-center-column">
+                                        <ButtonIcon
+                                            isDisabled={isPaid}
+                                            icon="fa-solid fa-circle-dollar-to-slot"
+                                            style="button-icon__no-border button-icon__small"
+                                            handleClick={() =>
+                                                handleMarkAsPaid(
+                                                    constantExpense.id,
+                                                )
+                                            }
+                                        />
                                     </div>
-                                )}
-                                <div className="flex-center-column">
-                                    <ButtonIcon
-                                        isDisabled={isPaid}
-                                        icon="fa-solid fa-circle-dollar-to-slot"
-                                        style="button-icon__no-border button-icon__small"
-                                        handleClick={() =>
-                                            handleMarkAsPaid(constantExpense.id)
+                                    <ConstantExpense
+                                        isDisabled={isDisabled}
+                                        constantExpense={constantExpense}
+                                        changeConstantExpense={
+                                            modifyChosenExpenseData
                                         }
                                     />
+                                    <div className="flex-center-column gap-5">
+                                        {isCurrentlyBeingEdited ? (
+                                            <ButtonIcon
+                                                icon="fas fa-check fa-xs"
+                                                handleClick={() =>
+                                                    handleEditExpense(
+                                                        constantExpense,
+                                                    )
+                                                }
+                                            />
+                                        ) : (
+                                            <ButtonIcon
+                                                icon="fa-solid fa-pen fa-xs"
+                                                handleClick={() =>
+                                                    initiateEditExpense(
+                                                        constantExpense,
+                                                    )
+                                                }
+                                            />
+                                        )}
+                                        {isCurrentlyBeingEdited ? (
+                                            <ButtonIcon
+                                                icon="fa-solid fa-xmark fa-xs"
+                                                handleClick={() =>
+                                                    undoEditExpense(
+                                                        constantExpense,
+                                                    )
+                                                }
+                                            />
+                                        ) : (
+                                            <ButtonIcon
+                                                icon="fa-solid fa-trash-can fa-xs"
+                                                handleClick={() =>
+                                                    initiateDeleteExpense(
+                                                        constantExpense,
+                                                    )
+                                                }
+                                            />
+                                        )}
+                                    </div>
+                                    <div
+                                        className={`flex-column flex-justify-center gap-10 constant-expense_delete-question text-center ${
+                                            isQuestionShown &&
+                                            'is-confirmation-text-shown'
+                                        }`}
+                                    >
+                                        {isBeingMarkedAsPaid && toBePaidContent}
+                                        {isToBeDeleted && deleteContent}
+                                    </div>
                                 </div>
-                                <ConstantExpense
-                                    isDisabled={isDisabled}
-                                    constantExpense={constantExpense}
-                                    changeConstantExpense={
-                                        modifyChosenExpenseData
-                                    }
-                                />
-                                <div className="flex-center-column gap-5">
-                                    {isCurrentlyBeingEdited ? (
-                                        <ButtonIcon
-                                            icon="fas fa-check fa-xs"
-                                            handleClick={() =>
-                                                handleEditExpense(
-                                                    constantExpense,
-                                                )
-                                            }
-                                        />
-                                    ) : (
-                                        <ButtonIcon
-                                            icon="fa-solid fa-pen fa-xs"
-                                            handleClick={() =>
-                                                initiateEditExpense(
-                                                    constantExpense,
-                                                )
-                                            }
-                                        />
-                                    )}
-                                    {isCurrentlyBeingEdited ? (
-                                        <ButtonIcon
-                                            icon="fa-solid fa-xmark fa-xs"
-                                            handleClick={() =>
-                                                undoEditExpense(constantExpense)
-                                            }
-                                        />
-                                    ) : (
-                                        <ButtonIcon
-                                            icon="fa-solid fa-trash-can fa-xs"
-                                            handleClick={() =>
-                                                initiateDeleteExpense(
-                                                    constantExpense,
-                                                )
-                                            }
-                                        />
-                                    )}
-                                </div>
-                                <div
-                                    className={`flex-column flex-justify-center gap-10 constant-expense_delete-question text-center ${
-                                        isQuestionShown &&
-                                        'is-confirmation-text-shown'
-                                    }`}
-                                >
-                                    {isBeingMarkedAsPaid && toBePaidContent}
-                                    {isToBeDeleted && deleteContent}
-                                </div>
+                                {constantExpense.isMultiple && !isPaid && (
+                                    <MultipleExpenseProgress
+                                        paidAmount={constantExpense.paidAmount}
+                                        totalAmount={constantExpense.amount}
+                                    />
+                                )}
                             </li>
                         );
                     })}

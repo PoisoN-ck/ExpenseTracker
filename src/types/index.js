@@ -32,7 +32,9 @@ export const ConstantExpense = PropTypes.shape({
         .isRequired,
     category: PropTypes.string.isRequired,
     id: PropTypes.string,
-    isOneTime: PropTypes.bool,
+    isTemporary: PropTypes.bool,
+    isMultiple: PropTypes.bool,
+    // runtime-only (not persisted): paidAmount — sum of linked transactions in current period
 });
 
 export const FilteredConstantExpenses = PropTypes.shape({
