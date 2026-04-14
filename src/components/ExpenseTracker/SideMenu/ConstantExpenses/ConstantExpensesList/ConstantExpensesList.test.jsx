@@ -56,7 +56,7 @@ describe('ConstantExpensesList', () => {
         expect(screen.getByTestId('no-data-screen')).toBeInTheDocument();
     });
 
-    it('shows total amount', () => {
+    it('shows total amount for regular expenses', () => {
         const expenses = [
             makeExpense('1', 'Rent', 200),
             makeExpense('2', 'Water', 50),
@@ -67,7 +67,40 @@ describe('ConstantExpensesList', () => {
                 currentlyFilteredExpenses={expenses}
             />,
         );
-        expect(screen.getByText(/total/i)).toBeInTheDocument();
+        expect(screen.getByText(/Total: 250 HUF/i)).toBeInTheDocument();
+    });
+
+    it('shows remaining amount for isMultiple expenses in the total', () => {
+        const expense = {
+            ...makeExpense('1', 'Gym', 200),
+            isMultiple: true,
+            paidAmount: 75,
+        };
+        render(
+            <ConstantExpensesList
+                {...defaultProps}
+                currentlyFilteredExpenses={[expense]}
+            />,
+        );
+        // remaining = 200 - 75 = 125
+        expect(screen.getByText(/Total: 125 HUF/i)).toBeInTheDocument();
+    });
+
+    it('mixes regular and isMultiple expenses correctly in the total', () => {
+        const regular = makeExpense('1', 'Rent', 300);
+        const multiple = {
+            ...makeExpense('2', 'Gym', 200),
+            isMultiple: true,
+            paidAmount: 50,
+        };
+        render(
+            <ConstantExpensesList
+                {...defaultProps}
+                currentlyFilteredExpenses={[regular, multiple]}
+            />,
+        );
+        // 300 + (200 - 50) = 450
+        expect(screen.getByText(/Total: 450 HUF/i)).toBeInTheDocument();
     });
 
     it('renders a list item for each expense', () => {

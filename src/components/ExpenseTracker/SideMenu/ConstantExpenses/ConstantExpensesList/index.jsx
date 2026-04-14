@@ -27,7 +27,12 @@ const ConstantExpensesList = ({
     const isConstantExpensesExist = currentlyFilteredExpenses.length > 0;
 
     const totalFilteredExpenses = currentlyFilteredExpenses.reduce(
-        (total, expense) => total + expense.amount,
+        (total, expense) => {
+            const remaining = expense.isMultiple
+                ? expense.amount - (expense.paidAmount || 0)
+                : expense.amount;
+            return total + remaining;
+        },
         0,
     );
 
